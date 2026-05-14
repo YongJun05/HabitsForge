@@ -290,30 +290,18 @@ const HabitForm: React.FC<HabitFormProps> = ({ initialData, onSave, onCancel }) 
       <div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           <label style={{ fontWeight: 800, fontSize: '12px', letterSpacing: '2px' }}>REMINDER</label>
-          <button
-            onClick={() => setReminderEnabled(!reminderEnabled)}
-            style={{
-              width: '48px',
-              height: '24px',
-              background: reminderEnabled ? '#22C55E' : '#f0f0f0',
-              border: '3px solid #000000',
-              boxShadow: '4px 4px 0px #000000',
-              cursor: 'pointer',
-              position: 'relative',
-            }}
-          >
-            <div
-              style={{
-                width: '16px',
-                height: '16px',
-                background: '#000000',
-                position: 'absolute',
-                top: '2px',
-                left: reminderEnabled ? '26px' : '4px',
-                transition: 'left 0.2s',
-              }}
+          <label className="hf-switch">
+            <input
+              className="hf-switch__input"
+              type="checkbox"
+              checked={reminderEnabled}
+              onChange={(e) => setReminderEnabled(e.target.checked)}
             />
-          </button>
+            <span className="hf-switch__toggle">
+              <span className="hf-switch__left">off</span>
+              <span className="hf-switch__right">on</span>
+            </span>
+          </label>
         </div>
 
         {reminderEnabled && (

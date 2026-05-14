@@ -26,7 +26,27 @@ export async function suggestHabits(goal: string): Promise<HabitSuggestion[]> {
   }
 
   const systemInstruction =
-    "You are a habit-building coach. The user will describe a personal goal. Respond ONLY with a valid JSON array of exactly 3 habit suggestions. No explanation, no markdown, no extra text — just the raw JSON array. Each object must have: name (max 8 words), description (one sentence, max 20 words), icon (must be one of: flame, book, brain, droplets, dumbbell, apple, moon, sun, heart, footprints, pencil, coffee, music, smile, sparkles, bike, leaf, pill, target, trophy), reminder_time (HH:MM 24h format), color (must be one of: #ffe600, #2563EB, #FF2D9B, #22C55E, #000000, #FFFFFF)";
+    "Return ONLY a JSON array of exactly 3 habit suggestions. No prose, no markdown, no extra keys. Keep fields concise.";
+
+  const responseSchema = {
+    type: 'array',
+    minItems: 3,
+    maxItems: 3,
+    items: {
+      type: 'object',
+      required: ['name', 'description', 'icon', 'reminder_time', 'color'],
+      properties: {
+        name: { type: 'string' },
+        description: { type: 'string' },
+        icon: {
+          type: 'string',
+          enum: ['flame', 'book', 'brain', 'droplets', 'dumbbell', 'apple', 'moon', 'sun', 'heart', 'footprints', 'pencil', 'coffee', 'music', 'smile', 'sparkles', 'bike', 'leaf', 'pill', 'target', 'trophy'],
+        },
+        reminder_time: { type: 'string' },
+        color: { type: 'string', enum: ['#ffe600', '#2563EB', '#FF2D9B', '#22C55E', '#000000', '#FFFFFF'] },
+      },
+    },
+  };
 
   const requestOnce = async (temperature: number, maxOutputTokens: number) => {
     const body = {
@@ -36,6 +56,7 @@ export async function suggestHabits(goal: string): Promise<HabitSuggestion[]> {
         temperature,
         maxOutputTokens,
         responseMimeType: 'application/json',
+        responseSchema,
       },
     };
 
@@ -51,23 +72,27 @@ export async function suggestHabits(goal: string): Promise<HabitSuggestion[]> {
     }
 
     const data = await response.json();
-    const parts: { text?: string }[] = data?.candidates?.[0]?.content?.parts ?? [];
+    const candidate = data?.candidates?.[0];
+    const parts: { text?: string }[] = candidate?.content?.parts ?? [];
     const rawText: string = parts.map((part) => part.text ?? '').join('').trim();
+    const finishReason: string = candidate?.finishReason ?? 'UNKNOWN';
 
-    if (!rawText) {
-      throw new Error('Gemini returned an empty response. Please try again.');
-    }
-
-    return rawText;
+    return { rawText, finishReason };
   };
 
-  let rawText = await requestOnce(0.6, 500);
-  if (!rawText.trim()) {
-    rawText = await requestOnce(0.4, 300);
+  let { rawText, finishReason } = await requestOnce(0.2, 800);
+  const isEmptyOrStub = (text: string) => !text.trim() || text.trim() === '[';
+
+  if (finishReason === 'MAX_TOKENS') {
+    ({ rawText, finishReason } = await requestOnce(0.2, 1200));
   }
 
-  if (!rawText.trim()) {
-    throw new Error('Gemini returned an empty response. Please try again in a moment.');
+  if (isEmptyOrStub(rawText)) {
+    ({ rawText, finishReason } = await requestOnce(0.2, 1200));
+  }
+
+  if (isEmptyOrStub(rawText)) {
+    throw new Error(`Gemini returned an empty or incomplete response (finishReason=${finishReason}). Please try again in a moment.`);
   }
 
   // Strip markdown code fences as a fallback — the prompt says no markdown,
@@ -126,7 +151,7 @@ export async function suggestHabits(goal: string): Promise<HabitSuggestion[]> {
     }
 
     // Retry once with a shorter response if the model returned partial JSON.
-    rawText = await requestOnce(0.4, 300);
+    ({ rawText, finishReason } = await requestOnce(0.2, 1200));
     cleaned = rawText.trim();
     if (cleaned.startsWith('```json')) {
       cleaned = cleaned.slice(7);
@@ -147,7 +172,7 @@ export async function suggestHabits(goal: string): Promise<HabitSuggestion[]> {
       // fall through to error below
     }
 
-    throw new Error(`Failed to parse Gemini response as JSON. Raw text: ${cleaned}`);
+    throw new Error(`Failed to parse Gemini response as JSON (finishReason=${finishReason}). Raw text: ${cleaned}`);
   }
 }
 

@@ -103,6 +103,121 @@ textarea::placeholder {
   box-shadow: 4px 4px 0px #000000;
 }
 
+/* Reminder switch */
+.hf-switch {
+  font-size: 13px;
+  position: relative;
+  display: inline-block;
+  width: 4.2em;
+  height: 2.1em;
+  user-select: none;
+}
+
+.hf-switch__input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.hf-switch__toggle {
+  position: absolute;
+  cursor: pointer;
+  width: 100%;
+  height: 100%;
+  background-color: #373737;
+  border-radius: 0.1em;
+  transition: 0.4s;
+  text-transform: uppercase;
+  font-weight: 700;
+  overflow: hidden;
+  box-shadow:
+    -0.3em 0 0 0 #373737,
+    -0.3em 0.3em 0 0 #373737,
+    0.3em 0 0 0 #373737,
+    0.3em 0.3em 0 0 #373737,
+    0 0.3em 0 0 #373737;
+}
+
+.hf-switch__left,
+.hf-switch__right {
+  position: absolute;
+  display: flex;
+  width: 50%;
+  height: 88%;
+  background-color: #f3f3f3;
+  align-items: center;
+  justify-content: center;
+  transform-style: preserve-3d;
+  transition: all 150ms;
+  font-size: 0.7em;
+}
+
+.hf-switch__left {
+  color: #373737;
+  left: 0;
+  bottom: 0;
+  transform-origin: right;
+  transform: rotateX(10deg);
+}
+
+.hf-switch__left::before {
+  position: absolute;
+  content: '';
+  width: 100%;
+  height: 100%;
+  background-color: #cecece;
+  transform-origin: center left;
+  transform: rotateY(90deg);
+}
+
+.hf-switch__left::after {
+  position: absolute;
+  content: '';
+  width: 100%;
+  height: 100%;
+  background-color: #707070;
+  transform-origin: center bottom;
+  transform: rotateX(90deg);
+}
+
+.hf-switch__right {
+  color: #cecece;
+  right: 1px;
+  bottom: 0;
+  transform-origin: left;
+  transform: rotateX(10deg) rotateY(-45deg);
+}
+
+.hf-switch__right::before {
+  position: absolute;
+  content: '';
+  width: 100%;
+  height: 100%;
+  background-color: #cecece;
+  transform-origin: center right;
+  transform: rotateY(-90deg);
+}
+
+.hf-switch__right::after {
+  position: absolute;
+  content: '';
+  width: 100%;
+  height: 100%;
+  background-color: #707070;
+  transform-origin: center bottom;
+  transform: rotateX(90deg);
+}
+
+.hf-switch__input:checked + .hf-switch__toggle > .hf-switch__left {
+  transform: rotateX(10deg) rotateY(45deg);
+  color: #cecece;
+}
+
+.hf-switch__input:checked + .hf-switch__toggle > .hf-switch__right {
+  transform: rotateX(10deg) rotateY(0deg);
+  color: #487bdb;
+}
+
 /* Loader */
 .hf-loader {
   display: inline-block;
