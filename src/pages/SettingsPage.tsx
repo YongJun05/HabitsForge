@@ -89,25 +89,28 @@ const SettingsPage: React.FC = () => {
   const permissionLabel = permission === 'granted' ? 'Granted' : permission === 'denied' ? 'Denied' : permission === 'unsupported' ? 'Not supported' : 'Not requested';
 
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--color-bg)' }}>
+    <div style={{ minHeight: '100vh' }}>
       <Navbar />
 
-      <div style={{ maxWidth: '600px', margin: '0 auto', padding: '24px 16px' }}>
+      <div style={{ maxWidth: '720px', margin: '0 auto', padding: '32px 16px' }}>
         <h1 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: '24px', marginBottom: '20px' }}>
-          Settings
+          SETTINGS
         </h1>
 
         {/* Account section */}
-        <div className="neo-card" style={{ padding: '20px', marginBottom: '16px' }}>
-          <h2 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '16px', marginBottom: '12px' }}>
-            Account
-          </h2>
+        <div style={{ padding: '20px', marginBottom: '16px', background: '#FFFFFF', border: '3px solid #000000', boxShadow: '4px 4px 0px #000000' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
+            <div className="neo-icon-box" style={{ background: '#FFE566' }}>👤</div>
+            <h2 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: '16px', margin: 0 }}>
+              ACCOUNT
+            </h2>
+          </div>
           <div style={{ marginBottom: '12px' }}>
-            <label style={{ fontWeight: 700, fontSize: '13px', display: 'block', marginBottom: '4px' }}>Email</label>
+            <label style={{ fontWeight: 800, fontSize: '12px', letterSpacing: '2px', display: 'block', marginBottom: '6px' }}>EMAIL</label>
             <input className="neo-input" value={email} disabled style={{ opacity: 0.6 }} />
           </div>
           <div style={{ marginBottom: '12px' }}>
-            <label style={{ fontWeight: 700, fontSize: '13px', display: 'block', marginBottom: '4px' }}>Display Name</label>
+            <label style={{ fontWeight: 800, fontSize: '12px', letterSpacing: '2px', display: 'block', marginBottom: '6px' }}>DISPLAY NAME</label>
             <div style={{ display: 'flex', gap: '8px' }}>
               <input
                 className="neo-input"
@@ -119,43 +122,46 @@ const SettingsPage: React.FC = () => {
                 className="neo-btn"
                 onClick={handleSaveName}
                 disabled={saving || !displayName.trim()}
-                style={{ background: '#FFE566', padding: '8px 16px', fontSize: '13px', whiteSpace: 'nowrap' }}
+                style={{ background: '#2563EB', color: '#FFFFFF', padding: '10px 16px', fontSize: '12px', whiteSpace: 'nowrap' }}
               >
-                {saving ? 'Saving...' : 'Save'}
+                {saving ? 'SAVING...' : 'SAVE CHANGES'}
               </button>
             </div>
           </div>
         </div>
 
         {/* Notifications section */}
-        <div className="neo-card" style={{ padding: '20px', marginBottom: '16px' }}>
-          <h2 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '16px', marginBottom: '12px' }}>
-            Notifications
-          </h2>
+        <div style={{ padding: '20px', marginBottom: '16px', background: '#FFFFFF', border: '3px solid #000000', boxShadow: '4px 4px 0px #000000' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
+            <div className="neo-icon-box" style={{ background: '#2563EB', color: '#FFFFFF' }}>🔔</div>
+            <h2 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: '16px', margin: 0 }}>
+              NOTIFICATIONS
+            </h2>
+          </div>
 
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-            <span style={{ fontSize: '13px' }}>Browser permission: <strong>{permissionLabel}</strong></span>
+            <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '13px' }}>BROWSER PERMISSION: <strong>{permissionLabel.toUpperCase()}</strong></span>
             {isSupported && permission !== 'granted' && permission !== 'unsupported' && (
               <button
                 className="neo-btn"
                 onClick={requestPermission}
-                style={{ background: '#74b9ff', padding: '6px 12px', fontSize: '12px' }}
+                style={{ background: '#2563EB', color: '#FFFFFF', padding: '8px 12px', fontSize: '12px' }}
               >
-                Enable Notifications
+                ENABLE NOTIFICATIONS
               </button>
             )}
           </div>
 
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ fontSize: '13px' }}>Global notifications</span>
+            <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '13px' }}>GLOBAL NOTIFICATIONS</span>
             <button
               onClick={handleToggleNotifGlobal}
               style={{
-                width: '44px',
+                width: '48px',
                 height: '24px',
-                borderRadius: '12px',
-                background: notifGlobal ? '#A8E6CF' : '#e0e0e0',
-                border: '2px solid #1A1A1A',
+                background: notifGlobal ? '#22C55E' : '#e0e0e0',
+                border: '3px solid #000000',
+                boxShadow: '4px 4px 0px #000000',
                 cursor: 'pointer',
                 position: 'relative',
               }}
@@ -164,8 +170,7 @@ const SettingsPage: React.FC = () => {
                 style={{
                   width: '16px',
                   height: '16px',
-                  borderRadius: '50%',
-                  background: '#1A1A1A',
+                  background: '#000000',
                   position: 'absolute',
                   top: '2px',
                   left: notifGlobal ? '22px' : '2px',
@@ -177,19 +182,22 @@ const SettingsPage: React.FC = () => {
         </div>
 
         {/* Danger zone */}
-        <div className="neo-card" style={{ padding: '20px', border: '3px solid #FF6B6B' }}>
-          <h2 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '16px', marginBottom: '12px', color: '#FF6B6B' }}>
-            Danger Zone
-          </h2>
-          <p style={{ fontSize: '13px', color: '#666', marginBottom: '12px' }}>
+        <div style={{ padding: '20px', border: '3px solid #FF2D9B', boxShadow: '4px 4px 0px #000000', background: '#FFFFFF' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
+            <div className="neo-icon-box" style={{ background: '#FF2D9B', color: '#FFFFFF' }}>⚠️</div>
+            <h2 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: '16px', margin: 0, color: '#FF2D9B' }}>
+              DANGER ZONE
+            </h2>
+          </div>
+          <p style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '13px', marginBottom: '12px' }}>
             This will permanently delete all your habits and their logs. This action cannot be undone.
           </p>
           <button
             className="neo-btn"
             onClick={handleDeleteAllHabits}
-            style={{ background: '#FF6B6B', color: 'white', padding: '8px 16px', fontSize: '13px' }}
+            style={{ background: '#FF2D9B', color: '#FFFFFF', padding: '10px 16px', fontSize: '12px' }}
           >
-            Delete All Habits
+            DELETE ALL HABITS
           </button>
         </div>
       </div>

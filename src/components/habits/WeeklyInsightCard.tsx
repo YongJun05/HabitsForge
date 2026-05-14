@@ -4,7 +4,7 @@
  * Only renders when the user has at least 1 habit.
  */
 import React from 'react';
-import { Sparkles, RefreshCw } from 'lucide-react';
+import { RefreshCw } from 'lucide-react';
 import { useWeeklyInsight } from '../../hooks/useWeeklyInsight';
 import Spinner from '../ui/Spinner';
 import type { HabitWithStreak } from '../../types';
@@ -21,68 +21,70 @@ const WeeklyInsightCard: React.FC<WeeklyInsightCardProps> = ({ habits }) => {
   return (
     <div
       style={{
-        border: '3px solid #1A1A1A',
-        borderLeft: '8px solid #C9B1FF',
-        boxShadow: '4px 4px 0px #1A1A1A',
-        borderRadius: '8px',
-        background: 'white',
-        padding: '16px',
+        border: '3px solid #000000',
+        borderLeft: '8px solid #FF2D9B',
+        boxShadow: '4px 4px 0px #000000',
+        background: '#FFFFFF',
+        padding: '20px',
       }}
     >
       {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
-        <Sparkles size={18} style={{ color: '#C9B1FF' }} />
-        <span style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '16px' }}>
-          Your AI Weekly Insight
+      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px' }}>
+        <div className="neo-icon-box" style={{ background: '#FF2D9B' }}>✨</div>
+        <span style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: '16px' }}>
+          AI WEEKLY INSIGHT
         </span>
       </div>
 
       {/* Loading state */}
       {loading && (
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', animation: 'pulse 1.5s ease-in-out infinite' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <Spinner size="sm" />
-          <span style={{ fontSize: '13px', color: '#666' }}>Analysing your habits...</span>
+          <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '13px' }}>ANALYSING YOUR HABITS...</span>
         </div>
       )}
 
       {/* Error state */}
       {error && !loading && (
         <div>
-          <p style={{ color: '#FF6B6B', fontSize: '13px', margin: '0 0 8px 0' }}>{error}</p>
-          <button className="neo-btn" onClick={refresh} style={{ background: '#FFE566', padding: '4px 12px', fontSize: '12px' }}>
-            Try again
+          <p style={{ color: '#FF2D9B', fontSize: '13px', margin: '0 0 8px 0', fontFamily: "'JetBrains Mono', monospace" }}>{error}</p>
+          <button
+            className="neo-btn"
+            onClick={refresh}
+            style={{ background: '#FFE566', padding: '6px 12px', fontSize: '12px' }}
+          >
+            TRY AGAIN
           </button>
         </div>
       )}
 
       {/* Success state */}
       {insight && !loading && !error && (
-        <p style={{ fontSize: '14px', lineHeight: '1.6', fontStyle: 'italic', color: '#333', margin: '0 0 12px 0' }}>
+        <p style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '14px', lineHeight: 1.8, margin: '0 0 12px 0' }}>
           {insight}
         </p>
       )}
 
       {/* Footer */}
       {!loading && (
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', borderTop: '1px solid #eee', paddingTop: '8px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', borderTop: '2px solid #000000', paddingTop: '8px' }}>
           <button
+            className="neo-btn"
             onClick={refresh}
             style={{
-              background: 'none',
-              border: 'none',
-              cursor: 'pointer',
+              background: '#FFFFFF',
+              border: '2px solid #000000',
+              boxShadow: '2px 2px 0px #000000',
+              padding: '4px 10px',
               fontSize: '12px',
-              color: '#888',
               display: 'flex',
               alignItems: 'center',
-              gap: '4px',
-              padding: 0,
+              gap: '6px',
             }}
           >
             <RefreshCw size={12} />
-            Refresh
+            ↻ REFRESH
           </button>
-          <span style={{ fontSize: '11px', color: '#aaa', marginLeft: 'auto' }}>Updates weekly</span>
         </div>
       )}
     </div>

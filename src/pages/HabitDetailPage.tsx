@@ -6,12 +6,11 @@
  */
 import React, { useEffect, useState, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft } from 'lucide-react';
 import Navbar from '../components/layout/Navbar';
 import HabitHeatmap from '../components/habits/HabitHeatmap';
 import Spinner from '../components/ui/Spinner';
 import { supabase } from '../lib/supabase';
-import { calculateCurrentStreak, calculateBestStreak, getTodayString } from '../lib/streakUtils';
+import { calculateCurrentStreak, calculateBestStreak } from '../lib/streakUtils';
 import type { Habit } from '../types';
 
 const HabitDetailPage: React.FC = () => {
@@ -72,8 +71,6 @@ const HabitDetailPage: React.FC = () => {
 
   const currentStreak = useMemo(() => calculateCurrentStreak(logs), [logs]);
   const bestStreak = useMemo(() => calculateBestStreak(logs), [logs]);
-  const today = getTodayString();
-  const isDoneToday = logs.includes(today);
 
   // Last 30 days completion percentage
   const last30Count = useMemo(() => {
@@ -108,7 +105,7 @@ const HabitDetailPage: React.FC = () => {
 
   if (loading) {
     return (
-      <div style={{ minHeight: '100vh', background: 'var(--color-bg)' }}>
+      <div style={{ minHeight: '100vh' }}>
         <Navbar />
         <div style={{ display: 'flex', justifyContent: 'center', padding: '60px' }}>
           <Spinner size="lg" />
@@ -119,15 +116,15 @@ const HabitDetailPage: React.FC = () => {
 
   if (notFound || !habit) {
     return (
-      <div style={{ minHeight: '100vh', background: 'var(--color-bg)' }}>
+      <div style={{ minHeight: '100vh' }}>
         <Navbar />
         <div style={{ maxWidth: '720px', margin: '0 auto', padding: '60px 24px', textAlign: 'center' }}>
           <h2 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: '24px', marginBottom: '12px' }}>
-            Habit not found
+            HABIT NOT FOUND
           </h2>
-          <p style={{ color: '#666', marginBottom: '20px' }}>This habit may have been deleted or the URL is incorrect.</p>
+          <p style={{ fontFamily: "'JetBrains Mono', monospace", marginBottom: '20px' }}>This habit may have been deleted or the URL is incorrect.</p>
           <button className="neo-btn" onClick={() => navigate('/dashboard')} style={{ background: '#FFE566', padding: '10px 20px' }}>
-            Back to Dashboard
+            BACK TO DASHBOARD
           </button>
         </div>
       </div>
@@ -135,50 +132,50 @@ const HabitDetailPage: React.FC = () => {
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--color-bg)' }}>
+    <div style={{ minHeight: '100vh' }}>
       <Navbar />
 
-      <div style={{ maxWidth: '720px', margin: '0 auto', padding: '24px 16px' }}>
+      <div style={{ maxWidth: '860px', margin: '0 auto', padding: '32px 16px' }}>
         {/* Back button */}
         <button
           onClick={() => navigate('/dashboard')}
-          style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '16px', fontWeight: 600, fontSize: '14px' }}
+          className="neo-btn"
+          style={{ background: '#FFFFFF', border: '3px solid #000000', boxShadow: '3px 3px 0px #000000', padding: '8px 12px', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '16px' }}
         >
-          <ArrowLeft size={16} />
-          Back to Dashboard
+          ← BACK
         </button>
 
         {/* Hero card */}
         <div
-          className="neo-card"
           style={{
-            padding: '24px',
+            padding: '32px',
             marginBottom: '16px',
             background: habit.color,
+            border: '3px solid #000000',
+            boxShadow: '6px 6px 0px #000000',
           }}
         >
-          <div style={{ fontSize: '48px', marginBottom: '8px' }}>{habit.icon}</div>
-          <h1 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: '24px', margin: '0 0 4px' }}>
+          <div
+            style={{
+              width: '64px',
+              height: '64px',
+              border: '3px solid #000000',
+              boxShadow: '3px 3px 0px #000000',
+              background: '#FFFFFF',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: '32px',
+              marginBottom: '12px',
+            }}
+          >
+            {habit.icon}
+          </div>
+          <h1 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: '36px', margin: '0 0 8px', textTransform: 'uppercase' }}>
             {habit.name}
           </h1>
           {habit.description && (
-            <p style={{ fontSize: '14px', color: '#333', margin: 0 }}>{habit.description}</p>
-          )}
-          {isDoneToday && (
-            <div
-              style={{
-                display: 'inline-block',
-                marginTop: '8px',
-                background: '#A8E6CF',
-                border: '2px solid #1A1A1A',
-                borderRadius: '6px',
-                padding: '4px 10px',
-                fontSize: '12px',
-                fontWeight: 700,
-              }}
-            >
-              Done today
-            </div>
+            <p style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '14px', margin: 0 }}>{habit.description}</p>
           )}
         </div>
 
@@ -189,23 +186,32 @@ const HabitDetailPage: React.FC = () => {
             { label: 'Best Streak', value: `${bestStreak}d`, icon: '🏆' },
             { label: 'Last 30 Days', value: `${last30Percent}%`, icon: '📊' },
           ].map((stat) => (
-            <div key={stat.label} className="neo-card" style={{ padding: '16px', textAlign: 'center' }}>
-              <div style={{ fontSize: '20px', marginBottom: '4px' }}>{stat.icon}</div>
-              <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: '20px' }}>{stat.value}</div>
-              <div style={{ fontSize: '11px', color: '#666', fontWeight: 600 }}>{stat.label}</div>
+            <div
+              key={stat.label}
+              style={{
+                padding: '16px',
+                textAlign: 'center',
+                background: '#FFFFFF',
+                border: '3px solid #000000',
+                boxShadow: '3px 3px 0px #000000',
+              }}
+            >
+              <div style={{ fontSize: '20px', marginBottom: '6px' }}>{stat.icon}</div>
+              <div style={{ fontFamily: "'JetBrains Mono', monospace", fontWeight: 800, fontSize: '36px' }}>{stat.value}</div>
+              <div style={{ fontSize: '11px', fontWeight: 800, letterSpacing: '2px' }}>{stat.label.toUpperCase()}</div>
             </div>
           ))}
         </div>
 
         {/* 30-day heatmap */}
-        <div className="neo-card" style={{ padding: '16px', marginBottom: '16px' }}>
+        <div style={{ padding: '16px', marginBottom: '16px', background: '#FFFFFF', border: '3px solid #000000', boxShadow: '4px 4px 0px #000000' }}>
           <HabitHeatmap logs={logs} />
         </div>
 
         {/* Recent activity */}
-        <div className="neo-card" style={{ padding: '16px' }}>
-          <h3 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '16px', marginBottom: '12px' }}>
-            Recent Activity
+        <div style={{ padding: '16px', background: '#FFFFFF', border: '3px solid #000000', boxShadow: '4px 4px 0px #000000' }}>
+          <h3 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: '16px', marginBottom: '12px' }}>
+            RECENT ACTIVITY
           </h3>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
             {recentActivity.map((entry) => (
@@ -216,21 +222,21 @@ const HabitDetailPage: React.FC = () => {
                   justifyContent: 'space-between',
                   alignItems: 'center',
                   padding: '6px 0',
-                  borderBottom: '1px solid #f0f0f0',
+                  borderBottom: '2px solid #000000',
                 }}
               >
-                <span style={{ fontSize: '13px' }}>{entry.date}</span>
+                <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '13px' }}>{entry.date}</span>
                 <span
                   style={{
                     fontSize: '12px',
-                    fontWeight: 700,
-                    padding: '2px 8px',
-                    borderRadius: '4px',
-                    border: '1px solid #1A1A1A',
-                    background: entry.done ? '#A8E6CF' : '#f0f0f0',
+                    fontWeight: 800,
+                    padding: '2px 10px',
+                    border: '2px solid #000000',
+                    background: entry.done ? '#22C55E' : '#f0f0f0',
+                    color: entry.done ? '#FFFFFF' : '#000000',
                   }}
                 >
-                  {entry.done ? 'Done' : 'Missed'}
+                  {entry.done ? 'DONE' : 'MISSED'}
                 </span>
               </div>
             ))}

@@ -5,7 +5,6 @@
  */
 import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Target } from 'lucide-react';
 import Navbar from '../components/layout/Navbar';
 import HabitCard from '../components/habits/HabitCard';
 import HabitFormModal from '../components/habits/HabitFormModal';
@@ -117,39 +116,43 @@ const DashboardPage: React.FC = () => {
   const showNotifBanner = isSupported && permission === 'default' && !notifDismissed;
 
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--color-bg)' }}>
+    <div style={{ minHeight: '100vh' }}>
       <Navbar />
 
-      <div style={{ maxWidth: '720px', margin: '0 auto', padding: '24px 16px' }}>
+      <div style={{ maxWidth: '760px', margin: '0 auto', padding: '32px 16px' }}>
         {/* Notification permission banner */}
         {showNotifBanner && (
           <div
-            className="neo-card"
             style={{
-              padding: '12px 16px',
+              background: '#FFE566',
+              border: '3px solid #000000',
+              boxShadow: '4px 4px 0px #000000',
+              padding: '14px 16px',
               marginBottom: '16px',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between',
               gap: '12px',
-              background: '#74b9ff',
             }}
           >
-            <span style={{ fontWeight: 600, fontSize: '14px' }}>Enable reminders to stay on track</span>
+            <span style={{ fontWeight: 800, fontSize: '12px', letterSpacing: '2px' }}>
+              🔔 ENABLE REMINDERS TO STAY ON TRACK
+            </span>
             <div style={{ display: 'flex', gap: '8px' }}>
               <button
                 className="neo-btn"
                 onClick={requestPermission}
-                style={{ background: '#1A1A1A', color: 'white', padding: '6px 12px', fontSize: '12px' }}
+                style={{ background: '#000000', color: '#FFFFFF', padding: '8px 12px', fontSize: '12px' }}
               >
                 Enable
               </button>
               <button
+                className="neo-btn"
                 onClick={() => {
                   setNotifDismissed(true);
                   localStorage.setItem('habitforge_notif_dismissed', 'true');
                 }}
-                style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '12px', fontWeight: 600 }}
+                style={{ background: '#FFFFFF', color: '#000000', padding: '8px 12px', fontSize: '12px', letterSpacing: '2px' }}
               >
                 Dismiss
               </button>
@@ -158,20 +161,22 @@ const DashboardPage: React.FC = () => {
         )}
 
         {/* Progress bar section */}
-        <div className="neo-card" style={{ padding: '16px', marginBottom: '16px' }}>
-          <div style={{ fontWeight: 700, fontSize: '14px', marginBottom: '8px' }}>
-            Today's Progress — {todayLabel}
+        <div className="neo-card" style={{ padding: '24px', marginBottom: '16px' }}>
+          <div style={{ fontWeight: 800, fontSize: '12px', letterSpacing: '2px', color: '#666', marginBottom: '6px' }}>
+            TODAY'S PROGRESS
           </div>
-          <div style={{ fontSize: '13px', color: '#555', marginBottom: '8px' }}>
-            {doneCount} / {totalCount} habits done
+          <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: '24px', marginBottom: '6px' }}>
+            {todayLabel.toUpperCase()}
+          </div>
+          <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '18px', marginBottom: '10px' }}>
+            {doneCount} / {totalCount} HABITS DONE
           </div>
           {/* Progress bar */}
           <div
             style={{
-              height: '16px',
+              height: '24px',
               background: '#f0f0f0',
-              borderRadius: '8px',
-              border: '2px solid #1A1A1A',
+              border: '3px solid #000000',
               overflow: 'hidden',
             }}
           >
@@ -179,16 +184,26 @@ const DashboardPage: React.FC = () => {
               style={{
                 height: '100%',
                 width: `${progressPercent}%`,
-                background: progressPercent === 100 ? '#A8E6CF' : '#FFE566',
-                borderRadius: '6px',
+                background: '#22C55E',
                 transition: 'width 0.3s ease',
               }}
             />
           </div>
           {progressPercent === 100 && totalCount > 0 && (
-            <p style={{ fontWeight: 700, fontSize: '14px', color: '#2d8a4e', margin: '8px 0 0' }}>
-              All habits done for today!
-            </p>
+            <div
+              style={{
+                display: 'inline-block',
+                background: '#000000',
+                color: '#FFFFFF',
+                padding: '6px 10px',
+                marginTop: '10px',
+                fontFamily: "'JetBrains Mono', monospace",
+                fontSize: '12px',
+                fontWeight: 800,
+              }}
+            >
+              🎉 ALL DONE TODAY!
+            </div>
           )}
         </div>
 
@@ -201,24 +216,21 @@ const DashboardPage: React.FC = () => {
           onClick={handleAddNew}
           style={{
             background: '#FFE566',
-            padding: '14px',
-            fontSize: '15px',
+            padding: '16px',
+            fontSize: '18px',
             width: '100%',
             marginTop: '16px',
             marginBottom: '16px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: '8px',
+            fontFamily: "'Syne', sans-serif",
+            fontWeight: 800,
           }}
         >
-          <Plus size={18} />
-          Add New Habit
+          + ADD NEW HABIT
         </button>
 
         {/* Error state */}
         {error && (
-          <p style={{ color: '#FF6B6B', fontSize: '14px', textAlign: 'center', marginBottom: '16px' }}>{error}</p>
+          <p style={{ color: '#FF2D9B', fontSize: '14px', textAlign: 'center', marginBottom: '16px', fontFamily: "'JetBrains Mono', monospace" }}>{error}</p>
         )}
 
         {/* Loading state */}
@@ -243,19 +255,34 @@ const DashboardPage: React.FC = () => {
         {/* Empty state */}
         {!loading && habits.length === 0 && (
           <div style={{ textAlign: 'center', padding: '60px 20px' }}>
-            <div style={{ fontSize: '64px', marginBottom: '16px' }}><Target /></div>
-            <h3 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '20px', marginBottom: '8px' }}>
-              No habits yet!
+            <div
+              style={{
+                width: '80px',
+                height: '80px',
+                border: '3px solid #000000',
+                boxShadow: '4px 4px 0px #000000',
+                background: '#FFE566',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '36px',
+                margin: '0 auto 16px',
+              }}
+            >
+              🎯
+            </div>
+            <h3 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: '28px', marginBottom: '8px' }}>
+              NO HABITS YET
             </h3>
-            <p style={{ color: '#666', fontSize: '14px', marginBottom: '20px' }}>
-              Start building your routine by adding your first habit.
+            <p style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '14px', marginBottom: '20px' }}>
+              Add your first habit and start your streak.
             </p>
             <button
               className="neo-btn"
               onClick={handleAddNew}
               style={{ background: '#FFE566', padding: '12px 24px', fontSize: '14px' }}
             >
-              Add Your First Habit
+              + ADD YOUR FIRST HABIT
             </button>
           </div>
         )}

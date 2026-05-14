@@ -3,6 +3,7 @@
  */
 import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import Navbar from '../components/layout/Navbar';
 
 const NotFoundPage: React.FC = () => {
   useEffect(() => {
@@ -10,41 +11,46 @@ const NotFoundPage: React.FC = () => {
   }, []);
 
   return (
-    <div style={{
-      minHeight: '100vh',
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      justifyContent: 'center',
-      padding: '24px',
-      textAlign: 'center',
-    }}>
-      <div style={{
-        fontFamily: "'Syne', sans-serif",
-        fontWeight: 800,
-        fontSize: '120px',
-        lineHeight: 1,
-        marginBottom: '16px',
-        color: '#1A1A1A',
-      }}>
-        404
-      </div>
-      <p style={{ fontSize: '18px', color: '#555', marginBottom: '24px' }}>
-        This page doesn't exist.
-      </p>
-      <Link
-        to="/dashboard"
-        className="neo-btn"
+    <div style={{ minHeight: '100vh' }}>
+      <Navbar />
+      <div
         style={{
-          background: '#FFE566',
-          padding: '12px 24px',
-          fontSize: '14px',
-          textDecoration: 'none',
-          color: '#1A1A1A',
+          minHeight: 'calc(100vh - 64px)',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '24px',
+          textAlign: 'center',
         }}
       >
-        Back to Dashboard
-      </Link>
+        <div style={{
+          fontFamily: "'Syne', sans-serif",
+          fontWeight: 800,
+          fontSize: '120px',
+          lineHeight: 1,
+          marginBottom: '8px',
+          color: '#000000',
+        }}>
+          404
+        </div>
+        <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: '18px', marginBottom: '16px' }}>
+          PAGE NOT FOUND
+        </div>
+        <Link
+          to="/dashboard"
+          className="neo-btn"
+          style={{
+            background: '#2563EB',
+            color: '#FFFFFF',
+            padding: '12px 24px',
+            fontSize: '14px',
+            textDecoration: 'none',
+          }}
+        >
+          ← GO HOME
+        </Link>
+      </div>
     </div>
   );
 };

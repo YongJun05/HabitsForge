@@ -22,9 +22,9 @@ const Spinner: React.FC<SpinnerProps> = ({ size = 'md' }) => {
       style={{
         width: dimension,
         height: dimension,
-        border: `3px solid #e0e0e0`,
-        borderTop: `3px solid var(--color-dark)`,
-        borderRadius: '50%',
+        border: '3px solid #000000',
+        borderTop: '3px solid #2563EB',
+        borderRadius: 0,
         animation: 'spin 0.6s linear infinite',
       }}
     />

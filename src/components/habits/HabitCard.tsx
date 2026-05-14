@@ -4,7 +4,7 @@
  * Gold border highlight for streaks >= 7 days.
  */
 import React from 'react';
-import { CreditCard as Edit3, Trash2, BarChart3, Check } from 'lucide-react';
+import { CreditCard as Edit3, Trash2, BarChart3 } from 'lucide-react';
 import type { HabitWithStreak } from '../../types';
 import HabitGrid from './HabitGrid';
 
@@ -23,45 +23,41 @@ const HabitCard: React.FC<HabitCardProps> = ({ habit, onEdit, onDelete, onToggle
     }
   };
 
-  // Gold border for streaks >= 7
-  const goldBorder = habit.currentStreak >= 7 ? '2px solid #FFD700' : undefined;
+  const streakHighlight = habit.currentStreak >= 7 ? '6px solid #FFE566' : undefined;
 
   return (
     <div
       style={{
-        border: '3px solid #1A1A1A',
-        borderLeft: `8px solid ${habit.color}`,
-        boxShadow: '4px 4px 0px #1A1A1A',
-        borderRadius: '8px',
-        background: 'white',
-        padding: '16px',
+        border: '3px solid #000000',
+        boxShadow: '4px 4px 0px #000000',
+        background: '#FFFFFF',
+        padding: '20px',
         position: 'relative',
-        outline: goldBorder,
-        outlineOffset: '2px',
+        borderLeft: streakHighlight ?? '3px solid #000000',
       }}
     >
       {/* Top row: emoji + name + streak badge */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-        <span style={{ fontSize: '24px' }}>{habit.icon}</span>
-        <span style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '16px', flex: 1 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '10px' }}>
+        <div className="neo-icon-box" style={{ background: habit.color }}>{habit.icon}</div>
+        <span style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: '18px', flex: 1, textTransform: 'uppercase' }}>
           {habit.name}
         </span>
         {habit.currentStreak > 0 && (
           <div
             style={{
-              background: '#FF9F43',
-              color: '#1A1A1A',
-              border: '2px solid #1A1A1A',
-              borderRadius: '6px',
-              padding: '2px 8px',
+              background: '#FFE566',
+              color: '#000000',
+              border: '2px solid #000000',
+              padding: '4px 12px',
               fontSize: '12px',
-              fontWeight: 700,
+              fontWeight: 800,
+              fontFamily: "'JetBrains Mono', monospace",
               display: 'flex',
               alignItems: 'center',
               gap: '4px',
             }}
           >
-            🔥 {habit.currentStreak}
+            🔥 {habit.currentStreak} DAY STREAK
           </div>
         )}
       </div>
@@ -70,8 +66,9 @@ const HabitCard: React.FC<HabitCardProps> = ({ habit, onEdit, onDelete, onToggle
       {habit.description && (
         <p
           style={{
+            fontFamily: "'JetBrains Mono', monospace",
             fontSize: '13px',
-            color: '#555',
+            color: '#666',
             margin: '0 0 8px 0',
             display: '-webkit-box',
             WebkitLineClamp: 2,
@@ -95,45 +92,64 @@ const HabitCard: React.FC<HabitCardProps> = ({ habit, onEdit, onDelete, onToggle
           onClick={() => onToggle(habit.id)}
           className="neo-btn"
           style={{
-            background: habit.isDoneToday ? '#A8E6CF' : '#FFFFFF',
-            padding: '6px 14px',
-            fontSize: '13px',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '6px',
+            background: habit.isDoneToday ? '#22C55E' : '#FFFFFF',
+            color: habit.isDoneToday ? '#FFFFFF' : '#000000',
+            border: '2px solid #000000',
+            boxShadow: '2px 2px 0px #000000',
+            padding: '8px 16px',
+            fontSize: '12px',
           }}
         >
-          <Check size={14} />
-          {habit.isDoneToday ? 'Done Today' : 'Mark Done'}
+          {habit.isDoneToday ? '✓ DONE TODAY' : 'MARK DONE'}
         </button>
 
         <div style={{ flex: 1 }} />
 
         {/* Edit */}
         <button
+          className="neo-btn"
           onClick={() => onEdit(habit)}
-          style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px' }}
+          style={{
+            background: '#FFE566',
+            border: '2px solid #000000',
+            boxShadow: '2px 2px 0px #000000',
+            padding: '6px 8px',
+          }}
           title="Edit habit"
         >
-          <Edit3 size={18} />
+          <Edit3 size={16} />
         </button>
 
         {/* Detail */}
         <button
+          className="neo-btn"
           onClick={() => onViewDetail(habit.id)}
-          style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px' }}
+          style={{
+            background: '#2563EB',
+            color: '#FFFFFF',
+            border: '2px solid #000000',
+            boxShadow: '2px 2px 0px #000000',
+            padding: '6px 8px',
+          }}
           title="View details"
         >
-          <BarChart3 size={18} />
+          <BarChart3 size={16} />
         </button>
 
         {/* Delete */}
         <button
+          className="neo-btn"
           onClick={handleDelete}
-          style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px', color: '#FF6B6B' }}
+          style={{
+            background: '#FF2D9B',
+            color: '#FFFFFF',
+            border: '2px solid #000000',
+            boxShadow: '2px 2px 0px #000000',
+            padding: '6px 8px',
+          }}
           title="Delete habit"
         >
-          <Trash2 size={18} />
+          <Trash2 size={16} />
         </button>
       </div>
     </div>

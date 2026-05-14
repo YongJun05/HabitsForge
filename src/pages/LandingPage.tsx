@@ -4,7 +4,7 @@
  */
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Sparkles, Flame, Bell } from 'lucide-react';
+import Navbar from '../components/layout/Navbar';
 
 const LandingPage: React.FC = () => {
   const navigate = useNavigate();
@@ -15,11 +15,12 @@ const LandingPage: React.FC = () => {
 
   return (
     <div style={{ minHeight: '100vh' }}>
+      <Navbar />
       {/* Hero section */}
       <section
         style={{
           background: '#FFE566',
-          borderBottom: '3px solid #1A1A1A',
+          borderBottom: '3px solid #000000',
           padding: '80px 24px 60px',
           textAlign: 'center',
         }}
@@ -32,6 +33,7 @@ const LandingPage: React.FC = () => {
             lineHeight: 1.1,
             maxWidth: '700px',
             margin: '0 auto 20px',
+            textTransform: 'uppercase',
           }}
         >
           Build habits. Break patterns. Stay consistent.
@@ -42,7 +44,8 @@ const LandingPage: React.FC = () => {
             maxWidth: '560px',
             margin: '0 auto 32px',
             lineHeight: 1.5,
-            color: '#333',
+            color: '#000000',
+            fontFamily: "'JetBrains Mono', monospace",
           }}
         >
           HabitForge uses AI to help you build the right habits, track your streaks, and stay consistent — one day at a time.
@@ -52,8 +55,8 @@ const LandingPage: React.FC = () => {
             className="neo-btn"
             onClick={() => navigate('/signup')}
             style={{
-              background: '#1A1A1A',
-              color: 'white',
+              background: '#000000',
+              color: '#FFFFFF',
               padding: '14px 32px',
               fontSize: '16px',
             }}
@@ -64,7 +67,7 @@ const LandingPage: React.FC = () => {
             className="neo-btn"
             onClick={() => navigate('/login')}
             style={{
-              background: 'white',
+              background: '#FFFFFF',
               padding: '14px 32px',
               fontSize: '16px',
             }}
@@ -79,31 +82,39 @@ const LandingPage: React.FC = () => {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '20px' }}>
           {[
             {
-              icon: <Sparkles size={28} style={{ color: '#C9B1FF' }} />,
+              icon: '✨',
               title: 'AI Habit Coach',
               desc: 'Describe a goal, get 3 habit suggestions instantly',
+              color: '#FF2D9B',
             },
             {
-              icon: <Flame size={28} style={{ color: '#FF9F43' }} />,
+              icon: '🔥',
               title: 'Streak Tracking',
               desc: 'Visual streaks that keep you accountable every day',
+              color: '#FFE566',
             },
             {
-              icon: <Bell size={28} style={{ color: '#74b9ff' }} />,
+              icon: '🔔',
               title: 'Smart Reminders',
               desc: 'Browser notifications at the exact time you need them',
+              color: '#2563EB',
             },
           ].map((feature) => (
             <div
               key={feature.title}
               className="neo-card"
-              style={{ padding: '24px', textAlign: 'center' }}
+              style={{ padding: '24px', textAlign: 'left' }}
             >
-              <div style={{ marginBottom: '12px' }}>{feature.icon}</div>
-              <h3 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 700, fontSize: '18px', marginBottom: '8px' }}>
+              <div
+                className="neo-icon-box"
+                style={{ background: feature.color, marginBottom: '12px' }}
+              >
+                {feature.icon}
+              </div>
+              <h3 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: '18px', marginBottom: '8px' }}>
                 {feature.title}
               </h3>
-              <p style={{ fontSize: '14px', color: '#555', margin: 0, lineHeight: 1.5 }}>
+              <p style={{ fontSize: '14px', color: '#000000', margin: 0, lineHeight: 1.5, fontFamily: "'JetBrains Mono', monospace" }}>
                 {feature.desc}
               </p>
             </div>

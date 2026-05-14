@@ -13,9 +13,15 @@ interface ToastProps {
 }
 
 const bgMap = {
-  success: '#A8E6CF',
-  error: '#FF6B6B',
+  success: '#22C55E',
+  error: '#FF2D9B',
   info: '#FFE566',
+};
+
+const textMap = {
+  success: '#FFFFFF',
+  error: '#FFFFFF',
+  info: '#000000',
 };
 
 const Toast: React.FC<ToastProps> = ({ message, type, visible, onClose }) => {
@@ -35,12 +41,14 @@ const Toast: React.FC<ToastProps> = ({ message, type, visible, onClose }) => {
         right: '24px',
         zIndex: 100,
         background: bgMap[type],
-        border: '3px solid #1A1A1A',
-        borderRadius: '8px',
-        boxShadow: '4px 4px 0px #1A1A1A',
+        color: textMap[type],
+        border: '3px solid #000000',
+        boxShadow: '4px 4px 0px #000000',
         padding: '12px 20px',
-        fontWeight: 700,
+        fontWeight: 800,
         fontSize: '14px',
+        fontFamily: "'JetBrains Mono', monospace",
+        textTransform: 'uppercase',
         maxWidth: '360px',
         animation: 'slideIn 0.2s ease-out',
       }}

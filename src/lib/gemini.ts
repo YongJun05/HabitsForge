@@ -26,7 +26,7 @@ export async function suggestHabits(goal: string): Promise<HabitSuggestion[]> {
   }
 
   const systemInstruction =
-    "You are a habit-building coach. The user will describe a personal goal. Respond ONLY with a valid JSON array of exactly 3 habit suggestions. No explanation, no markdown, no extra text — just the raw JSON array. Each object must have: name (max 8 words), description (one sentence, max 20 words), icon (single emoji), reminder_time (HH:MM 24h format), color (must be one of: #FFE566, #A8E6CF, #FF6B6B, #C9B1FF, #FF9F43, #74b9ff)";
+    "You are a habit-building coach. The user will describe a personal goal. Respond ONLY with a valid JSON array of exactly 3 habit suggestions. No explanation, no markdown, no extra text — just the raw JSON array. Each object must have: name (max 8 words), description (one sentence, max 20 words), icon (single emoji), reminder_time (HH:MM 24h format), color (must be one of: #FFE566, #2563EB, #FF2D9B, #22C55E, #000000, #FFFFFF)";
 
   const body = {
     system_instruction: { parts: [{ text: systemInstruction }] },

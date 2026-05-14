@@ -25,47 +25,45 @@ const HabitHeatmap: React.FC<HabitHeatmapProps> = ({ logs }) => {
     cells.push({ dateStr, isDone: logSet.has(dateStr) });
   }
 
-  // Current month label
-  const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
-    'July', 'August', 'September', 'October', 'November', 'December'];
-  const monthLabel = `${monthNames[today.getMonth()]} ${today.getFullYear()}`;
-
   // Calculate completion percentage for last 30 days
   const doneCount = cells.filter((c) => c.isDone).length;
   const percentage = Math.round((doneCount / 30) * 100);
 
   return (
     <div>
-      <div style={{ fontWeight: 700, fontSize: '14px', marginBottom: '8px' }}>{monthLabel}</div>
+      <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: '16px', marginBottom: '8px' }}>
+        30-DAY HISTORY
+      </div>
 
       {/* 5x6 grid = 30 cells */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 24px)', gap: '3px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 28px)', gap: '4px' }}>
         {cells.map((cell) => (
           <div
             key={cell.dateStr}
             title={`${cell.dateStr}: ${cell.isDone ? 'Done' : 'Missed'}`}
             style={{
-              width: '24px',
-              height: '24px',
-              borderRadius: '3px',
-              border: '2px solid #1A1A1A',
-              background: cell.isDone ? '#A8E6CF' : '#f0f0f0',
+              width: '28px',
+              height: '28px',
+              border: '2px solid #000000',
+              background: cell.isDone ? '#22C55E' : '#f0f0f0',
             }}
           />
         ))}
       </div>
 
       {/* Legend */}
-      <div style={{ display: 'flex', gap: '16px', marginTop: '8px', fontSize: '12px', alignItems: 'center' }}>
+      <div style={{ display: 'flex', gap: '16px', marginTop: '10px', fontSize: '12px', alignItems: 'center' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-          <div style={{ width: '12px', height: '12px', borderRadius: '2px', border: '1px solid #1A1A1A', background: '#f0f0f0' }} />
-          <span>Missed</span>
+          <div style={{ width: '12px', height: '12px', border: '2px solid #000000', background: '#f0f0f0' }} />
+          <span style={{ fontFamily: "'JetBrains Mono', monospace" }}>MISSED</span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-          <div style={{ width: '12px', height: '12px', borderRadius: '2px', border: '1px solid #1A1A1A', background: '#A8E6CF' }} />
-          <span>Done</span>
+          <div style={{ width: '12px', height: '12px', border: '2px solid #000000', background: '#22C55E' }} />
+          <span style={{ fontFamily: "'JetBrains Mono', monospace" }}>DONE</span>
         </div>
-        <span style={{ marginLeft: 'auto', fontWeight: 600 }}>{percentage}% last 30 days</span>
+        <span style={{ marginLeft: 'auto', fontFamily: "'JetBrains Mono', monospace", fontWeight: 800 }}>
+          {percentage}% LAST 30 DAYS
+        </span>
       </div>
     </div>
   );

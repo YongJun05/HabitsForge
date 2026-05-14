@@ -4,14 +4,13 @@
  * IMPORTANT: Uses divs with onClick handlers, not <form> tags.
  */
 import React, { useState } from 'react';
-import { Sparkles } from 'lucide-react';
 import { suggestHabits } from '../../lib/gemini';
 import Spinner from '../ui/Spinner';
 import type { Habit, HabitSuggestion } from '../../types';
 
 const EMOJI_OPTIONS = ['💧', '🏃', '📚', '🧘', '💪', '🛌', '🥗', '📝', '🎯', '🎨', '🎵', '🧹', '🙏', '🌱', '💊', '🚴', '🧠', '✍️', '🏋️', '🍎'];
 
-const COLOR_OPTIONS = ['#FFE566', '#A8E6CF', '#FF6B6B', '#C9B1FF', '#FF9F43', '#74b9ff'];
+const COLOR_OPTIONS = ['#FFE566', '#2563EB', '#FF2D9B', '#22C55E', '#000000', '#FFFFFF'];
 
 interface HabitFormProps {
   initialData?: Partial<Habit>;
@@ -74,15 +73,13 @@ const HabitForm: React.FC<HabitFormProps> = ({ initialData, onSave, onCancel }) 
       {/* AI Coach Banner */}
       <div
         style={{
-          background: '#f3eeff',
-          border: '2px solid #C9B1FF',
-          borderRadius: '8px',
+          background: '#F0E6FF',
+          border: '3px solid #000000',
           padding: '16px',
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
-          <Sparkles size={18} style={{ color: '#C9B1FF' }} />
-          <span style={{ fontWeight: 700, fontSize: '14px' }}>AI Habit Coach</span>
+          <span style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800 }}>✨ AI HABIT COACH</span>
         </div>
 
         <div style={{ display: 'flex', gap: '8px' }}>
@@ -98,25 +95,26 @@ const HabitForm: React.FC<HabitFormProps> = ({ initialData, onSave, onCancel }) 
             onClick={handleSuggest}
             disabled={aiLoading || !goal.trim()}
             style={{
-              background: '#C9B1FF',
-              padding: '8px 16px',
-              fontSize: '13px',
+              background: '#FF2D9B',
+              color: '#FFFFFF',
+              padding: '12px 16px',
+              fontSize: '12px',
               whiteSpace: 'nowrap',
             }}
           >
-            {aiLoading ? 'Thinking...' : 'Suggest'}
+            {aiLoading ? 'SUGGESTING...' : 'SUGGEST →'}
           </button>
         </div>
 
         {aiLoading && (
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '12px' }}>
             <Spinner size="sm" />
-            <span style={{ fontSize: '13px', color: '#666' }}>Analysing your goal...</span>
+            <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '13px' }}>ANALYSING YOUR GOAL...</span>
           </div>
         )}
 
         {aiError && (
-          <p style={{ color: '#FF6B6B', fontSize: '13px', marginTop: '8px' }}>{aiError}</p>
+          <p style={{ color: '#FF2D9B', fontSize: '13px', marginTop: '8px', fontFamily: "'JetBrains Mono', monospace" }}>{aiError}</p>
         )}
 
         {/* Suggestion cards */}
@@ -126,23 +124,22 @@ const HabitForm: React.FC<HabitFormProps> = ({ initialData, onSave, onCancel }) 
               <div
                 key={i}
                 style={{
-                  border: '2px solid #1A1A1A',
-                  borderRadius: '6px',
-                  padding: '10px',
-                  background: 'white',
-                  boxShadow: '2px 2px 0px #1A1A1A',
+                  border: '2px solid #000000',
+                  padding: '12px',
+                  background: '#FFFFFF',
+                  boxShadow: '3px 3px 0px #000000',
                 }}
               >
                 <div style={{ fontSize: '20px', marginBottom: '4px' }}>{s.icon}</div>
-                <div style={{ fontWeight: 700, fontSize: '13px', marginBottom: '2px' }}>{s.name}</div>
-                <div style={{ fontSize: '11px', color: '#666', marginBottom: '4px' }}>{s.description}</div>
-                <div style={{ fontSize: '11px', color: '#888', marginBottom: '8px' }}>⏰ {s.reminder_time}</div>
+                <div style={{ fontWeight: 800, fontSize: '13px', marginBottom: '2px' }}>{s.name}</div>
+                <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '11px', color: '#666', marginBottom: '6px' }}>{s.description}</div>
+                <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '11px', marginBottom: '8px' }}>⏰ {s.reminder_time}</div>
                 <button
                   className="neo-btn"
                   onClick={() => handleUseSuggestion(s)}
-                  style={{ background: '#C9B1FF', padding: '4px 10px', fontSize: '12px', width: '100%' }}
+                  style={{ background: '#22C55E', color: '#FFFFFF', border: '2px solid #000000', boxShadow: '2px 2px 0px #000000', padding: '6px 10px', fontSize: '12px', width: '100%' }}
                 >
-                  + Use This
+                  + USE THIS
                 </button>
               </div>
             ))}
@@ -152,8 +149,8 @@ const HabitForm: React.FC<HabitFormProps> = ({ initialData, onSave, onCancel }) 
 
       {/* Name */}
       <div>
-        <label style={{ fontWeight: 700, fontSize: '13px', display: 'block', marginBottom: '4px' }}>
-          Name <span style={{ color: '#FF6B6B' }}>*</span>
+        <label style={{ fontWeight: 800, fontSize: '12px', letterSpacing: '2px', display: 'block', marginBottom: '6px' }}>
+          NAME <span style={{ color: '#FF2D9B' }}>*</span>
         </label>
         <input
           className="neo-input"
@@ -162,15 +159,15 @@ const HabitForm: React.FC<HabitFormProps> = ({ initialData, onSave, onCancel }) 
           onChange={(e) => setName(e.target.value.slice(0, 50))}
           maxLength={50}
         />
-        <div style={{ fontSize: '11px', color: '#888', textAlign: 'right', marginTop: '2px' }}>
+        <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '11px', textAlign: 'right', marginTop: '2px' }}>
           {name.length}/50
         </div>
       </div>
 
       {/* Description */}
       <div>
-        <label style={{ fontWeight: 700, fontSize: '13px', display: 'block', marginBottom: '4px' }}>
-          Description
+        <label style={{ fontWeight: 800, fontSize: '12px', letterSpacing: '2px', display: 'block', marginBottom: '6px' }}>
+          DESCRIPTION
         </label>
         <textarea
           className="neo-input"
@@ -181,28 +178,28 @@ const HabitForm: React.FC<HabitFormProps> = ({ initialData, onSave, onCancel }) 
           rows={2}
           style={{ resize: 'vertical' }}
         />
-        <div style={{ fontSize: '11px', color: '#888', textAlign: 'right', marginTop: '2px' }}>
+        <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '11px', textAlign: 'right', marginTop: '2px' }}>
           {description.length}/200
         </div>
       </div>
 
       {/* Emoji picker */}
       <div>
-        <label style={{ fontWeight: 700, fontSize: '13px', display: 'block', marginBottom: '4px' }}>
-          Icon
+        <label style={{ fontWeight: 800, fontSize: '12px', letterSpacing: '2px', display: 'block', marginBottom: '6px' }}>
+          CHOOSE ICON
         </label>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
           {EMOJI_OPTIONS.map((emoji) => (
             <button
               key={emoji}
               onClick={() => setIcon(emoji)}
               style={{
-                width: '36px',
-                height: '36px',
-                border: icon === emoji ? '2px solid #1A1A1A' : '1px solid #ddd',
-                borderRadius: '6px',
-                background: icon === emoji ? '#FFE566' : 'white',
+                width: '40px',
+                height: '40px',
+                border: '2px solid #000000',
+                background: icon === emoji ? '#FFE566' : '#FFFFFF',
                 fontSize: '18px',
+                boxShadow: icon === emoji ? '2px 2px 0px #000000' : 'none',
                 cursor: 'pointer',
                 display: 'flex',
                 alignItems: 'center',
@@ -217,22 +214,22 @@ const HabitForm: React.FC<HabitFormProps> = ({ initialData, onSave, onCancel }) 
 
       {/* Color picker */}
       <div>
-        <label style={{ fontWeight: 700, fontSize: '13px', display: 'block', marginBottom: '4px' }}>
-          Color
+        <label style={{ fontWeight: 800, fontSize: '12px', letterSpacing: '2px', display: 'block', marginBottom: '6px' }}>
+          CARD COLOR
         </label>
-        <div style={{ display: 'flex', gap: '8px' }}>
+        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
           {COLOR_OPTIONS.map((c) => (
             <button
               key={c}
               onClick={() => setColor(c)}
               style={{
-                width: '32px',
-                height: '32px',
-                borderRadius: '6px',
+                width: '36px',
+                height: '36px',
                 background: c,
-                border: color === c ? '3px solid #1A1A1A' : '2px solid #ddd',
+                border: '2px solid #000000',
                 cursor: 'pointer',
-                boxShadow: color === c ? '2px 2px 0px #1A1A1A' : 'none',
+                boxShadow: color === c ? '4px 4px 0px #000000' : 'none',
+                transform: color === c ? 'translate(-2px, -2px)' : 'none',
               }}
             />
           ))}
@@ -242,30 +239,27 @@ const HabitForm: React.FC<HabitFormProps> = ({ initialData, onSave, onCancel }) 
       {/* Reminder toggle */}
       <div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <label style={{ fontWeight: 700, fontSize: '13px' }}>Reminder</label>
-          {/* Custom styled toggle */}
+          <label style={{ fontWeight: 800, fontSize: '12px', letterSpacing: '2px' }}>REMINDER</label>
           <button
             onClick={() => setReminderEnabled(!reminderEnabled)}
             style={{
-              width: '44px',
+              width: '48px',
               height: '24px',
-              borderRadius: '12px',
-              background: reminderEnabled ? '#A8E6CF' : '#e0e0e0',
-              border: '2px solid #1A1A1A',
+              background: reminderEnabled ? '#22C55E' : '#f0f0f0',
+              border: '3px solid #000000',
+              boxShadow: '4px 4px 0px #000000',
               cursor: 'pointer',
               position: 'relative',
-              transition: 'background 0.2s',
             }}
           >
             <div
               style={{
                 width: '16px',
                 height: '16px',
-                borderRadius: '50%',
-                background: '#1A1A1A',
+                background: '#000000',
                 position: 'absolute',
                 top: '2px',
-                left: reminderEnabled ? '22px' : '2px',
+                left: reminderEnabled ? '26px' : '4px',
                 transition: 'left 0.2s',
               }}
             />
@@ -284,30 +278,34 @@ const HabitForm: React.FC<HabitFormProps> = ({ initialData, onSave, onCancel }) 
       </div>
 
       {/* Save + Cancel */}
-      <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '8px' }}>
         <button
           className="neo-btn"
           onClick={handleSave}
           disabled={!name.trim()}
           style={{
-            background: '#FFE566',
-            padding: '10px 24px',
+            background: '#2563EB',
+            color: '#FFFFFF',
+            padding: '12px 24px',
             fontSize: '14px',
-            flex: 1,
+            width: '100%',
+            fontFamily: "'Syne', sans-serif",
+            fontWeight: 800,
           }}
         >
-          {initialData ? 'Save Changes' : 'Add Habit'}
+          {initialData ? 'SAVE CHANGES' : 'ADD HABIT'}
         </button>
         <button
           className="neo-btn"
           onClick={onCancel}
           style={{
-            background: 'white',
-            padding: '10px 24px',
+            background: '#FFFFFF',
+            padding: '12px 24px',
             fontSize: '14px',
+            width: '100%',
           }}
         >
-          Cancel
+          CANCEL
         </button>
       </div>
     </div>

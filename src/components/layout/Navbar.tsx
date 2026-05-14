@@ -6,25 +6,44 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
-import { LogOut, Settings } from 'lucide-react';
+import { LogOut } from 'lucide-react';
 
 const Navbar: React.FC = () => {
   const navigate = useNavigate();
   const [displayName, setDisplayName] = useState('');
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
+    let isMounted = true;
+
     async function fetchProfile() {
       const { data: { user } } = await supabase.auth.getUser();
+      if (!isMounted) return;
+
       if (user) {
+        setIsAuthenticated(true);
         const { data } = await supabase
           .from('profiles')
           .select('display_name')
           .eq('id', user.id)
           .maybeSingle();
-        if (data) setDisplayName(data.display_name);
+        if (data?.display_name) setDisplayName(data.display_name);
+      } else {
+        setIsAuthenticated(false);
+        setDisplayName('');
       }
     }
+
     fetchProfile();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(() => {
+      fetchProfile();
+    });
+
+    return () => {
+      isMounted = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
   const handleLogout = async () => {
@@ -38,12 +57,12 @@ const Navbar: React.FC = () => {
     <nav
       style={{
         background: '#FFE566',
-        borderBottom: '3px solid #1A1A1A',
+        borderBottom: '3px solid #000000',
         position: 'sticky',
         top: 0,
         zIndex: 50,
         padding: '0 24px',
-        height: '60px',
+        height: '64px',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
@@ -51,7 +70,7 @@ const Navbar: React.FC = () => {
     >
       {/* Logo */}
       <div
-        style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: '22px', cursor: 'pointer' }}
+        style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: '22px', cursor: 'pointer', textTransform: 'uppercase' }}
         onClick={() => navigate('/dashboard')}
       >
         HabitForge
@@ -59,60 +78,73 @@ const Navbar: React.FC = () => {
 
       {/* Right side: user info + actions */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-        <span style={{ fontWeight: 500, fontSize: '14px' }}>{displayName}</span>
+        {isAuthenticated ? (
+          <>
+            <span style={{ fontWeight: 800, fontSize: '12px', letterSpacing: '2px', textTransform: 'uppercase' }}>{displayName}</span>
 
-        {/* Initials avatar */}
-        <div
-          style={{
-            width: '32px',
-            height: '32px',
-            borderRadius: '50%',
-            background: '#1A1A1A',
-            color: '#FFE566',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontWeight: 700,
-            fontSize: '14px',
-          }}
-        >
-          {initial}
-        </div>
+            {/* Initials avatar */}
+            <div
+              style={{
+                width: '36px',
+                height: '36px',
+                border: '3px solid #000000',
+                boxShadow: '3px 3px 0px #000000',
+                background: '#FFFFFF',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontWeight: 800,
+                fontSize: '14px',
+              }}
+            >
+              {initial}
+            </div>
 
-        <button
-          onClick={() => navigate('/settings')}
-          style={{
-            background: 'none',
-            border: 'none',
-            cursor: 'pointer',
-            padding: '4px',
-            display: 'flex',
-            alignItems: 'center',
-          }}
-          title="Settings"
-        >
-          <Settings size={20} />
-        </button>
-
-        <button
-          onClick={handleLogout}
-          style={{
-            background: '#1A1A1A',
-            color: '#FFE566',
-            border: '2px solid #1A1A1A',
-            borderRadius: '6px',
-            padding: '6px 12px',
-            fontWeight: 700,
-            fontSize: '13px',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '6px',
-          }}
-        >
-          <LogOut size={14} />
-          Logout
-        </button>
+            <button
+              className="neo-btn"
+              onClick={handleLogout}
+              style={{
+                background: '#000000',
+                color: '#FFFFFF',
+                padding: '8px 14px',
+                fontSize: '12px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+              }}
+            >
+              <LogOut size={14} />
+              Logout
+            </button>
+          </>
+        ) : (
+          <>
+            <button
+              className="neo-btn"
+              onClick={() => navigate('/login')}
+              style={{
+                background: '#FFFFFF',
+                color: '#000000',
+                padding: '8px 14px',
+                fontSize: '12px',
+              }}
+            >
+              Login
+            </button>
+            <button
+              className="neo-btn"
+              onClick={() => navigate('/signup')}
+              style={{
+                background: '#2563EB',
+                color: '#FFFFFF',
+                padding: '8px 14px',
+                fontSize: '12px',
+              }}
+            >
+              Sign Up
+            </button>
+          </>
+        )}
       </div>
     </nav>
   );

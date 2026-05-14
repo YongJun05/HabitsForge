@@ -36,22 +36,21 @@ const HabitGrid: React.FC<HabitGridProps> = ({ recentLogs, isDoneToday }) => {
   }
 
   return (
-    <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
+    <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
       {days.map((day) => (
-        <div key={day.dateStr} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px' }}>
-          <span style={{ fontSize: '10px', fontWeight: 600, color: '#888' }}>{day.dayLabel}</span>
+        <div key={day.dateStr} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
+          <span style={{ fontSize: '10px', fontWeight: 800, letterSpacing: '1px' }}>{day.dayLabel}</span>
           <div
             style={{
-              width: '28px',
-              height: '28px',
-              borderRadius: '4px',
-              border: day.isToday && !day.isDone ? '2px dashed #1A1A1A' : '2px solid #1A1A1A',
+              width: '32px',
+              height: '32px',
+              border: '2px solid #000000',
               background: day.isToday
                 ? day.isDone
                   ? '#FFE566'
                   : '#FFFFFF'
                 : day.isDone
-                  ? '#A8E6CF'
+                  ? '#22C55E'
                   : '#f0f0f0',
             }}
           />

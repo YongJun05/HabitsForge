@@ -23,7 +23,7 @@ const HabitFormModal: React.FC<HabitFormModalProps> = ({ isOpen, onClose, initia
       style={{
         position: 'fixed',
         inset: 0,
-        background: 'rgba(0,0,0,0.4)',
+        background: 'rgba(0,0,0,0.7)',
         zIndex: 60,
         display: 'flex',
         alignItems: 'center',
@@ -34,11 +34,10 @@ const HabitFormModal: React.FC<HabitFormModalProps> = ({ isOpen, onClose, initia
     >
       <div
         style={{
-          background: 'white',
-          border: '3px solid #1A1A1A',
-          boxShadow: '6px 6px 0px #1A1A1A',
-          borderRadius: '8px',
-          padding: '24px',
+          background: '#FFFFFF',
+          border: '3px solid #000000',
+          boxShadow: '8px 8px 0px #000000',
+          padding: '32px',
           maxWidth: '520px',
           width: '100%',
           maxHeight: '85vh',
@@ -51,21 +50,26 @@ const HabitFormModal: React.FC<HabitFormModalProps> = ({ isOpen, onClose, initia
         {/* Close button */}
         <button
           onClick={onClose}
+          className="neo-btn"
           style={{
             position: 'absolute',
             top: '12px',
             right: '12px',
-            background: 'none',
-            border: 'none',
-            cursor: 'pointer',
-            padding: '4px',
+            background: '#FFFFFF',
+            border: '3px solid #000000',
+            boxShadow: '2px 2px 0px #000000',
+            width: '36px',
+            height: '36px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
           }}
         >
-          <X size={20} />
+          <X size={18} />
         </button>
 
-        <h2 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: '20px', marginBottom: '16px' }}>
-          {initialData ? 'Edit Habit' : 'Add New Habit'}
+        <h2 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: '24px', marginBottom: '16px', textTransform: 'uppercase' }}>
+          {initialData ? 'EDIT HABIT' : 'ADD NEW HABIT'}
         </h2>
 
         <HabitForm
