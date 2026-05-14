@@ -28,31 +28,46 @@ export async function suggestHabits(goal: string): Promise<HabitSuggestion[]> {
   const systemInstruction =
     "You are a habit-building coach. The user will describe a personal goal. Respond ONLY with a valid JSON array of exactly 3 habit suggestions. No explanation, no markdown, no extra text — just the raw JSON array. Each object must have: name (max 8 words), description (one sentence, max 20 words), icon (must be one of: flame, book, brain, droplets, dumbbell, apple, moon, sun, heart, footprints, pencil, coffee, music, smile, sparkles, bike, leaf, pill, target, trophy), reminder_time (HH:MM 24h format), color (must be one of: #ffe600, #2563EB, #FF2D9B, #22C55E, #000000, #FFFFFF)";
 
-  const body = {
-    system_instruction: { parts: [{ text: systemInstruction }] },
-    contents: [{ parts: [{ text: `My goal: ${goal}` }] }],
-    generationConfig: {
-      temperature: 0.8,
-      maxOutputTokens: 500,
-    },
+  const requestOnce = async (temperature: number, maxOutputTokens: number) => {
+    const body = {
+      system_instruction: { parts: [{ text: systemInstruction }] },
+      contents: [{ parts: [{ text: `My goal: ${goal}` }] }],
+      generationConfig: {
+        temperature,
+        maxOutputTokens,
+        responseMimeType: 'application/json',
+      },
+    };
+
+    const response = await fetch(`${GEMINI_BASE}?key=${apiKey}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Gemini API error (${response.status}): ${errorText}`);
+    }
+
+    const data = await response.json();
+    const parts: { text?: string }[] = data?.candidates?.[0]?.content?.parts ?? [];
+    const rawText: string = parts.map((part) => part.text ?? '').join('').trim();
+
+    if (!rawText) {
+      throw new Error('Gemini returned an empty response. Please try again.');
+    }
+
+    return rawText;
   };
 
-  const response = await fetch(`${GEMINI_BASE}?key=${apiKey}`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
-  });
-
-  if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(`Gemini API error (${response.status}): ${errorText}`);
+  let rawText = await requestOnce(0.6, 500);
+  if (!rawText.trim()) {
+    rawText = await requestOnce(0.4, 300);
   }
 
-  const data = await response.json();
-  const rawText: string = data?.candidates?.[0]?.content?.parts?.[0]?.text ?? '';
-
-  if (!rawText) {
-    throw new Error('Gemini returned an empty response. Please try again.');
+  if (!rawText.trim()) {
+    throw new Error('Gemini returned an empty response. Please try again in a moment.');
   }
 
   // Strip markdown code fences as a fallback — the prompt says no markdown,
@@ -75,19 +90,61 @@ export async function suggestHabits(goal: string): Promise<HabitSuggestion[]> {
     }
     return suggestions;
   } catch {
-    // Fallback: try to extract the first JSON array from any surrounding text.
-    const startIndex = cleaned.indexOf('[');
-    const endIndex = cleaned.lastIndexOf(']');
-    if (startIndex !== -1 && endIndex !== -1 && endIndex > startIndex) {
-      const extracted = cleaned.slice(startIndex, endIndex + 1).trim();
+    // Fallback: try to extract the first JSON array/object from any surrounding text.
+    const arrayStart = cleaned.indexOf('[');
+    const arrayEnd = cleaned.lastIndexOf(']');
+    const objectStart = cleaned.indexOf('{');
+    const objectEnd = cleaned.lastIndexOf('}');
+
+    if (arrayStart !== -1) {
+      const sliced = arrayEnd !== -1 && arrayEnd > arrayStart
+        ? cleaned.slice(arrayStart, arrayEnd + 1).trim()
+        : cleaned.slice(arrayStart).trim();
+
+      // Best-effort repair for truncated arrays: trim to the last complete object.
+      const lastObjectIndex = sliced.lastIndexOf('}');
+      const repaired = lastObjectIndex !== -1
+        ? `${sliced.slice(0, lastObjectIndex + 1)}]`
+        : sliced;
+
       try {
-        const suggestions: HabitSuggestion[] = JSON.parse(extracted);
+        const suggestions: HabitSuggestion[] = JSON.parse(repaired);
         if (Array.isArray(suggestions) && suggestions.length > 0) {
           return suggestions;
         }
       } catch {
-        // fall through to error below
+        // fall through to retry below
       }
+    } else if (objectStart !== -1 && objectEnd !== -1 && objectEnd > objectStart) {
+      const objectSlice = cleaned.slice(objectStart, objectEnd + 1).trim();
+      try {
+        const single = JSON.parse(objectSlice) as HabitSuggestion;
+        return [single];
+      } catch {
+        // fall through to retry below
+      }
+    }
+
+    // Retry once with a shorter response if the model returned partial JSON.
+    rawText = await requestOnce(0.4, 300);
+    cleaned = rawText.trim();
+    if (cleaned.startsWith('```json')) {
+      cleaned = cleaned.slice(7);
+    } else if (cleaned.startsWith('```')) {
+      cleaned = cleaned.slice(3);
+    }
+    if (cleaned.endsWith('```')) {
+      cleaned = cleaned.slice(0, -3);
+    }
+    cleaned = cleaned.trim();
+
+    try {
+      const suggestions: HabitSuggestion[] = JSON.parse(cleaned);
+      if (Array.isArray(suggestions) && suggestions.length > 0) {
+        return suggestions;
+      }
+    } catch {
+      // fall through to error below
     }
 
     throw new Error(`Failed to parse Gemini response as JSON. Raw text: ${cleaned}`);

@@ -1,6 +1,6 @@
 /**
- * Simple CSS-animated spinner for loading states.
- * Uses pure CSS animation — no external dependencies.
+ * CSS-animated loader for loading states.
+ * Uses global styles from globals.css.
  */
 import React from 'react';
 
@@ -9,9 +9,9 @@ interface SpinnerProps {
 }
 
 const sizeMap = {
-  sm: '16px',
-  md: '24px',
-  lg: '40px',
+  sm: '48px',
+  md: '64px',
+  lg: '80px',
 };
 
 const Spinner: React.FC<SpinnerProps> = ({ size = 'md' }) => {
@@ -19,25 +19,16 @@ const Spinner: React.FC<SpinnerProps> = ({ size = 'md' }) => {
 
   return (
     <div
-      style={{
-        width: dimension,
-        height: dimension,
-        border: '3px solid #000000',
-        borderTop: '3px solid #2563EB',
-        borderRadius: 0,
-        animation: 'spin 0.6s linear infinite',
-      }}
-    />
+      className="hf-loader"
+      role="status"
+      aria-label="Loading"
+      style={{ width: dimension, height: dimension }}
+    >
+      {Array.from({ length: 12 }).map((_, index) => (
+        <div key={index} className="hf-loader__item" />
+      ))}
+    </div>
   );
 };
-
-// Inject the keyframe animation once
-const styleId = 'habitforge-spinner-style';
-if (typeof document !== 'undefined' && !document.getElementById(styleId)) {
-  const style = document.createElement('style');
-  style.id = styleId;
-  style.textContent = `@keyframes spin { to { transform: rotate(360deg); } }`;
-  document.head.appendChild(style);
-}
 
 export default Spinner;
