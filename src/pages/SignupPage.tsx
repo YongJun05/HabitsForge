@@ -86,7 +86,7 @@ const SignupPage: React.FC = () => {
 
   return (
     <div style={{ minHeight: '100vh' }}>
-      <Navbar />
+      <Navbar variant="landing" />
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '40px 24px' }}>
         <div
           style={{
@@ -196,8 +196,10 @@ const SignupPage: React.FC = () => {
               style={{
                 background: '#2563EB',
                 color: '#FFFFFF',
-                padding: '14px',
-                fontSize: '16px',
+                padding: '10px 18px',
+                fontSize: '14px',
+                border: '3px solid #000000',
+                boxShadow: '4px 4px 0px #000000',
                 width: '100%',
                 fontFamily: "'Syne', sans-serif",
                 fontWeight: 800,

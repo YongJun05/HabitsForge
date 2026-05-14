@@ -6,12 +6,17 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
-import { LogOut } from 'lucide-react';
+import { Flame, LogOut } from 'lucide-react';
 
-const Navbar: React.FC = () => {
+interface NavbarProps {
+  variant?: 'app' | 'landing';
+}
+
+const Navbar: React.FC<NavbarProps> = ({ variant = 'app' }) => {
   const navigate = useNavigate();
   const [displayName, setDisplayName] = useState('');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const isLanding = variant === 'landing';
 
   useEffect(() => {
     let isMounted = true;
@@ -55,25 +60,42 @@ const Navbar: React.FC = () => {
 
   return (
     <nav
+      className={isLanding ? 'landing-nav' : undefined}
       style={{
-        background: '#ffe600',
-        borderBottom: '3px solid #000000',
+        background: isLanding ? '#FFFFFF' : '#ffe600',
+        borderBottom: `${isLanding ? 4 : 3}px solid #000000`,
         position: 'sticky',
         top: 0,
         zIndex: 50,
-        padding: '0 24px',
-        height: '64px',
+        padding: isLanding ? '0 clamp(20px, 8vw, 146px)' : '0 24px',
+        minHeight: isLanding ? '96px' : '64px',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
+        gap: isLanding ? '24px' : '12px',
       }}
     >
       {/* Logo */}
       <div
-        style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: '22px', cursor: 'pointer', textTransform: 'uppercase' }}
-        onClick={() => navigate('/dashboard')}
+        style={{ display: 'flex', alignItems: 'center', gap: '16px', cursor: 'pointer' }}
+        onClick={() => navigate(isAuthenticated ? '/dashboard' : '/')}
       >
-        HabitForge
+        <div
+          style={{
+            width: isLanding ? '48px' : '42px',
+            height: isLanding ? '48px' : '42px',
+            background: '#ffe600',
+            border: `${isLanding ? 4 : 3}px solid #000000`,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          <Flame size={isLanding ? 26 : 22} strokeWidth={3} />
+        </div>
+        <span style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: isLanding ? '26px' : '22px', cursor: 'pointer', textTransform: 'uppercase', letterSpacing: '1px' }}>
+          HabitForge
+        </span>
       </div>
 
       {/* Right side: user info + actions */}
@@ -125,8 +147,10 @@ const Navbar: React.FC = () => {
               style={{
                 background: '#FFFFFF',
                 color: '#000000',
-                padding: '8px 14px',
-                fontSize: '12px',
+                padding: isLanding ? '10px 18px' : '8px 14px',
+                fontSize: isLanding ? '14px' : '12px',
+                border: isLanding ? '3px solid #000000' : undefined,
+                boxShadow: isLanding ? '4px 4px 0px #000000' : undefined,
               }}
             >
               Login
@@ -135,10 +159,12 @@ const Navbar: React.FC = () => {
               className="neo-btn"
               onClick={() => navigate('/signup')}
               style={{
-                background: '#2563EB',
-                color: '#FFFFFF',
-                padding: '8px 14px',
-                fontSize: '12px',
+                background: isLanding ? '#ffe600' : '#2563EB',
+                color: isLanding ? '#000000' : '#FFFFFF',
+                padding: isLanding ? '10px 18px' : '8px 14px',
+                fontSize: isLanding ? '14px' : '12px',
+                border: isLanding ? '3px solid #000000' : undefined,
+                boxShadow: isLanding ? '4px 4px 0px #000000' : undefined,
               }}
             >
               Sign Up

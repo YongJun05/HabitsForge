@@ -4,7 +4,7 @@
  */
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Sparkles, Flame, Bell } from 'lucide-react';
+import { Bell, Brain, Calendar, Flame, Sparkles, TrendingUp } from 'lucide-react';
 import Navbar from '../components/layout/Navbar';
 
 const LandingPage: React.FC = () => {
@@ -16,112 +16,118 @@ const LandingPage: React.FC = () => {
 
   return (
     <div style={{ minHeight: '100vh' }}>
-      <Navbar />
-      {/* Hero section */}
-      <section
-        style={{
-          background: '#ffe600',
-          borderBottom: '3px solid #000000',
-          padding: '80px 24px 60px',
-          textAlign: 'center',
-        }}
-      >
-        <h1
-          style={{
-            fontFamily: "'Syne', sans-serif",
-            fontWeight: 800,
-            fontSize: 'clamp(32px, 6vw, 56px)',
-            lineHeight: 1.1,
-            maxWidth: '700px',
-            margin: '0 auto 20px',
-            textTransform: 'uppercase',
-          }}
-        >
-          Build habits. Break patterns. Stay consistent.
-        </h1>
-        <p
-          style={{
-            fontSize: '18px',
-            maxWidth: '560px',
-            margin: '0 auto 32px',
-            lineHeight: 1.5,
-            color: '#000000',
-            fontFamily: "'JetBrains Mono', monospace",
-          }}
-        >
-          HabitForge uses AI to help you build the right habits, track your streaks, and stay consistent — one day at a time.
-        </p>
-        <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
-          <button
-            className="neo-btn"
-            onClick={() => navigate('/signup')}
-            style={{
-              background: '#000000',
-              color: '#FFFFFF',
-              padding: '14px 32px',
-              fontSize: '16px',
-            }}
-          >
-            Get Started Free
-          </button>
-          <button
-            className="neo-btn"
-            onClick={() => navigate('/login')}
-            style={{
-              background: '#FFFFFF',
-              padding: '14px 32px',
-              fontSize: '16px',
-            }}
-          >
-            Login
+      <Navbar variant="landing" />
+      <section className="landing-hero">
+        <div className="landing-hero__inner">
+          <div className="landing-hero__copy">
+            <div className="landing-hero__eyebrow">AI HABIT COACH · V1.0</div>
+            <h1 className="landing-hero__title">
+              <span>Build habits</span>
+              <span>
+                that <mark>actually</mark>
+              </span>
+              <span>stick.</span>
+            </h1>
+            <p className="landing-hero__text">
+              HabitForge turns your goals into daily wins with an AI coach, streak tracking, and zero fluff.
+            </p>
+            <div className="landing-hero__actions">
+              <button className="neo-btn landing-hero__primary" onClick={() => navigate('/signup')}>
+                Get Started Free →
+              </button>
+              <button className="neo-btn landing-hero__secondary" onClick={() => navigate('/login')}>
+                Login
+              </button>
+            </div>
+          </div>
+
+          <div className="landing-hero__art" aria-hidden="true">
+            <div className="hero-tile hero-tile--blue" />
+            <div className="hero-tile hero-tile--pink" />
+            <div className="hero-stat">
+              <span>Today</span>
+              <strong>7/8</strong>
+              <small>habits done</small>
+            </div>
+            <div className="hero-tile hero-tile--green">
+              <Flame size={78} strokeWidth={3.5} />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="landing-features">
+        <div className="landing-features__inner">
+          <div className="landing-features__intro">
+            <h2>Why HabitForge?</h2>
+            <p>No gimmicks. Just bold, science-backed tracking with an AI in your corner.</p>
+          </div>
+
+          <div className="landing-features__grid">
+            {[
+              {
+                Icon: Brain,
+                title: 'AI Suggestions',
+                text: 'Tell us your goal. Gemini-powered coach gives you 3 perfectly-sized habits to start today.',
+                color: '#0757ff',
+              },
+              {
+                Icon: Flame,
+                title: 'Streak Power',
+                text: 'Track current & best streaks. Daily check-ins keep the fire burning - literally.',
+                color: '#ff0084',
+              },
+              {
+                Icon: TrendingUp,
+                title: 'Weekly Insights',
+                text: 'Get a personalized recap every week. Celebrate wins, fix gaps.',
+                color: '#00f060',
+              },
+              {
+                Icon: Calendar,
+                title: '30-Day Heatmap',
+                text: 'See your consistency at a glance with a chunky brutalist heatmap.',
+                color: '#ffe600',
+              },
+              {
+                Icon: Bell,
+                title: 'Browser Reminders',
+                text: 'Custom reminder times per habit, right in your browser. No app needed.',
+                color: '#ffffff',
+              },
+              {
+                Icon: Sparkles,
+                title: 'Zero Bloat',
+                text: 'Just habits, streaks, and AI. No social feed, no ads, no nonsense.',
+                color: '#0757ff',
+              },
+            ].map((feature) => (
+              <article className="feature-card" key={feature.title}>
+                <div className="feature-card__icon" style={{ background: feature.color }}>
+                  <feature.Icon size={28} strokeWidth={3} color={feature.color === '#ffffff' ? '#000000' : '#ffffff'} />
+                </div>
+                <h3>{feature.title}</h3>
+                <p>{feature.text}</p>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="landing-cta">
+        <div className="landing-cta__inner">
+          <h2>Start your streak.</h2>
+          <p>Free. No credit card. Build your first habit in 60 seconds.</p>
+          <button className="landing-cta__button" onClick={() => navigate('/signup')}>
+            Forge your first habit →
           </button>
         </div>
       </section>
 
-      {/* Feature highlights */}
-      <section style={{ padding: '60px 24px', maxWidth: '900px', margin: '0 auto' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '20px' }}>
-          {[
-            {
-              Icon: Sparkles,
-              title: 'AI Habit Coach',
-              desc: 'Describe a goal, get 3 habit suggestions instantly',
-              color: '#FF2D9B',
-            },
-            {
-              Icon: Flame,
-              title: 'Streak Tracking',
-              desc: 'Visual streaks that keep you accountable every day',
-              color: '#ffe600',
-            },
-            {
-              Icon: Bell,
-              title: 'Smart Reminders',
-              desc: 'Browser notifications at the exact time you need them',
-              color: '#2563EB',
-            },
-          ].map((feature) => (
-            <div
-              key={feature.title}
-              className="neo-card"
-              style={{ padding: '24px', textAlign: 'left' }}
-            >
-              <div
-                className="neo-icon-box"
-                style={{ background: feature.color, marginBottom: '12px' }}
-              >
-                <feature.Icon size={22} strokeWidth={2} />
-              </div>
-              <h3 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: '18px', marginBottom: '8px' }}>
-                {feature.title}
-              </h3>
-              <p style={{ fontSize: '14px', color: '#000000', margin: 0, lineHeight: 1.5, fontFamily: "'JetBrains Mono', monospace" }}>
-                {feature.desc}
-              </p>
-            </div>
-          ))}
-        </div>
-      </section>
+      <footer className="landing-footer">
+        <span>© 2026 HabitForge</span>
+        <span>Built with bricks & brutalism.</span>
+      </footer>
     </div>
   );
 };
