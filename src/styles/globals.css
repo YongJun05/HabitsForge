@@ -1,0 +1,87 @@
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;700&family=JetBrains+Mono:wght@600&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --color-bg: #FFFBF0;
+  --color-primary: #FFE566;
+  --color-secondary: #A8E6CF;
+  --color-danger: #FF6B6B;
+  --color-dark: #1A1A1A;
+  --color-card: #FFFFFF;
+  --color-streak: #FF9F43;
+  --color-purple: #C9B1FF;
+}
+
+body {
+  background-color: var(--color-bg);
+  font-family: 'DM Sans', sans-serif;
+  color: var(--color-dark);
+  margin: 0;
+  padding: 0;
+}
+
+h1, h2, h3 {
+  font-family: 'Syne', sans-serif;
+}
+
+/* Neobrutalism card style — applied via utility class */
+.neo-card {
+  border: 3px solid #1A1A1A;
+  box-shadow: 4px 4px 0px #1A1A1A;
+  border-radius: 8px;
+  background: white;
+}
+
+/* Neobrutalism button style */
+.neo-btn {
+  border: 2px solid #1A1A1A;
+  box-shadow: 3px 3px 0px #1A1A1A;
+  border-radius: 6px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.1s, box-shadow 0.1s;
+}
+
+.neo-btn:hover:not(:disabled) {
+  transform: translate(2px, 2px);
+  box-shadow: 1px 1px 0px #1A1A1A;
+}
+
+.neo-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Neobrutalism input style */
+.neo-input {
+  border: 2px solid #1A1A1A;
+  border-radius: 6px;
+  background: white;
+  padding: 10px 12px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  outline: none;
+  width: 100%;
+}
+
+.neo-input:focus {
+  box-shadow: 0 0 0 2px var(--color-primary);
+}
+
+/* Scrollbar styling for modals */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #f0f0f0;
+  border-radius: 3px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #ccc;
+  border-radius: 3px;
+}
