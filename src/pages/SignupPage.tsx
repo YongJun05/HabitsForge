@@ -209,6 +209,21 @@ const SignupPage: React.FC = () => {
             >
               {loading ? 'CREATING...' : 'GET STARTED →'}
             </button>
+            <div
+              style={{
+                background: '#ffe600',
+                border: '3px solid #000000',
+                boxShadow: '4px 4px 0px #000000',
+                fontFamily: "'JetBrains Mono', monospace",
+                fontSize: '12px',
+                fontWeight: 700,
+                letterSpacing: '0.5px',
+                padding: '10px 12px',
+                textAlign: 'center',
+              }}
+            >
+              Verify your email after signup to activate your account.
+            </div>
 
             {/* Divider */}
             <div style={{ textAlign: 'center', color: '#666', fontSize: '12px', margin: '16px 0' }}>

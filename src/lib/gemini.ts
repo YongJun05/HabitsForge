@@ -75,6 +75,21 @@ export async function suggestHabits(goal: string): Promise<HabitSuggestion[]> {
     }
     return suggestions;
   } catch {
+    // Fallback: try to extract the first JSON array from any surrounding text.
+    const startIndex = cleaned.indexOf('[');
+    const endIndex = cleaned.lastIndexOf(']');
+    if (startIndex !== -1 && endIndex !== -1 && endIndex > startIndex) {
+      const extracted = cleaned.slice(startIndex, endIndex + 1).trim();
+      try {
+        const suggestions: HabitSuggestion[] = JSON.parse(extracted);
+        if (Array.isArray(suggestions) && suggestions.length > 0) {
+          return suggestions;
+        }
+      } catch {
+        // fall through to error below
+      }
+    }
+
     throw new Error(`Failed to parse Gemini response as JSON. Raw text: ${cleaned}`);
   }
 }
