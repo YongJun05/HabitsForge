@@ -37,7 +37,7 @@ function buildSummary(habits: HabitWithStreak[]): string {
   const lines = habits.map((h) => {
     const doneToday = h.isDoneToday ? 'done today' : 'not done today';
     const last7 = h.recentLogs.length;
-    return `- ${h.icon} ${h.name}: ${doneToday}, completed ${last7}/7 days this week, current streak: ${h.currentStreak} days, best streak: ${h.bestStreak} days`;
+    return `- ${h.name}: ${doneToday}, completed ${last7}/7 days this week, current streak: ${h.currentStreak} days, best streak: ${h.bestStreak} days`;
   });
   return `Today is ${today}. Here is my weekly habit data:\n${lines.join('\n')}`;
 }

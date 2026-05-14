@@ -56,7 +56,7 @@ const Navbar: React.FC = () => {
   return (
     <nav
       style={{
-        background: '#FFE566',
+        background: '#ffe600',
         borderBottom: '3px solid #000000',
         position: 'sticky',
         top: 0,

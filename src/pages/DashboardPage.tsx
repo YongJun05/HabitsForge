@@ -5,6 +5,7 @@
  */
 import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Bell, Plus, Target, Trophy } from 'lucide-react';
 import Navbar from '../components/layout/Navbar';
 import HabitCard from '../components/habits/HabitCard';
 import HabitFormModal from '../components/habits/HabitFormModal';
@@ -124,7 +125,7 @@ const DashboardPage: React.FC = () => {
         {showNotifBanner && (
           <div
             style={{
-              background: '#FFE566',
+              background: '#ffe600',
               border: '3px solid #000000',
               boxShadow: '4px 4px 0px #000000',
               padding: '14px 16px',
@@ -135,8 +136,9 @@ const DashboardPage: React.FC = () => {
               gap: '12px',
             }}
           >
-            <span style={{ fontWeight: 800, fontSize: '12px', letterSpacing: '2px' }}>
-              🔔 ENABLE REMINDERS TO STAY ON TRACK
+            <span style={{ fontWeight: 800, fontSize: '12px', letterSpacing: '2px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Bell size={18} strokeWidth={2} />
+              ENABLE REMINDERS TO STAY ON TRACK
             </span>
             <div style={{ display: 'flex', gap: '8px' }}>
               <button
@@ -192,7 +194,9 @@ const DashboardPage: React.FC = () => {
           {progressPercent === 100 && totalCount > 0 && (
             <div
               style={{
-                display: 'inline-block',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
                 background: '#000000',
                 color: '#FFFFFF',
                 padding: '6px 10px',
@@ -202,7 +206,7 @@ const DashboardPage: React.FC = () => {
                 fontWeight: 800,
               }}
             >
-              🎉 ALL DONE TODAY!
+              <Trophy size={16} strokeWidth={2} /> ALL DONE TODAY!
             </div>
           )}
         </div>
@@ -215,7 +219,7 @@ const DashboardPage: React.FC = () => {
           className="neo-btn"
           onClick={handleAddNew}
           style={{
-            background: '#FFE566',
+            background: '#ffe600',
             padding: '16px',
             fontSize: '18px',
             width: '100%',
@@ -223,9 +227,14 @@ const DashboardPage: React.FC = () => {
             marginBottom: '16px',
             fontFamily: "'Syne', sans-serif",
             fontWeight: 800,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '8px',
           }}
         >
-          + ADD NEW HABIT
+          <Plus size={20} strokeWidth={2} />
+          ADD NEW HABIT
         </button>
 
         {/* Error state */}
@@ -261,15 +270,14 @@ const DashboardPage: React.FC = () => {
                 height: '80px',
                 border: '3px solid #000000',
                 boxShadow: '4px 4px 0px #000000',
-                background: '#FFE566',
+                background: '#ffe600',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                fontSize: '36px',
                 margin: '0 auto 16px',
               }}
             >
-              🎯
+              <Target size={36} strokeWidth={2} />
             </div>
             <h3 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: '28px', marginBottom: '8px' }}>
               NO HABITS YET
@@ -280,9 +288,10 @@ const DashboardPage: React.FC = () => {
             <button
               className="neo-btn"
               onClick={handleAddNew}
-              style={{ background: '#FFE566', padding: '12px 24px', fontSize: '14px' }}
+              style={{ background: '#ffe600', padding: '12px 24px', fontSize: '14px', display: 'inline-flex', alignItems: 'center', gap: '8px' }}
             >
-              + ADD YOUR FIRST HABIT
+              <Plus size={20} strokeWidth={2} />
+              ADD YOUR FIRST HABIT
             </button>
           </div>
         )}

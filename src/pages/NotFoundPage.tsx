@@ -3,6 +3,7 @@
  */
 import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { ArrowLeft } from 'lucide-react';
 import Navbar from '../components/layout/Navbar';
 
 const NotFoundPage: React.FC = () => {
@@ -46,9 +47,13 @@ const NotFoundPage: React.FC = () => {
             padding: '12px 24px',
             fontSize: '14px',
             textDecoration: 'none',
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '6px',
           }}
         >
-          ← GO HOME
+          <ArrowLeft size={16} />
+          GO HOME
         </Link>
       </div>
     </div>

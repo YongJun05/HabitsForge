@@ -4,9 +4,10 @@
  * Gold border highlight for streaks >= 7 days.
  */
 import React from 'react';
-import { CreditCard as Edit3, Trash2, BarChart3 } from 'lucide-react';
+import { Pencil, Trash2, BarChart2, Check, Flame } from 'lucide-react';
 import type { HabitWithStreak } from '../../types';
 import HabitGrid from './HabitGrid';
+import HabitIcon from '../ui/HabitIcon';
 
 interface HabitCardProps {
   habit: HabitWithStreak;
@@ -23,7 +24,7 @@ const HabitCard: React.FC<HabitCardProps> = ({ habit, onEdit, onDelete, onToggle
     }
   };
 
-  const streakHighlight = habit.currentStreak >= 7 ? '6px solid #FFE566' : undefined;
+  const streakHighlight = habit.currentStreak >= 7 ? '6px solid #ffe600' : undefined;
 
   return (
     <div
@@ -36,16 +37,18 @@ const HabitCard: React.FC<HabitCardProps> = ({ habit, onEdit, onDelete, onToggle
         borderLeft: streakHighlight ?? '3px solid #000000',
       }}
     >
-      {/* Top row: emoji + name + streak badge */}
+      {/* Top row: icon + name + streak badge */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '10px' }}>
-        <div className="neo-icon-box" style={{ background: habit.color }}>{habit.icon}</div>
+        <div className="neo-icon-box" style={{ background: habit.color }}>
+          <HabitIcon iconId={habit.icon} />
+        </div>
         <span style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: '18px', flex: 1, textTransform: 'uppercase' }}>
           {habit.name}
         </span>
         {habit.currentStreak > 0 && (
           <div
             style={{
-              background: '#FFE566',
+              background: '#ffe600',
               color: '#000000',
               border: '2px solid #000000',
               padding: '4px 12px',
@@ -57,7 +60,7 @@ const HabitCard: React.FC<HabitCardProps> = ({ habit, onEdit, onDelete, onToggle
               gap: '4px',
             }}
           >
-            🔥 {habit.currentStreak} DAY STREAK
+            <Flame size={16} strokeWidth={2} /> {habit.currentStreak} DAY STREAK
           </div>
         )}
       </div>
@@ -98,9 +101,18 @@ const HabitCard: React.FC<HabitCardProps> = ({ habit, onEdit, onDelete, onToggle
             boxShadow: '2px 2px 0px #000000',
             padding: '8px 16px',
             fontSize: '12px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
           }}
         >
-          {habit.isDoneToday ? '✓ DONE TODAY' : 'MARK DONE'}
+          {habit.isDoneToday ? (
+            <>
+              <Check size={16} strokeWidth={2} /> DONE TODAY
+            </>
+          ) : (
+            'MARK DONE'
+          )}
         </button>
 
         <div style={{ flex: 1 }} />
@@ -110,14 +122,14 @@ const HabitCard: React.FC<HabitCardProps> = ({ habit, onEdit, onDelete, onToggle
           className="neo-btn"
           onClick={() => onEdit(habit)}
           style={{
-            background: '#FFE566',
+            background: '#ffe600',
             border: '2px solid #000000',
             boxShadow: '2px 2px 0px #000000',
             padding: '6px 8px',
           }}
           title="Edit habit"
         >
-          <Edit3 size={16} />
+          <Pencil size={16} />
         </button>
 
         {/* Detail */}
@@ -133,7 +145,7 @@ const HabitCard: React.FC<HabitCardProps> = ({ habit, onEdit, onDelete, onToggle
           }}
           title="View details"
         >
-          <BarChart3 size={16} />
+          <BarChart2 size={16} />
         </button>
 
         {/* Delete */}

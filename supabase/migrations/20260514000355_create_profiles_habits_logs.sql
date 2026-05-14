@@ -11,8 +11,8 @@
       - `user_id` (uuid, not null, references profiles)
       - `name` (text, not null, max 50 chars)
       - `description` (text, optional, max 200 chars)
-      - `icon` (text, default '🎯')
-      - `color` (text, default '#FFE566')
+      - `icon` (text, default 'target')
+      - `color` (text, default '#ffe600')
       - `reminder_enabled` (boolean, default false)
       - `reminder_time` (text, optional, HH:MM format)
       - `created_at` (timestamptz, default now())
@@ -50,8 +50,8 @@ CREATE TABLE IF NOT EXISTS habits (
   user_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
   name TEXT NOT NULL CHECK (char_length(name) <= 50),
   description TEXT CHECK (char_length(description) <= 200),
-  icon TEXT DEFAULT '🎯',
-  color TEXT DEFAULT '#FFE566',
+  icon TEXT DEFAULT 'target',
+  color TEXT DEFAULT '#ffe600',
   reminder_enabled BOOLEAN DEFAULT FALSE,
   reminder_time TEXT,
   created_at TIMESTAMPTZ DEFAULT NOW(),

@@ -4,7 +4,7 @@
  */
 import type { HabitSuggestion } from '../types';
 
-const GEMINI_BASE = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
+const GEMINI_BASE = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent';
 
 /**
  * Calls Gemini API to suggest 3 habit ideas based on a user's goal.
@@ -26,7 +26,7 @@ export async function suggestHabits(goal: string): Promise<HabitSuggestion[]> {
   }
 
   const systemInstruction =
-    "You are a habit-building coach. The user will describe a personal goal. Respond ONLY with a valid JSON array of exactly 3 habit suggestions. No explanation, no markdown, no extra text — just the raw JSON array. Each object must have: name (max 8 words), description (one sentence, max 20 words), icon (single emoji), reminder_time (HH:MM 24h format), color (must be one of: #FFE566, #2563EB, #FF2D9B, #22C55E, #000000, #FFFFFF)";
+    "You are a habit-building coach. The user will describe a personal goal. Respond ONLY with a valid JSON array of exactly 3 habit suggestions. No explanation, no markdown, no extra text — just the raw JSON array. Each object must have: name (max 8 words), description (one sentence, max 20 words), icon (must be one of: flame, book, brain, droplets, dumbbell, apple, moon, sun, heart, footprints, pencil, coffee, music, smile, sparkles, bike, leaf, pill, target, trophy), reminder_time (HH:MM 24h format), color (must be one of: #ffe600, #2563EB, #FF2D9B, #22C55E, #000000, #FFFFFF)";
 
   const body = {
     system_instruction: { parts: [{ text: systemInstruction }] },
@@ -74,7 +74,7 @@ export async function suggestHabits(goal: string): Promise<HabitSuggestion[]> {
       throw new Error('Expected a non-empty array');
     }
     return suggestions;
-  } catch (parseError) {
+  } catch {
     throw new Error(`Failed to parse Gemini response as JSON. Raw text: ${cleaned}`);
   }
 }

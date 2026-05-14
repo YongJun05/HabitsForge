@@ -71,7 +71,7 @@ export function useNotifications(): UseNotificationsReturn {
 
         try {
           new Notification('HabitForge', {
-            body: `Time for: ${habit.icon} ${habit.name}!`,
+            body: `Time for: ${habit.name}!`,
           });
         } catch {
           // Notification creation can fail in some contexts — fail silently

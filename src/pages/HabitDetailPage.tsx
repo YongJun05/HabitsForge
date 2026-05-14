@@ -6,9 +6,11 @@
  */
 import React, { useEffect, useState, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { ArrowLeft, Flame, Trophy, BarChart2 } from 'lucide-react';
 import Navbar from '../components/layout/Navbar';
 import HabitHeatmap from '../components/habits/HabitHeatmap';
 import Spinner from '../components/ui/Spinner';
+import HabitIcon from '../components/ui/HabitIcon';
 import { supabase } from '../lib/supabase';
 import { calculateCurrentStreak, calculateBestStreak } from '../lib/streakUtils';
 import type { Habit } from '../types';
@@ -123,7 +125,7 @@ const HabitDetailPage: React.FC = () => {
             HABIT NOT FOUND
           </h2>
           <p style={{ fontFamily: "'JetBrains Mono', monospace", marginBottom: '20px' }}>This habit may have been deleted or the URL is incorrect.</p>
-          <button className="neo-btn" onClick={() => navigate('/dashboard')} style={{ background: '#FFE566', padding: '10px 20px' }}>
+          <button className="neo-btn" onClick={() => navigate('/dashboard')} style={{ background: '#ffe600', padding: '10px 20px' }}>
             BACK TO DASHBOARD
           </button>
         </div>
@@ -142,7 +144,8 @@ const HabitDetailPage: React.FC = () => {
           className="neo-btn"
           style={{ background: '#FFFFFF', border: '3px solid #000000', boxShadow: '3px 3px 0px #000000', padding: '8px 12px', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '16px' }}
         >
-          ← BACK
+          <ArrowLeft size={16} />
+          BACK
         </button>
 
         {/* Hero card */}
@@ -165,11 +168,10 @@ const HabitDetailPage: React.FC = () => {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              fontSize: '32px',
               marginBottom: '12px',
             }}
           >
-            {habit.icon}
+            <HabitIcon iconId={habit.icon} size={32} />
           </div>
           <h1 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: '36px', margin: '0 0 8px', textTransform: 'uppercase' }}>
             {habit.name}
@@ -182,9 +184,9 @@ const HabitDetailPage: React.FC = () => {
         {/* Stats boxes */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px', marginBottom: '16px' }}>
           {[
-            { label: 'Current Streak', value: `${currentStreak}d`, icon: '🔥' },
-            { label: 'Best Streak', value: `${bestStreak}d`, icon: '🏆' },
-            { label: 'Last 30 Days', value: `${last30Percent}%`, icon: '📊' },
+            { label: 'Current Streak', value: `${currentStreak}d`, Icon: Flame },
+            { label: 'Best Streak', value: `${bestStreak}d`, Icon: Trophy },
+            { label: 'Last 30 Days', value: `${last30Percent}%`, Icon: BarChart2 },
           ].map((stat) => (
             <div
               key={stat.label}
@@ -196,7 +198,9 @@ const HabitDetailPage: React.FC = () => {
                 boxShadow: '3px 3px 0px #000000',
               }}
             >
-              <div style={{ fontSize: '20px', marginBottom: '6px' }}>{stat.icon}</div>
+              <div style={{ marginBottom: '6px' }}>
+                <stat.Icon size={22} strokeWidth={2} />
+              </div>
               <div style={{ fontFamily: "'JetBrains Mono', monospace", fontWeight: 800, fontSize: '36px' }}>{stat.value}</div>
               <div style={{ fontSize: '11px', fontWeight: 800, letterSpacing: '2px' }}>{stat.label.toUpperCase()}</div>
             </div>

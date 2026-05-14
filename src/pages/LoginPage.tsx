@@ -7,6 +7,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { signInWithGoogle } from '../lib/auth';
 import Navbar from '../components/layout/Navbar';
+import { LockKeyhole } from 'lucide-react';
 
 const LoginPage: React.FC = () => {
   const navigate = useNavigate();
@@ -62,16 +63,18 @@ const LoginPage: React.FC = () => {
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
-            <div className="neo-icon-box" style={{ background: '#FFE566' }}>🔐</div>
+            <div className="neo-icon-box" style={{ background: '#ffe600' }}>
+              <LockKeyhole size={22} strokeWidth={2} />
+            </div>
             <div>
-              <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: '32px' }}>WELCOME BACK</div>
-              <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '13px' }}>Enter your credentials to continue.</div>
+              <div className="font-hero" style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: '32px' }}>WELCOME BACK.</div>
+              <div className="font-mono" style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '14px' }}>Log in to keep your streaks alive.</div>
             </div>
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
             <div>
-              <label style={{ fontWeight: 800, fontSize: '12px', letterSpacing: '2px', display: 'block', marginBottom: '6px' }}>EMAIL</label>
+              <label style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 800, textTransform: 'uppercase', letterSpacing: '2px', fontSize: '12px', display: 'block', marginBottom: '6px' }}>EMAIL</label>
               <input
                 className="neo-input"
                 type="email"
@@ -82,11 +85,11 @@ const LoginPage: React.FC = () => {
             </div>
 
             <div>
-              <label style={{ fontWeight: 800, fontSize: '12px', letterSpacing: '2px', display: 'block', marginBottom: '6px' }}>PASSWORD</label>
+              <label style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 800, textTransform: 'uppercase', letterSpacing: '2px', fontSize: '12px', display: 'block', marginBottom: '6px' }}>PASSWORD</label>
               <input
                 className="neo-input"
                 type="password"
-                placeholder="Your password"
+                placeholder="·······"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 onKeyDown={(e) => { if (e.key === 'Enter') handleLogin(); }}
@@ -103,9 +106,13 @@ const LoginPage: React.FC = () => {
                 padding: '14px',
                 fontSize: '16px',
                 width: '100%',
+                fontFamily: "'Syne', sans-serif",
+                fontWeight: 800,
+                textTransform: 'uppercase',
+                letterSpacing: '1px',
               }}
             >
-              {loading ? 'LOGGING IN...' : 'LOGIN'}
+              {loading ? 'LOGGING IN...' : 'LOG IN →'}
             </button>
 
             {error && (
@@ -155,9 +162,9 @@ const LoginPage: React.FC = () => {
             </button>
           </div>
 
-          <p style={{ textAlign: 'center', fontSize: '13px', marginTop: '16px', color: '#000000' }}>
-            Don't have an account?{' '}
-            <Link to="/signup" style={{ fontWeight: 800, color: '#000000', textDecoration: 'underline' }}>SIGN UP →</Link>
+          <p style={{ textAlign: 'center', fontFamily: "'JetBrains Mono', monospace", fontSize: '14px', marginTop: '16px', color: '#000000' }}>
+            New here?{' '}
+            <Link to="/signup" style={{ fontWeight: 700, color: '#000000', textDecoration: 'underline' }}>Create account</Link>
           </p>
         </div>
       </div>

@@ -8,6 +8,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { signInWithGoogle } from '../lib/auth';
 import Navbar from '../components/layout/Navbar';
+import { Sparkles } from 'lucide-react';
 
 const SignupPage: React.FC = () => {
   const navigate = useNavigate();
@@ -98,16 +99,18 @@ const SignupPage: React.FC = () => {
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
-            <div className="neo-icon-box" style={{ background: '#FF2D9B' }}>✨</div>
+            <div className="neo-icon-box" style={{ background: '#FF2D9B' }}>
+              <Sparkles size={22} strokeWidth={2} />
+            </div>
             <div>
-              <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: '32px' }}>CREATE ACCOUNT</div>
-              <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '13px' }}>Join HabitForge and start building.</div>
+              <div className="font-hero" style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: '32px' }}>CREATE ACCOUNT.</div>
+              <div className="font-mono" style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '14px' }}>Start building streaks that stick.</div>
             </div>
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
             <div>
-              <label style={{ fontWeight: 800, fontSize: '12px', letterSpacing: '2px', display: 'block', marginBottom: '6px' }}>DISPLAY NAME</label>
+              <label style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 800, textTransform: 'uppercase', letterSpacing: '2px', fontSize: '12px', display: 'block', marginBottom: '6px' }}>DISPLAY NAME</label>
               <input
                 className="neo-input"
                 placeholder="Your name"
@@ -122,7 +125,7 @@ const SignupPage: React.FC = () => {
             </div>
 
             <div>
-              <label style={{ fontWeight: 800, fontSize: '12px', letterSpacing: '2px', display: 'block', marginBottom: '6px' }}>EMAIL</label>
+              <label style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 800, textTransform: 'uppercase', letterSpacing: '2px', fontSize: '12px', display: 'block', marginBottom: '6px' }}>EMAIL</label>
               <input
                 className="neo-input"
                 type="email"
@@ -143,11 +146,11 @@ const SignupPage: React.FC = () => {
             </div>
 
             <div>
-              <label style={{ fontWeight: 800, fontSize: '12px', letterSpacing: '2px', display: 'block', marginBottom: '6px' }}>PASSWORD</label>
+              <label style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 800, textTransform: 'uppercase', letterSpacing: '2px', fontSize: '12px', display: 'block', marginBottom: '6px' }}>PASSWORD</label>
               <input
                 className="neo-input"
                 type="password"
-                placeholder="Min. 8 characters"
+                placeholder="·······"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />
@@ -164,11 +167,11 @@ const SignupPage: React.FC = () => {
             </div>
 
             <div>
-              <label style={{ fontWeight: 800, fontSize: '12px', letterSpacing: '2px', display: 'block', marginBottom: '6px' }}>CONFIRM PASSWORD</label>
+              <label style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 800, textTransform: 'uppercase', letterSpacing: '2px', fontSize: '12px', display: 'block', marginBottom: '6px' }}>CONFIRM PASSWORD</label>
               <input
                 className="neo-input"
                 type="password"
-                placeholder="Repeat your password"
+                placeholder="·······"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 onKeyDown={(e) => { if (e.key === 'Enter') handleSignup(); }}
@@ -196,6 +199,10 @@ const SignupPage: React.FC = () => {
                 padding: '14px',
                 fontSize: '16px',
                 width: '100%',
+                fontFamily: "'Syne', sans-serif",
+                fontWeight: 800,
+                textTransform: 'uppercase',
+                letterSpacing: '1px',
               }}
             >
               {loading ? 'CREATING...' : 'GET STARTED →'}
@@ -233,9 +240,9 @@ const SignupPage: React.FC = () => {
             </button>
           </div>
 
-          <p style={{ textAlign: 'center', fontSize: '13px', marginTop: '16px', color: '#000000' }}>
+          <p style={{ textAlign: 'center', fontFamily: "'JetBrains Mono', monospace", fontSize: '14px', marginTop: '16px', color: '#000000' }}>
             Already have an account?{' '}
-            <Link to="/login" style={{ fontWeight: 800, color: '#000000', textDecoration: 'underline' }}>LOGIN →</Link>
+            <Link to="/login" style={{ fontWeight: 700, color: '#000000', textDecoration: 'underline' }}>Log in</Link>
           </p>
         </div>
       </div>

@@ -47,7 +47,7 @@ const HabitGrid: React.FC<HabitGridProps> = ({ recentLogs, isDoneToday }) => {
               border: '2px solid #000000',
               background: day.isToday
                 ? day.isDone
-                  ? '#FFE566'
+                  ? '#ffe600'
                   : '#FFFFFF'
                 : day.isDone
                   ? '#22C55E'

@@ -4,6 +4,7 @@
  */
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Sparkles, Flame, Bell } from 'lucide-react';
 import Navbar from '../components/layout/Navbar';
 
 const LandingPage: React.FC = () => {
@@ -19,7 +20,7 @@ const LandingPage: React.FC = () => {
       {/* Hero section */}
       <section
         style={{
-          background: '#FFE566',
+          background: '#ffe600',
           borderBottom: '3px solid #000000',
           padding: '80px 24px 60px',
           textAlign: 'center',
@@ -82,19 +83,19 @@ const LandingPage: React.FC = () => {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '20px' }}>
           {[
             {
-              icon: '✨',
+              Icon: Sparkles,
               title: 'AI Habit Coach',
               desc: 'Describe a goal, get 3 habit suggestions instantly',
               color: '#FF2D9B',
             },
             {
-              icon: '🔥',
+              Icon: Flame,
               title: 'Streak Tracking',
               desc: 'Visual streaks that keep you accountable every day',
-              color: '#FFE566',
+              color: '#ffe600',
             },
             {
-              icon: '🔔',
+              Icon: Bell,
               title: 'Smart Reminders',
               desc: 'Browser notifications at the exact time you need them',
               color: '#2563EB',
@@ -109,7 +110,7 @@ const LandingPage: React.FC = () => {
                 className="neo-icon-box"
                 style={{ background: feature.color, marginBottom: '12px' }}
               >
-                {feature.icon}
+                <feature.Icon size={22} strokeWidth={2} />
               </div>
               <h3 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: '18px', marginBottom: '8px' }}>
                 {feature.title}

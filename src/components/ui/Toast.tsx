@@ -15,7 +15,7 @@ interface ToastProps {
 const bgMap = {
   success: '#22C55E',
   error: '#FF2D9B',
-  info: '#FFE566',
+  info: '#ffe600',
 };
 
 const textMap = {

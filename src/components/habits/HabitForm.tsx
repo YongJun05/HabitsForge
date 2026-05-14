@@ -4,13 +4,58 @@
  * IMPORTANT: Uses divs with onClick handlers, not <form> tags.
  */
 import React, { useState } from 'react';
+import {
+  Flame,
+  BookOpen,
+  Brain,
+  Droplets,
+  Dumbbell,
+  Apple,
+  Moon,
+  Sun,
+  Heart,
+  Footprints,
+  Pencil,
+  Coffee,
+  Music,
+  Smile,
+  Sparkles,
+  Bike,
+  Leaf,
+  Pill,
+  Target,
+  Trophy,
+} from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 import { suggestHabits } from '../../lib/gemini';
 import Spinner from '../ui/Spinner';
+import HabitIcon from '../ui/HabitIcon';
 import type { Habit, HabitSuggestion } from '../../types';
 
-const EMOJI_OPTIONS = ['💧', '🏃', '📚', '🧘', '💪', '🛌', '🥗', '📝', '🎯', '🎨', '🎵', '🧹', '🙏', '🌱', '💊', '🚴', '🧠', '✍️', '🏋️', '🍎'];
+const HABIT_ICONS: { id: string; Icon: LucideIcon }[] = [
+  { id: 'flame', Icon: Flame },
+  { id: 'book', Icon: BookOpen },
+  { id: 'brain', Icon: Brain },
+  { id: 'droplets', Icon: Droplets },
+  { id: 'dumbbell', Icon: Dumbbell },
+  { id: 'apple', Icon: Apple },
+  { id: 'moon', Icon: Moon },
+  { id: 'sun', Icon: Sun },
+  { id: 'heart', Icon: Heart },
+  { id: 'footprints', Icon: Footprints },
+  { id: 'pencil', Icon: Pencil },
+  { id: 'coffee', Icon: Coffee },
+  { id: 'music', Icon: Music },
+  { id: 'smile', Icon: Smile },
+  { id: 'sparkles', Icon: Sparkles },
+  { id: 'bike', Icon: Bike },
+  { id: 'leaf', Icon: Leaf },
+  { id: 'pill', Icon: Pill },
+  { id: 'target', Icon: Target },
+  { id: 'trophy', Icon: Trophy },
+];
 
-const COLOR_OPTIONS = ['#FFE566', '#2563EB', '#FF2D9B', '#22C55E', '#000000', '#FFFFFF'];
+const COLOR_OPTIONS = ['#ffe600', '#2563EB', '#FF2D9B', '#22C55E', '#000000', '#FFFFFF'];
 
 interface HabitFormProps {
   initialData?: Partial<Habit>;
@@ -21,8 +66,8 @@ interface HabitFormProps {
 const HabitForm: React.FC<HabitFormProps> = ({ initialData, onSave, onCancel }) => {
   const [name, setName] = useState(initialData?.name ?? '');
   const [description, setDescription] = useState(initialData?.description ?? '');
-  const [icon, setIcon] = useState(initialData?.icon ?? '🎯');
-  const [color, setColor] = useState(initialData?.color ?? '#FFE566');
+  const [icon, setIcon] = useState(initialData?.icon ?? 'target');
+  const [color, setColor] = useState(initialData?.color ?? '#ffe600');
   const [reminderEnabled, setReminderEnabled] = useState(initialData?.reminder_enabled ?? false);
   const [reminderTime, setReminderTime] = useState(initialData?.reminder_time ?? '09:00');
 
@@ -49,7 +94,7 @@ const HabitForm: React.FC<HabitFormProps> = ({ initialData, onSave, onCancel }) 
   const handleUseSuggestion = (s: HabitSuggestion) => {
     setName(s.name);
     setDescription(s.description);
-    setIcon(s.icon);
+    setIcon(HABIT_ICONS.some(({ id }) => id === s.icon) ? s.icon : 'target');
     setColor(s.color);
     setReminderTime(s.reminder_time);
     setReminderEnabled(true);
@@ -79,7 +124,8 @@ const HabitForm: React.FC<HabitFormProps> = ({ initialData, onSave, onCancel }) 
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
-          <span style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800 }}>✨ AI HABIT COACH</span>
+          <Sparkles size={18} strokeWidth={2} />
+          <span style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800 }}>AI HABIT COACH</span>
         </div>
 
         <div style={{ display: 'flex', gap: '8px' }}>
@@ -102,7 +148,7 @@ const HabitForm: React.FC<HabitFormProps> = ({ initialData, onSave, onCancel }) 
               whiteSpace: 'nowrap',
             }}
           >
-            {aiLoading ? 'SUGGESTING...' : 'SUGGEST →'}
+            {aiLoading ? 'SUGGESTING...' : 'SUGGEST'}
           </button>
         </div>
 
@@ -130,16 +176,18 @@ const HabitForm: React.FC<HabitFormProps> = ({ initialData, onSave, onCancel }) 
                   boxShadow: '3px 3px 0px #000000',
                 }}
               >
-                <div style={{ fontSize: '20px', marginBottom: '4px' }}>{s.icon}</div>
+                <div style={{ marginBottom: '4px' }}>
+                  <HabitIcon iconId={s.icon} />
+                </div>
                 <div style={{ fontWeight: 800, fontSize: '13px', marginBottom: '2px' }}>{s.name}</div>
                 <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '11px', color: '#666', marginBottom: '6px' }}>{s.description}</div>
-                <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '11px', marginBottom: '8px' }}>⏰ {s.reminder_time}</div>
+                <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '11px', marginBottom: '8px' }}>{s.reminder_time}</div>
                 <button
                   className="neo-btn"
                   onClick={() => handleUseSuggestion(s)}
                   style={{ background: '#22C55E', color: '#FFFFFF', border: '2px solid #000000', boxShadow: '2px 2px 0px #000000', padding: '6px 10px', fontSize: '12px', width: '100%' }}
                 >
-                  + USE THIS
+                  USE THIS
                 </button>
               </div>
             ))}
@@ -183,30 +231,32 @@ const HabitForm: React.FC<HabitFormProps> = ({ initialData, onSave, onCancel }) 
         </div>
       </div>
 
-      {/* Emoji picker */}
+      {/* Icon picker */}
       <div>
         <label style={{ fontWeight: 800, fontSize: '12px', letterSpacing: '2px', display: 'block', marginBottom: '6px' }}>
           CHOOSE ICON
         </label>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
-          {EMOJI_OPTIONS.map((emoji) => (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, 48px)', gap: '8px' }}>
+          {HABIT_ICONS.map(({ id, Icon }) => (
             <button
-              key={emoji}
-              onClick={() => setIcon(emoji)}
+              key={id}
+              onClick={() => setIcon(id)}
+              aria-label={`Choose ${id} icon`}
               style={{
-                width: '40px',
-                height: '40px',
+                width: '48px',
+                height: '48px',
                 border: '2px solid #000000',
-                background: icon === emoji ? '#FFE566' : '#FFFFFF',
-                fontSize: '18px',
-                boxShadow: icon === emoji ? '2px 2px 0px #000000' : 'none',
+                boxShadow: icon === id ? '2px 2px 0px #000000' : '3px 3px 0px #000000',
+                background: icon === id ? '#FFE566' : '#FFFFFF',
+                transform: icon === id ? 'translate(1px, 1px)' : 'none',
                 cursor: 'pointer',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
+                borderRadius: 0,
               }}
             >
-              {emoji}
+              <Icon size={22} strokeWidth={2} color="#000000" />
             </button>
           ))}
         </div>

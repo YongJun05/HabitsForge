@@ -8,6 +8,7 @@ import Navbar from '../components/layout/Navbar';
 import Toast from '../components/ui/Toast';
 import { supabase } from '../lib/supabase';
 import { useNotifications } from '../hooks/useNotifications';
+import { User, Bell, AlertTriangle } from 'lucide-react';
 
 const SettingsPage: React.FC = () => {
   const navigate = useNavigate();
@@ -100,7 +101,9 @@ const SettingsPage: React.FC = () => {
         {/* Account section */}
         <div style={{ padding: '20px', marginBottom: '16px', background: '#FFFFFF', border: '3px solid #000000', boxShadow: '4px 4px 0px #000000' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
-            <div className="neo-icon-box" style={{ background: '#FFE566' }}>👤</div>
+            <div className="neo-icon-box" style={{ background: '#ffe600' }}>
+              <User size={22} strokeWidth={2} />
+            </div>
             <h2 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: '16px', margin: 0 }}>
               ACCOUNT
             </h2>
@@ -133,7 +136,9 @@ const SettingsPage: React.FC = () => {
         {/* Notifications section */}
         <div style={{ padding: '20px', marginBottom: '16px', background: '#FFFFFF', border: '3px solid #000000', boxShadow: '4px 4px 0px #000000' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
-            <div className="neo-icon-box" style={{ background: '#2563EB', color: '#FFFFFF' }}>🔔</div>
+            <div className="neo-icon-box" style={{ background: '#2563EB', color: '#FFFFFF' }}>
+              <Bell size={22} strokeWidth={2} />
+            </div>
             <h2 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: '16px', margin: 0 }}>
               NOTIFICATIONS
             </h2>
@@ -184,7 +189,9 @@ const SettingsPage: React.FC = () => {
         {/* Danger zone */}
         <div style={{ padding: '20px', border: '3px solid #FF2D9B', boxShadow: '4px 4px 0px #000000', background: '#FFFFFF' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
-            <div className="neo-icon-box" style={{ background: '#FF2D9B', color: '#FFFFFF' }}>⚠️</div>
+            <div className="neo-icon-box" style={{ background: '#FF2D9B', color: '#FFFFFF' }}>
+              <AlertTriangle size={22} strokeWidth={2} />
+            </div>
             <h2 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: '16px', margin: 0, color: '#FF2D9B' }}>
               DANGER ZONE
             </h2>

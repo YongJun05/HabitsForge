@@ -4,7 +4,7 @@
  * Only renders when the user has at least 1 habit.
  */
 import React from 'react';
-import { RefreshCw } from 'lucide-react';
+import { RefreshCw, Sparkles } from 'lucide-react';
 import { useWeeklyInsight } from '../../hooks/useWeeklyInsight';
 import Spinner from '../ui/Spinner';
 import type { HabitWithStreak } from '../../types';
@@ -30,7 +30,9 @@ const WeeklyInsightCard: React.FC<WeeklyInsightCardProps> = ({ habits }) => {
     >
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px' }}>
-        <div className="neo-icon-box" style={{ background: '#FF2D9B' }}>✨</div>
+        <div className="neo-icon-box" style={{ background: '#FF2D9B' }}>
+          <Sparkles size={22} strokeWidth={2} />
+        </div>
         <span style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: '16px' }}>
           AI WEEKLY INSIGHT
         </span>
@@ -51,7 +53,7 @@ const WeeklyInsightCard: React.FC<WeeklyInsightCardProps> = ({ habits }) => {
           <button
             className="neo-btn"
             onClick={refresh}
-            style={{ background: '#FFE566', padding: '6px 12px', fontSize: '12px' }}
+            style={{ background: '#ffe600', padding: '6px 12px', fontSize: '12px' }}
           >
             TRY AGAIN
           </button>
@@ -82,8 +84,8 @@ const WeeklyInsightCard: React.FC<WeeklyInsightCardProps> = ({ habits }) => {
               gap: '6px',
             }}
           >
-            <RefreshCw size={12} />
-            ↻ REFRESH
+            <RefreshCw size={16} />
+            REFRESH
           </button>
         </div>
       )}
