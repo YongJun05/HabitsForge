@@ -11,6 +11,7 @@ import HabitCard from '../components/habits/HabitCard';
 import HabitFormModal from '../components/habits/HabitFormModal';
 import WeeklyInsightCard from '../components/habits/WeeklyInsightCard';
 import Toast from '../components/ui/Toast';
+import { supabase } from '../lib/supabase';
 import { useHabits } from '../hooks/useHabits';
 import { useNotifications } from '../hooks/useNotifications';
 import type { Habit, HabitWithStreak } from '../types';
@@ -28,6 +29,23 @@ const DashboardPage: React.FC = () => {
   useEffect(() => {
     document.title = 'HabitForge — Dashboard';
   }, []);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const checkSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (isMounted && !session) {
+        navigate('/login', { replace: true });
+      }
+    };
+
+    checkSession();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [navigate]);
 
   // Schedule reminders when habits change
   useEffect(() => {

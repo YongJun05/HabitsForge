@@ -4,7 +4,7 @@
  * Redirects to /login if no session exists.
  * Also subscribes to auth state changes to handle mid-session expiry.
  *
- * For Google OAuth users: automatically creates a profile row if one
+ * For OAuth users: automatically creates a profile row if one
  * doesn't exist yet (OAuth users don't go through the signup form
  * where profiles are normally created).
  */
@@ -19,7 +19,7 @@ interface AuthGuardProps {
 
 /**
  * Ensures a profile row exists for the current user.
- * Google OAuth users may not have a profile yet since they
+ * OAuth users may not have a profile yet since they
  * bypass the signup form. We use upsert to handle the race
  * condition where the profile might be created concurrently.
  */
@@ -67,13 +67,16 @@ const AuthGuard: React.FC<AuthGuardProps> = ({ children }) => {
     });
 
     // Subscribe to auth state changes — handles mid-session expiry and OAuth callbacks
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (!session) {
         setAuthenticated(false);
         navigate('/login', { replace: true });
       } else {
         await ensureProfile(session.user.id, session.user.user_metadata);
         setAuthenticated(true);
+        if (event === 'SIGNED_IN') {
+          navigate('/dashboard', { replace: true });
+        }
       }
     });
 
