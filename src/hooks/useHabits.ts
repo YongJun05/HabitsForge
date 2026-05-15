@@ -11,7 +11,7 @@
  */
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
-import { calculateCurrentStreak, calculateBestStreak, getTodayString } from '../lib/streakUtils';
+import { calculateCurrentStreak, calculateBestStreak, getTodayString, getCurrentWeekString } from '../lib/streakUtils';
 import type { Habit, HabitLog, HabitWithStreak } from '../types';
 
 interface UseHabitsReturn {
@@ -260,7 +260,6 @@ export function useHabits(): UseHabitsReturn {
   const freezeHabit = useCallback(async (habitId: string) => {
     setError(null);
     try {
-      const { getCurrentWeekString } = await import('../lib/streakUtils');
       const weekStr = getCurrentWeekString();
 
       const { error: freezeError } = await supabase
