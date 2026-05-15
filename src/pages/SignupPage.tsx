@@ -49,7 +49,10 @@ const SignupPage: React.FC = () => {
         const { error: profileError } = await supabase.from('profiles').insert({ id: data.user.id, display_name: displayName.trim() });
         if (profileError) console.error('Profile insert failed:', profileError.message);
       }
-      navigate('/dashboard', { replace: true });
+      if (data.session) {
+        await supabase.auth.signOut();
+      }
+      navigate('/login', { state: { message: 'Account created successfully! Please log in.' } });
     } catch (err) {
       setErrors([err instanceof Error ? err.message : 'Signup failed']);
     } finally { setLoading(false); }
@@ -142,18 +145,7 @@ const SignupPage: React.FC = () => {
           </p>
         </div>
 
-        {/* Email verification tip */}
-        <div style={{ position: 'absolute', left: 'calc(50% + 260px)', top: '50%', transform: 'translateY(-50%)', width: '200px', border: '3px solid #000000', boxShadow: '4px 4px 0px #000000', background: '#ffe600', overflow: 'hidden' }}>
-          <div style={{ background: '#000000', color: '#ffe600', display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 12px' }}>
-            <Mail size={14} strokeWidth={2.5} />
-            <span style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: '10px', letterSpacing: '2px', textTransform: 'uppercase' }}>Heads Up!</span>
-          </div>
-          <div style={{ padding: '12px' }}>
-            <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '11px', color: '#000', lineHeight: 1.6 }}>
-              Check your inbox and verify your email to activate your account.
-            </div>
-          </div>
-        </div>
+
       </div>
       <Footer />
     </div>

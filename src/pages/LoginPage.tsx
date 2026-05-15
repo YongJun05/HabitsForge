@@ -3,15 +3,16 @@
  * Shows inline error messages and disables the button while loading.
  */
 import React, { useEffect, useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { signInWithGoogle } from '../lib/auth';
 import Navbar from '../components/layout/Navbar';
 import Footer from '../components/layout/Footer';
-import { LockKeyhole, Eye, EyeOff } from 'lucide-react';
+import { LockKeyhole, Eye, EyeOff, CheckCircle2 } from 'lucide-react';
 
 const LoginPage: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -53,7 +54,30 @@ const LoginPage: React.FC = () => {
   return (
     <div style={{ minHeight: '100vh' }}>
       <Navbar variant="landing" />
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '40px 24px' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '40px 24px' }}>
+        
+        {location.state?.message && (
+          <div
+            style={{
+              maxWidth: '480px',
+              width: '100%',
+              background: '#A3E635',
+              border: '3px solid #000000',
+              boxShadow: '6px 6px 0px #000000',
+              padding: '16px',
+              marginBottom: '24px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '12px',
+            }}
+          >
+            <CheckCircle2 size={24} strokeWidth={2.5} color="#000000" />
+            <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '14px', fontWeight: 700, color: '#000000' }}>
+              {location.state.message}
+            </span>
+          </div>
+        )}
+
         <div
           style={{
             maxWidth: '480px',
