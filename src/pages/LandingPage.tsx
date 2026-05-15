@@ -6,6 +6,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Bell, Brain, Calendar, Flame, Sparkles } from 'lucide-react';
 import Navbar from '../components/layout/Navbar';
+import Footer from '../components/layout/Footer';
 import { supabase } from '../lib/supabase';
 
 const LandingPage: React.FC = () => {
@@ -160,10 +161,7 @@ const LandingPage: React.FC = () => {
         </div>
       </section>
 
-      <footer className="landing-footer">
-        <span>© 2026 HabitForge</span>
-        <span>Built with bricks & brutalism.</span>
-      </footer>
+      <Footer />
     </div>
   );
 };

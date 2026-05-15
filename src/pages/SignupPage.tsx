@@ -8,7 +8,8 @@ import { useNavigate, Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { signInWithGoogle } from '../lib/auth';
 import Navbar from '../components/layout/Navbar';
-import { Sparkles } from 'lucide-react';
+import Footer from '../components/layout/Footer';
+import { Sparkles, Mail } from 'lucide-react';
 
 const SignupPage: React.FC = () => {
   const navigate = useNavigate();
@@ -87,7 +88,7 @@ const SignupPage: React.FC = () => {
   return (
     <div style={{ minHeight: '100vh' }}>
       <Navbar variant="landing" />
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '40px 24px' }}>
+      <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '40px 24px' }}>
         <div
           style={{
             maxWidth: '480px',
@@ -209,21 +210,6 @@ const SignupPage: React.FC = () => {
             >
               {loading ? 'CREATING...' : 'GET STARTED →'}
             </button>
-            <div
-              style={{
-                background: '#ffe600',
-                border: '3px solid #000000',
-                boxShadow: '4px 4px 0px #000000',
-                fontFamily: "'JetBrains Mono', monospace",
-                fontSize: '12px',
-                fontWeight: 700,
-                letterSpacing: '0.5px',
-                padding: '10px 12px',
-                textAlign: 'center',
-              }}
-            >
-              Verify your email after signup to activate your account.
-            </div>
 
             {/* Divider */}
             <div style={{ textAlign: 'center', color: '#666', fontSize: '12px', margin: '16px 0' }}>
@@ -262,7 +248,55 @@ const SignupPage: React.FC = () => {
             <Link to="/login" style={{ fontWeight: 700, color: '#000000', textDecoration: 'underline' }}>Log in</Link>
           </p>
         </div>
+
+        {/* Email verification tip — floats to the right of the form */}
+        <div
+          style={{
+            position: 'absolute',
+            left: 'calc(50% + 260px)',
+            top: '50%',
+            transform: 'translateY(-50%)',
+            width: '200px',
+            border: '3px solid #000000',
+            boxShadow: '4px 4px 0px #000000',
+            background: '#ffe600',
+            overflow: 'hidden',
+          }}
+        >
+          {/* Top accent bar with icon */}
+          <div style={{
+            background: '#000000',
+            color: '#ffe600',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            padding: '8px 12px',
+          }}>
+            <Mail size={14} strokeWidth={2.5} />
+            <span style={{
+              fontFamily: "'Syne', sans-serif",
+              fontWeight: 800,
+              fontSize: '10px',
+              letterSpacing: '2px',
+              textTransform: 'uppercase',
+            }}>
+              Heads Up!
+            </span>
+          </div>
+          {/* Text content */}
+          <div style={{ padding: '12px' }}>
+            <div style={{
+              fontFamily: "'JetBrains Mono', monospace",
+              fontSize: '11px',
+              color: '#000',
+              lineHeight: 1.6,
+            }}>
+              Check your inbox and verify your email to activate your account.
+            </div>
+          </div>
+        </div>
       </div>
+      <Footer />
     </div>
   );
 };

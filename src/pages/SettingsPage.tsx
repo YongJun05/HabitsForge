@@ -5,6 +5,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/layout/Navbar';
+import Footer from '../components/layout/Footer';
 import Toast from '../components/ui/Toast';
 import { supabase } from '../lib/supabase';
 import { useNotifications } from '../hooks/useNotifications';
@@ -208,6 +209,8 @@ const SettingsPage: React.FC = () => {
           </button>
         </div>
       </div>
+
+      <Footer />
 
       {toast && (
         <Toast

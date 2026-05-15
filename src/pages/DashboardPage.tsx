@@ -12,6 +12,7 @@ import HabitHeatmap from '../components/habits/HabitHeatmap';
 import HabitIcon from '../components/ui/HabitIcon';
 import Spinner from '../components/ui/Spinner';
 import Toast from '../components/ui/Toast';
+import Footer from '../components/layout/Footer';
 import { supabase } from '../lib/supabase';
 import { useHabits } from '../hooks/useHabits';
 import { useNotifications } from '../hooks/useNotifications';
@@ -618,6 +619,8 @@ const DashboardPage: React.FC = () => {
                     </div>
                 )}
             </div>
+
+            <Footer />
 
             {toast && (
                 <Toast

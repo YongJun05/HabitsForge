@@ -5,6 +5,7 @@ import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import Navbar from '../components/layout/Navbar';
+import Footer from '../components/layout/Footer';
 
 const NotFoundPage: React.FC = () => {
   useEffect(() => {
@@ -56,6 +57,7 @@ const NotFoundPage: React.FC = () => {
           GO HOME
         </Link>
       </div>
+      <Footer />
     </div>
   );
 };

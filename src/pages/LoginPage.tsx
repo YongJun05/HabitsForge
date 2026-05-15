@@ -7,6 +7,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { signInWithGoogle } from '../lib/auth';
 import Navbar from '../components/layout/Navbar';
+import Footer from '../components/layout/Footer';
 import { LockKeyhole } from 'lucide-react';
 
 const LoginPage: React.FC = () => {
@@ -170,6 +171,7 @@ const LoginPage: React.FC = () => {
           </p>
         </div>
       </div>
+      <Footer />
     </div>
   );
 };

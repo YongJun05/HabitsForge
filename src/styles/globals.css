@@ -81,6 +81,11 @@ textarea::placeholder {
   box-shadow: 2px 2px 0px #000000;
 }
 
+.neo-btn:active:not(:disabled) {
+  transform: translate(4px, 4px);
+  box-shadow: 0px 0px 0px #000000;
+}
+
 .neo-btn:disabled {
   opacity: 0.6;
   cursor: not-allowed;
@@ -562,7 +567,7 @@ textarea::placeholder {
     linear-gradient(#00000008 1px, transparent 1px),
     linear-gradient(90deg, #00000008 1px, transparent 1px);
   background-size: 39px 39px;
-  padding: 48px 18px 54px;
+  padding: 80px clamp(20px, 8vw, 146px) 96px;
 }
 
 .landing-features__inner {
