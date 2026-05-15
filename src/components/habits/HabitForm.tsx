@@ -59,7 +59,7 @@ const COLOR_OPTIONS = ['#ffe600', '#2563EB', '#FF2D9B', '#22C55E', '#000000', '#
 
 interface HabitFormProps {
   initialData?: Partial<Habit>;
-  onSave: (data: Omit<Habit, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => void;
+  onSave: (data: Omit<Habit, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => Promise<void> | void;
   onCancel: () => void;
 }
 
@@ -70,6 +70,7 @@ const HabitForm: React.FC<HabitFormProps> = ({ initialData, onSave, onCancel }) 
   const [color, setColor] = useState(initialData?.color ?? '#ffe600');
   const [reminderEnabled, setReminderEnabled] = useState(initialData?.reminder_enabled ?? false);
   const [reminderTime, setReminderTime] = useState(initialData?.reminder_time ?? '09:00');
+  const [formError, setFormError] = useState<string | null>(null);
 
   // AI suggestion state
   const [goal, setGoal] = useState('');
@@ -101,17 +102,28 @@ const HabitForm: React.FC<HabitFormProps> = ({ initialData, onSave, onCancel }) 
     setSuggestions([]);
   };
 
-  const handleSave = () => {
-    if (!name.trim()) return;
-    onSave({
-      name: name.trim(),
-      description: description.trim() || undefined,
-      icon,
-      color,
-      reminder_enabled: reminderEnabled,
-      reminder_time: reminderEnabled ? reminderTime : undefined,
-    });
+  const handleSave = async () => {
+    if (!name.trim()) {
+      setFormError('Name is required.');
+      return;
+    }
+
+    setFormError(null);
+    try {
+      await onSave({
+        name: name.trim(),
+        description: description.trim() || undefined,
+        icon,
+        color,
+        reminder_enabled: reminderEnabled,
+        reminder_time: reminderEnabled ? reminderTime : undefined,
+      });
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to save habit.';
+      setFormError(message);
+    }
   };
+
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
@@ -317,10 +329,16 @@ const HabitForm: React.FC<HabitFormProps> = ({ initialData, onSave, onCancel }) 
 
       {/* Save + Cancel */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '8px' }}>
+        {formError && (
+          <div style={{ color: '#FF2D9B', fontSize: '13px', fontFamily: "'JetBrains Mono', monospace" }}>
+            {formError}
+          </div>
+        )}
         <button
           className="neo-btn"
           onClick={handleSave}
           disabled={!name.trim()}
+          type="button"
           style={{
             background: '#2563EB',
             color: '#FFFFFF',
@@ -336,6 +354,7 @@ const HabitForm: React.FC<HabitFormProps> = ({ initialData, onSave, onCancel }) 
         <button
           className="neo-btn"
           onClick={onCancel}
+          type="button"
           style={{
             background: '#FFFFFF',
             padding: '12px 24px',

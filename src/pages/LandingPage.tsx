@@ -2,7 +2,7 @@
  * Landing page — the first thing unauthenticated users see.
  * Hero section with bold headline, two CTA buttons, and feature highlights.
  */
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Bell, Brain, Calendar, Flame, Sparkles } from 'lucide-react';
 import Navbar from '../components/layout/Navbar';
@@ -10,6 +10,7 @@ import { supabase } from '../lib/supabase';
 
 const LandingPage: React.FC = () => {
   const navigate = useNavigate();
+  const [authChecked, setAuthChecked] = useState(false);
 
   useEffect(() => {
     document.title = 'HabitForge — Build Better Habits';
@@ -22,6 +23,10 @@ const LandingPage: React.FC = () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (isMounted && session) {
         navigate('/dashboard', { replace: true });
+        return;
+      }
+      if (isMounted) {
+        setAuthChecked(true);
       }
     };
 
@@ -38,6 +43,18 @@ const LandingPage: React.FC = () => {
       subscription.unsubscribe();
     };
   }, [navigate]);
+
+  if (!authChecked) {
+    return (
+      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#FAFAFA' }}>
+        <div className="hf-loader" style={{ width: '80px', height: '80px' }}>
+          {[...Array(12)].map((_, i) => (
+            <div key={i} className="hf-loader__item" />
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div style={{ minHeight: '100vh' }}>

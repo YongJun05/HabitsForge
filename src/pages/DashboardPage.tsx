@@ -4,7 +4,7 @@
  */
 import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Bell, Plus, Trophy, BarChart2 } from 'lucide-react';
+import { Bell, Plus, Trophy, BarChart2, RefreshCw } from 'lucide-react';
 import Navbar from '../components/layout/Navbar';
 import TabBar from '../components/layout/TabBar';
 import HabitCard from '../components/habits/HabitCard';
@@ -29,6 +29,8 @@ const DashboardPage: React.FC = () => {
     const [formKey, setFormKey] = useState(0);
     const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
     const [notifDismissed, setNotifDismissed] = useState(() => localStorage.getItem('habitforge_notif_dismissed') === 'true');
+    const [sessionChecked, setSessionChecked] = useState(true);
+    const [renderError, setRenderError] = useState<string | null>(null);
 
     useEffect(() => {
         document.title = 'HabitForge — Dashboard';
@@ -38,9 +40,20 @@ const DashboardPage: React.FC = () => {
         let isMounted = true;
 
         const checkSession = async () => {
-            const { data: { session } } = await supabase.auth.getSession();
-            if (isMounted && !session) {
-                navigate('/login', { replace: true });
+            try {
+                console.log('[DashboardPage] Checking session...');
+                const { data: { session } } = await supabase.auth.getSession();
+                console.log('[DashboardPage] Session:', session ? 'FOUND' : 'NOT FOUND');
+                if (isMounted && !session) {
+                    console.log('[DashboardPage] No session, redirecting to login');
+                    navigate('/login', { replace: true });
+                }
+            } catch (err) {
+                console.error('[DashboardPage] Session check error:', err);
+                if (isMounted) {
+                    setRenderError(err instanceof Error ? err.message : 'Session check failed');
+                    navigate('/login', { replace: true });
+                }
             }
         };
 
@@ -198,6 +211,21 @@ const DashboardPage: React.FC = () => {
 
     return (
         <div style={{ minHeight: '100vh' }}>
+            {renderError && (
+                <div style={{ background: '#FF2D9B', color: '#FFF', padding: '20px', fontFamily: "'Syne', sans-serif" }}>
+                    <strong>ERROR:</strong> {renderError}
+                </div>
+            )}
+            {!sessionChecked ? (
+                <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#FAFAFA' }}>
+                    <div className="hf-loader" style={{ width: '80px', height: '80px' }}>
+                        {[...Array(12)].map((_, i) => (
+                            <div key={i} className="hf-loader__item" />
+                        ))}
+                    </div>
+                </div>
+            ) : (
+                <>
             <Navbar />
             <TabBar activeTab={activeTab} onTabChange={setActiveTab} />
 
@@ -358,12 +386,30 @@ const DashboardPage: React.FC = () => {
 
                 {activeTab === 1 && (
                     <div style={{ background: '#FFFFFF', border: '3px solid #000000', boxShadow: '4px 4px 0px #000000', padding: '24px' }}>
-                        <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: '28px', textTransform: 'uppercase', marginBottom: '6px' }}>
-                            {editingHabit ? 'EDIT HABIT' : 'ADD NEW HABIT'}
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', marginBottom: '6px' }}>
+                            <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: '28px', textTransform: 'uppercase' }}>
+                                {editingHabit ? 'EDIT HABIT' : 'ADD NEW HABIT'}
+                            </div>
+                            <button
+                                className="neo-btn"
+                                onClick={() => {
+                                    setEditingHabit(undefined);
+                                    setFormKey((prev) => prev + 1);
+                                }}
+                                style={{ background: '#FFE566', padding: '8px 14px', fontSize: '12px', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+                            >
+                                <RefreshCw size={14} />
+                                RESET
+                            </button>
                         </div>
                         <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '13px', color: '#333', marginBottom: '16px' }}>
                             Describe a goal or fill in the form below.
                         </div>
+                        {error && (
+                            <div style={{ color: '#FF2D9B', fontSize: '13px', marginBottom: '12px', fontFamily: "'JetBrains Mono', monospace" }}>
+                                {error}
+                            </div>
+                        )}
                         <HabitForm
                             key={formKey}
                             initialData={editingHabit}
@@ -573,6 +619,8 @@ const DashboardPage: React.FC = () => {
                     visible={!!toast}
                     onClose={() => setToast(null)}
                 />
+            )}
+            </>
             )}
         </div>
     );

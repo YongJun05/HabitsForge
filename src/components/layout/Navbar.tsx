@@ -52,8 +52,16 @@ const Navbar: React.FC<NavbarProps> = ({ variant = 'app' }) => {
   }, []);
 
   const handleLogout = async () => {
-    await supabase.auth.signOut();
-    navigate('/', { replace: true });
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+    } catch (err) {
+      console.error('Logout failed:', err instanceof Error ? err.message : err);
+    } finally {
+      setIsAuthenticated(false);
+      setDisplayName('');
+      navigate('/', { replace: true });
+    }
   };
 
   const initial = displayName ? displayName.charAt(0).toUpperCase() : '?';

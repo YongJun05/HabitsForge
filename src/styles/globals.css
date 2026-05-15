@@ -110,19 +110,22 @@ textarea::placeholder {
   z-index: 40;
   display: flex;
   width: 100%;
+  justify-content: flex-start;
+  gap: 8px;
+  padding: 0 16px;
   background: #FFFFFF;
   border-bottom: 3px solid #000000;
 }
 
 .hf-tabbar__tab {
-  flex: 1;
+  flex: 0;
   text-align: center;
-  padding: 14px;
+  padding: 10px 12px;
   background: #FFFFFF;
   color: #666666;
   font-family: 'Syne', sans-serif;
   font-weight: 800;
-  font-size: 14px;
+  font-size: 12px;
   letter-spacing: 1px;
   text-transform: uppercase;
   border: 0;
