@@ -7,6 +7,7 @@
  * - Groups logs by habit_id client-side for streak calculation
  * - toggleDone: if log exists for today → delete it (undo); if not → insert it
  * - After any mutation → call refetch to keep UI in sync
+ * - Uses getSession instead of getUser for faster auth checks
  */
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
@@ -34,18 +35,20 @@ export function useHabits(): UseHabitsReturn {
     setError(null);
 
     try {
-      // Get current user — needed to query user-specific data
-      const { data: { user }, error: authError } = await supabase.auth.getUser();
-      if (authError || !user) {
+      // Use getSession (cached) instead of getUser (network call) for speed
+      const { data: { session }, error: authError } = await supabase.auth.getSession();
+      if (authError || !session?.user) {
         setError('Not authenticated');
         setLoading(false);
         return;
       }
 
+      const userId = session.user.id;
+
       // Fetch habits and ALL logs in parallel — avoids N+1 queries
       const [habitsResult, logsResult] = await Promise.all([
-        supabase.from('habits').select('*').eq('user_id', user.id).order('created_at', { ascending: true }),
-        supabase.from('habit_logs').select('id, habit_id, log_date').eq('user_id', user.id),
+        supabase.from('habits').select('*').eq('user_id', userId).order('created_at', { ascending: true }),
+        supabase.from('habit_logs').select('id, habit_id, log_date').eq('user_id', userId),
       ]);
 
       if (habitsResult.error) throw new Error(habitsResult.error.message);
@@ -108,12 +111,12 @@ export function useHabits(): UseHabitsReturn {
   const createHabit = useCallback(async (data: Omit<Habit, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => {
     setError(null);
     try {
-      const { data: { user }, error: authError } = await supabase.auth.getUser();
-      if (authError || !user) throw new Error('Not authenticated');
+      const { data: { session }, error: authError } = await supabase.auth.getSession();
+      if (authError || !session?.user) throw new Error('Not authenticated');
 
       const { error: insertError } = await supabase
         .from('habits')
-        .insert({ ...data, user_id: user.id });
+        .insert({ ...data, user_id: session.user.id });
 
       if (insertError) throw new Error(insertError.message);
       await fetchHabits();
@@ -161,8 +164,8 @@ export function useHabits(): UseHabitsReturn {
   const toggleDone = useCallback(async (habitId: string) => {
     setError(null);
     try {
-      const { data: { user }, error: authError } = await supabase.auth.getUser();
-      if (authError || !user) throw new Error('Not authenticated');
+      const { data: { session }, error: authError } = await supabase.auth.getSession();
+      if (authError || !session?.user) throw new Error('Not authenticated');
 
       const today = getTodayString();
 
@@ -187,7 +190,7 @@ export function useHabits(): UseHabitsReturn {
         // Log today's completion
         const { error: insertError } = await supabase
           .from('habit_logs')
-          .insert({ habit_id: habitId, user_id: user.id, log_date: today });
+          .insert({ habit_id: habitId, user_id: session.user.id, log_date: today });
         if (insertError) throw new Error(insertError.message);
       }
 

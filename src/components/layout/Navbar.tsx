@@ -22,18 +22,24 @@ const Navbar: React.FC<NavbarProps> = ({ variant = 'app' }) => {
     let isMounted = true;
 
     async function fetchProfile() {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!isMounted) return;
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!isMounted) return;
 
-      if (user) {
-        setIsAuthenticated(true);
-        const { data } = await supabase
-          .from('profiles')
-          .select('display_name')
-          .eq('id', user.id)
-          .maybeSingle();
-        if (data?.display_name) setDisplayName(data.display_name);
-      } else {
+        if (session?.user) {
+          setIsAuthenticated(true);
+          const { data } = await supabase
+            .from('profiles')
+            .select('display_name')
+            .eq('id', session.user.id)
+            .maybeSingle();
+          if (data?.display_name) setDisplayName(data.display_name);
+        } else {
+          setIsAuthenticated(false);
+          setDisplayName('');
+        }
+      } catch {
+        if (!isMounted) return;
         setIsAuthenticated(false);
         setDisplayName('');
       }

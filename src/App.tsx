@@ -18,6 +18,7 @@ import NotFoundPage from './pages/NotFoundPage';
 function App() {
   if (!isSupabaseConfigured) {
     return (
+      <BrowserRouter>
       <div style={{ minHeight: '100vh' }}>
         <Navbar />
         <div style={{ padding: '48px 24px' }}>
@@ -47,6 +48,7 @@ function App() {
           </div>
         </div>
       </div>
+      </BrowserRouter>
     );
   }
 

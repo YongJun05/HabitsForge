@@ -3,13 +3,14 @@
  * Hosts a 3-tab layout for dashboard, add habit, and details.
  */
 import React, { useEffect, useState, useCallback, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { Bell, Plus, Trophy, BarChart2, RefreshCw } from 'lucide-react';
 import Navbar from '../components/layout/Navbar';
 import TabBar from '../components/layout/TabBar';
 import HabitCard from '../components/habits/HabitCard';
 import HabitForm from '../components/habits/HabitForm';
+import HabitHeatmap from '../components/habits/HabitHeatmap';
 import HabitIcon from '../components/ui/HabitIcon';
+import Spinner from '../components/ui/Spinner';
 import Toast from '../components/ui/Toast';
 import { supabase } from '../lib/supabase';
 import { useHabits } from '../hooks/useHabits';
@@ -17,7 +18,6 @@ import { useNotifications } from '../hooks/useNotifications';
 import type { Habit, HabitWithStreak } from '../types';
 
 const DashboardPage: React.FC = () => {
-    const navigate = useNavigate();
     const { habits, loading, error, createHabit, updateHabit, deleteHabit, toggleDone } = useHabits();
     const { permission, requestPermission, isSupported, scheduleReminders } = useNotifications();
 
@@ -29,46 +29,23 @@ const DashboardPage: React.FC = () => {
     const [formKey, setFormKey] = useState(0);
     const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
     const [notifDismissed, setNotifDismissed] = useState(() => localStorage.getItem('habitforge_notif_dismissed') === 'true');
-    const [sessionChecked, setSessionChecked] = useState(true);
-    const [renderError, setRenderError] = useState<string | null>(null);
 
     useEffect(() => {
         document.title = 'HabitForge — Dashboard';
     }, []);
 
     useEffect(() => {
-        let isMounted = true;
-
-        const checkSession = async () => {
-            try {
-                console.log('[DashboardPage] Checking session...');
-                const { data: { session } } = await supabase.auth.getSession();
-                console.log('[DashboardPage] Session:', session ? 'FOUND' : 'NOT FOUND');
-                if (isMounted && !session) {
-                    console.log('[DashboardPage] No session, redirecting to login');
-                    navigate('/login', { replace: true });
-                }
-            } catch (err) {
-                console.error('[DashboardPage] Session check error:', err);
-                if (isMounted) {
-                    setRenderError(err instanceof Error ? err.message : 'Session check failed');
-                    navigate('/login', { replace: true });
-                }
-            }
-        };
-
-        checkSession();
-
-        return () => {
-            isMounted = false;
-        };
-    }, [navigate]);
-
-    useEffect(() => {
         if (habits.length > 0) {
             scheduleReminders(habits);
         }
     }, [habits, scheduleReminders]);
+
+    // Auto-select first habit for details tab if none selected
+    useEffect(() => {
+        if (activeTab === 2 && !selectedHabitId && habits.length > 0) {
+            setSelectedHabitId(habits[0].id);
+        }
+    }, [activeTab, selectedHabitId, habits]);
 
     const showToast = useCallback((message: string, type: 'success' | 'error' | 'info' = 'success') => {
         setToast({ message, type });
@@ -105,6 +82,10 @@ const DashboardPage: React.FC = () => {
     const handleDelete = async (id: string) => {
         try {
             await deleteHabit(id);
+            // Clear selection if deleted habit was selected
+            if (selectedHabitId === id) {
+                setSelectedHabitId(null);
+            }
             showToast('HABIT DELETED');
         } catch {
             showToast('FAILED TO DELETE', 'error');
@@ -134,6 +115,7 @@ const DashboardPage: React.FC = () => {
 
     const selectedHabit = selectedHabitId ? habits.find((habit) => habit.id === selectedHabitId) ?? null : null;
 
+    // Fetch full log history for the selected habit (details tab)
     useEffect(() => {
         let isMounted = true;
 
@@ -158,8 +140,7 @@ const DashboardPage: React.FC = () => {
                 setDetailLogs(logDates);
             } catch (err) {
                 if (!isMounted) return;
-                const message = err instanceof Error ? err.message : 'Failed to load logs';
-                showToast(message, 'error');
+                console.error('Failed to load detail logs:', err);
             } finally {
                 if (isMounted) setDetailLoading(false);
             }
@@ -170,10 +151,11 @@ const DashboardPage: React.FC = () => {
         return () => {
             isMounted = false;
         };
-    }, [selectedHabitId, showToast]);
+    }, [selectedHabitId]);
 
     const last30Days = useMemo(() => {
         const days: { date: string; done: boolean; isToday: boolean }[] = [];
+        const logSet = new Set(detailLogs);
         for (let i = 29; i >= 0; i--) {
             const d = new Date();
             d.setDate(d.getDate() - i);
@@ -183,7 +165,7 @@ const DashboardPage: React.FC = () => {
             const dateStr = `${year}-${month}-${day}`;
             days.push({
                 date: dateStr,
-                done: detailLogs.includes(dateStr),
+                done: logSet.has(dateStr),
                 isToday: i === 0,
             });
         }
@@ -197,6 +179,7 @@ const DashboardPage: React.FC = () => {
 
     const recentLog = useMemo(() => {
         const entries: { date: string; done: boolean }[] = [];
+        const logSet = new Set(detailLogs);
         for (let i = 0; i < 14; i++) {
             const d = new Date();
             d.setDate(d.getDate() - i);
@@ -204,28 +187,29 @@ const DashboardPage: React.FC = () => {
             const month = String(d.getMonth() + 1).padStart(2, '0');
             const day = String(d.getDate()).padStart(2, '0');
             const dateStr = `${year}-${month}-${day}`;
-            entries.push({ date: dateStr, done: detailLogs.includes(dateStr) });
+            entries.push({ date: dateStr, done: logSet.has(dateStr) });
         }
         return entries;
     }, [detailLogs]);
 
-    return (
-        <div style={{ minHeight: '100vh' }}>
-            {renderError && (
-                <div style={{ background: '#FF2D9B', color: '#FFF', padding: '20px', fontFamily: "'Syne', sans-serif" }}>
-                    <strong>ERROR:</strong> {renderError}
-                </div>
-            )}
-            {!sessionChecked ? (
-                <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#FAFAFA' }}>
-                    <div className="hf-loader" style={{ width: '80px', height: '80px' }}>
-                        {[...Array(12)].map((_, i) => (
-                            <div key={i} className="hf-loader__item" />
-                        ))}
+    // Full-page loading state — shown while habits are being fetched for the first time
+    if (loading && habits.length === 0) {
+        return (
+            <div style={{ minHeight: '100vh' }}>
+                <Navbar />
+                <TabBar activeTab={activeTab} onTabChange={setActiveTab} />
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', gap: '16px' }}>
+                    <Spinner size="lg" />
+                    <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '14px', fontWeight: 700, letterSpacing: '2px', color: '#666' }}>
+                        LOADING YOUR HABITS...
                     </div>
                 </div>
-            ) : (
-                <>
+            </div>
+        );
+    }
+
+    return (
+        <div style={{ minHeight: '100vh' }}>
             <Navbar />
             <TabBar activeTab={activeTab} onTabChange={setActiveTab} />
 
@@ -345,10 +329,6 @@ const DashboardPage: React.FC = () => {
                             <p style={{ color: '#FF2D9B', fontSize: '14px', textAlign: 'center', marginBottom: '16px', fontFamily: "'JetBrains Mono', monospace" }}>{error}</p>
                         )}
 
-                        {loading && habits.length === 0 && (
-                            <div style={{ textAlign: 'center', padding: '40px', color: '#888' }}>Loading habits...</div>
-                        )}
-
                         {!loading && habits.length === 0 && (
                             <div
                                 style={{
@@ -424,7 +404,47 @@ const DashboardPage: React.FC = () => {
 
                 {activeTab === 2 && (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                        {!selectedHabit && (
+                        {/* Habit selector for details tab */}
+                        {habits.length > 0 && (
+                            <div
+                                style={{
+                                    background: '#FFFFFF',
+                                    border: '3px solid #000000',
+                                    boxShadow: '4px 4px 0px #000000',
+                                    padding: '16px',
+                                }}
+                            >
+                                <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: '12px', letterSpacing: '2px', marginBottom: '10px', color: '#666' }}>
+                                    SELECT HABIT
+                                </div>
+                                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                                    {habits.map((h) => (
+                                        <button
+                                            key={h.id}
+                                            className="neo-btn"
+                                            onClick={() => setSelectedHabitId(h.id)}
+                                            style={{
+                                                background: selectedHabitId === h.id ? h.color : '#FFFFFF',
+                                                color: selectedHabitId === h.id && (h.color === '#000000') ? '#FFFFFF' : '#000000',
+                                                padding: '8px 14px',
+                                                fontSize: '12px',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                gap: '6px',
+                                                border: selectedHabitId === h.id ? '3px solid #000000' : '2px solid #000000',
+                                                boxShadow: selectedHabitId === h.id ? '2px 2px 0px #000000' : '3px 3px 0px #000000',
+                                                transform: selectedHabitId === h.id ? 'translate(1px, 1px)' : 'none',
+                                            }}
+                                        >
+                                            <HabitIcon iconId={h.icon} size={14} />
+                                            {h.name}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {!selectedHabit && habits.length === 0 && (
                             <div
                                 style={{
                                     border: '3px solid #000000',
@@ -449,10 +469,10 @@ const DashboardPage: React.FC = () => {
                                     <BarChart2 size={28} strokeWidth={2} />
                                 </div>
                                 <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: '24px', marginBottom: '6px' }}>
-                                    SELECT A HABIT
+                                    NO HABITS YET
                                 </div>
                                 <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '13px', color: '#666' }}>
-                                    Tap the chart icon on any habit to view its details.
+                                    Add a habit first to view its details here.
                                 </div>
                             </div>
                         )}
@@ -465,7 +485,6 @@ const DashboardPage: React.FC = () => {
                                         border: '3px solid #000000',
                                         boxShadow: '5px 5px 0 #000000',
                                         padding: '24px',
-                                        marginBottom: '16px',
                                     }}
                                 >
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
@@ -494,7 +513,7 @@ const DashboardPage: React.FC = () => {
                                     )}
                                 </div>
 
-                                <div style={{ display: 'flex', gap: '12px', marginBottom: '16px' }}>
+                                <div style={{ display: 'flex', gap: '12px', marginBottom: '0' }}>
                                     {[
                                         { label: 'CURRENT STREAK', value: selectedHabit.currentStreak, prefix: '🔥 ' },
                                         { label: 'BEST STREAK', value: selectedHabit.bestStreak, prefix: '' },
@@ -530,54 +549,42 @@ const DashboardPage: React.FC = () => {
                                     ))}
                                 </div>
 
-                                <div style={{ marginBottom: '16px' }}>
-                                    <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, textTransform: 'uppercase', marginBottom: '12px' }}>
-                                        30-DAY HISTORY
-                                    </div>
-                                    <div
-                                        style={{
-                                            background: '#FFFFFF',
-                                            border: '3px solid #000000',
-                                            boxShadow: '4px 4px 0 #000000',
-                                            padding: '20px',
-                                        }}
-                                    >
-                                        {detailLoading ? (
-                                            <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '13px', color: '#666' }}>Loading history...</div>
-                                        ) : (
-                                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 32px)', gap: '6px' }}>
-                                                {last30Days.map((day) => (
-                                                    <div
-                                                        key={day.date}
-                                                        style={{
-                                                            width: '32px',
-                                                            height: '32px',
-                                                            border: day.isToday ? '3px solid #000000' : '2px solid #000000',
-                                                            background: day.done ? '#22C55E' : '#f0f0f0',
-                                                        }}
-                                                    />
-                                                ))}
-                                            </div>
-                                        )}
-                                        <div style={{ marginTop: '12px', fontFamily: "'JetBrains Mono', monospace", fontSize: '12px' }}>
-                                            □ Missed  ■ Done
+                                {/* 30-day heatmap */}
+                                <div
+                                    style={{
+                                        background: '#FFFFFF',
+                                        border: '3px solid #000000',
+                                        boxShadow: '4px 4px 0 #000000',
+                                        padding: '20px',
+                                    }}
+                                >
+                                    {detailLoading ? (
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '12px 0' }}>
+                                            <Spinner size="sm" />
+                                            <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '13px', color: '#666' }}>Loading history...</span>
                                         </div>
-                                    </div>
+                                    ) : (
+                                        <HabitHeatmap logs={detailLogs} />
+                                    )}
                                 </div>
 
+                                {/* Recent log */}
                                 <div>
                                     <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, textTransform: 'uppercase', marginBottom: '12px' }}>
                                         RECENT LOG
                                     </div>
                                     <div style={{ background: '#FFFFFF', border: '3px solid #000000', boxShadow: '4px 4px 0 #000000', padding: 0 }}>
                                         {detailLoading ? (
-                                            <div style={{ padding: '16px', fontFamily: "'JetBrains Mono', monospace", fontSize: '13px', color: '#666' }}>Loading log...</div>
+                                            <div style={{ padding: '16px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                                <Spinner size="sm" />
+                                                <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '13px', color: '#666' }}>Loading log...</span>
+                                            </div>
                                         ) : (
-                                            recentLog.map((entry) => (
+                                            recentLog.map((entry, idx) => (
                                                 <div
                                                     key={entry.date}
                                                     style={{
-                                                        borderBottom: '2px solid #000000',
+                                                        borderBottom: idx < recentLog.length - 1 ? '2px solid #000000' : 'none',
                                                         padding: '12px 16px',
                                                         display: 'flex',
                                                         justifyContent: 'space-between',
@@ -619,8 +626,6 @@ const DashboardPage: React.FC = () => {
                     visible={!!toast}
                     onClose={() => setToast(null)}
                 />
-            )}
-            </>
             )}
         </div>
     );
