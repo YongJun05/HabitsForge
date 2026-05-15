@@ -1,5 +1,5 @@
 /**
- * Gemini API integration for AI-powered habit suggestions and weekly insights.
+ * Gemini API integration for AI-powered habit suggestions.
  * Uses the REST endpoint directly — no SDK needed, keeping the bundle small.
  */
 import type { HabitSuggestion } from '../types';
@@ -80,19 +80,11 @@ export async function suggestHabits(goal: string): Promise<HabitSuggestion[]> {
     return { rawText, finishReason };
   };
 
-  let { rawText, finishReason } = await requestOnce(0.2, 800);
+  const { rawText, finishReason } = await requestOnce(0.2, 800);
   const isEmptyOrStub = (text: string) => !text.trim() || text.trim() === '[';
 
-  if (finishReason === 'MAX_TOKENS') {
-    ({ rawText, finishReason } = await requestOnce(0.2, 1200));
-  }
-
-  if (isEmptyOrStub(rawText)) {
-    ({ rawText, finishReason } = await requestOnce(0.2, 1200));
-  }
-
-  if (isEmptyOrStub(rawText)) {
-    throw new Error(`Gemini returned an empty or incomplete response (finishReason=${finishReason}). Please try again in a moment.`);
+  if (isEmptyOrStub(rawText) || finishReason === 'MAX_TOKENS') {
+    throw new Error('AI is busy. Please try again in a moment.');
   }
 
   // Strip markdown code fences as a fallback — the prompt says no markdown,
@@ -150,76 +142,7 @@ export async function suggestHabits(goal: string): Promise<HabitSuggestion[]> {
       }
     }
 
-    // Retry once with a shorter response if the model returned partial JSON.
-    ({ rawText, finishReason } = await requestOnce(0.2, 1200));
-    cleaned = rawText.trim();
-    if (cleaned.startsWith('```json')) {
-      cleaned = cleaned.slice(7);
-    } else if (cleaned.startsWith('```')) {
-      cleaned = cleaned.slice(3);
-    }
-    if (cleaned.endsWith('```')) {
-      cleaned = cleaned.slice(0, -3);
-    }
-    cleaned = cleaned.trim();
-
-    try {
-      const suggestions: HabitSuggestion[] = JSON.parse(cleaned);
-      if (Array.isArray(suggestions) && suggestions.length > 0) {
-        return suggestions;
-      }
-    } catch {
-      // fall through to error below
-    }
-
-    throw new Error(`Failed to parse Gemini response as JSON (finishReason=${finishReason}). Raw text: ${cleaned}`);
+    throw new Error('AI is busy. Please try again in a moment.');
   }
 }
 
-/**
- * Calls Gemini API to generate a personalised weekly insight.
- *
- * The summary passed in is pre-processed frontend-side (no raw IDs or PII
- * sent to the API — only aggregated stats like "completed 5/7 days").
- *
- * Caching strategy: the caller (useWeeklyInsight hook) caches results
- * in localStorage for 7 days to avoid unnecessary API calls.
- */
-export async function generateWeeklyInsight(summary: string): Promise<string> {
-  const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
-  if (!apiKey) {
-    throw new Error('Gemini API key is not configured. Check your .env file.');
-  }
-
-  const systemInstruction =
-    "You are a friendly, motivating habit coach reviewing someone's weekly habit data. Write a short insight (3–4 sentences) that: 1) celebrates their strongest habit by name, 2) identifies their biggest gap or pattern (e.g. skipping on specific days), 3) gives one practical actionable tip. Tone: warm, direct, encouraging — like a coach, not a robot. Write as a single paragraph. No bullet points, no headers.";
-
-  const body = {
-    system_instruction: { parts: [{ text: systemInstruction }] },
-    contents: [{ parts: [{ text: summary }] }],
-    generationConfig: {
-      temperature: 0.7,
-      maxOutputTokens: 300,
-    },
-  };
-
-  const response = await fetch(`${GEMINI_BASE}?key=${apiKey}`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
-  });
-
-  if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(`Gemini API error (${response.status}): ${errorText}`);
-  }
-
-  const data = await response.json();
-  const text: string = data?.candidates?.[0]?.content?.parts?.[0]?.text ?? '';
-
-  if (!text) {
-    throw new Error('Gemini returned an empty insight. Please try again.');
-  }
-
-  return text.trim();
-}

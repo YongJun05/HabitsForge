@@ -12,7 +12,6 @@ import LandingPage from './pages/LandingPage';
 import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/SignupPage';
 import DashboardPage from './pages/DashboardPage';
-import HabitDetailPage from './pages/HabitDetailPage';
 import SettingsPage from './pages/SettingsPage';
 import NotFoundPage from './pages/NotFoundPage';
 
@@ -62,14 +61,6 @@ function App() {
           element={
             <AuthGuard>
               <DashboardPage />
-            </AuthGuard>
-          }
-        />
-        <Route
-          path="/habit/:id"
-          element={
-            <AuthGuard>
-              <HabitDetailPage />
             </AuthGuard>
           }
         />

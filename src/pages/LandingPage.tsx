@@ -4,8 +4,9 @@
  */
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Bell, Brain, Calendar, Flame, Sparkles, TrendingUp } from 'lucide-react';
+import { Bell, Brain, Calendar, Flame, Sparkles } from 'lucide-react';
 import Navbar from '../components/layout/Navbar';
+import { supabase } from '../lib/supabase';
 
 const LandingPage: React.FC = () => {
   const navigate = useNavigate();
@@ -13,6 +14,30 @@ const LandingPage: React.FC = () => {
   useEffect(() => {
     document.title = 'HabitForge — Build Better Habits';
   }, []);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const redirectIfAuthenticated = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (isMounted && session) {
+        navigate('/dashboard', { replace: true });
+      }
+    };
+
+    redirectIfAuthenticated();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session) {
+        navigate('/dashboard', { replace: true });
+      }
+    });
+
+    return () => {
+      isMounted = false;
+      subscription.unsubscribe();
+    };
+  }, [navigate]);
 
   return (
     <div style={{ minHeight: '100vh' }}>
@@ -76,12 +101,6 @@ const LandingPage: React.FC = () => {
                 title: 'Streak Power',
                 text: 'Track current & best streaks. Daily check-ins keep the fire burning - literally.',
                 color: '#ff0084',
-              },
-              {
-                Icon: TrendingUp,
-                title: 'Weekly Insights',
-                text: 'Get a personalized recap every week. Celebrate wins, fix gaps.',
-                color: '#00f060',
               },
               {
                 Icon: Calendar,

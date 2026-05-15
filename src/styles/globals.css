@@ -103,6 +103,47 @@ textarea::placeholder {
   box-shadow: 4px 4px 0px #000000;
 }
 
+/* Tab bar */
+.hf-tabbar {
+  position: sticky;
+  top: 64px;
+  z-index: 40;
+  display: flex;
+  width: 100%;
+  background: #FFFFFF;
+  border-bottom: 3px solid #000000;
+}
+
+.hf-tabbar__tab {
+  flex: 1;
+  text-align: center;
+  padding: 14px;
+  background: #FFFFFF;
+  color: #666666;
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
+  font-size: 14px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  border: 0;
+  border-bottom: 4px solid transparent;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.hf-tabbar__tab:hover {
+  background: #f5f5f5;
+}
+
+.hf-tabbar__tab--active {
+  background: #FFE566;
+  color: #000000;
+  border-bottom: 4px solid #000000;
+}
+
 /* Reminder switch */
 .hf-switch {
   font-size: 13px;
@@ -208,12 +249,12 @@ textarea::placeholder {
   transform: rotateX(90deg);
 }
 
-.hf-switch__input:checked + .hf-switch__toggle > .hf-switch__left {
+.hf-switch__input:checked+.hf-switch__toggle>.hf-switch__left {
   transform: rotateX(10deg) rotateY(45deg);
   color: #cecece;
 }
 
-.hf-switch__input:checked + .hf-switch__toggle > .hf-switch__right {
+.hf-switch__input:checked+.hf-switch__toggle>.hf-switch__right {
   transform: rotateX(10deg) rotateY(0deg);
   color: #487bdb;
 }
@@ -350,7 +391,7 @@ textarea::placeholder {
   max-width: 1360px;
   min-height: 560px;
   margin: 0 auto;
-  padding: 48px clamp(20px, 4vw, 40px) 44px;
+  padding: 48px clamp(16px, 3vw, 32px) 44px;
   display: grid;
   grid-template-columns: minmax(360px, 0.95fr) minmax(420px, 1.05fr);
   align-items: center;
@@ -518,7 +559,7 @@ textarea::placeholder {
     linear-gradient(#00000008 1px, transparent 1px),
     linear-gradient(90deg, #00000008 1px, transparent 1px);
   background-size: 39px 39px;
-  padding: 48px 24px 54px;
+  padding: 48px 18px 54px;
 }
 
 .landing-features__inner {
@@ -594,7 +635,7 @@ textarea::placeholder {
 .landing-cta {
   background: #000000;
   color: #ffffff;
-  padding: 56px 24px 64px;
+  padding: 56px 18px 64px;
   text-align: center;
 }
 
@@ -638,7 +679,7 @@ textarea::placeholder {
 .landing-footer {
   min-height: 64px;
   background: #f7f7f2;
-  padding: 0 clamp(24px, 14vw, 268px);
+  padding: 0 clamp(18px, 12vw, 220px);
   display: flex;
   align-items: center;
   justify-content: space-between;
