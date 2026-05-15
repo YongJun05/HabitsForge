@@ -12,21 +12,27 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
 import { calculateCurrentStreak, calculateBestStreak, getTodayString } from '../lib/streakUtils';
-import type { Habit, HabitWithStreak } from '../types';
+import type { Habit, HabitLog, HabitWithStreak } from '../types';
 
 interface UseHabitsReturn {
   habits: HabitWithStreak[];
+  allLogs: HabitLog[];
   loading: boolean;
   error: string | null;
   createHabit: (data: Omit<Habit, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => Promise<void>;
   updateHabit: (id: string, data: Partial<Omit<Habit, 'id' | 'user_id'>>) => Promise<void>;
   deleteHabit: (id: string) => Promise<void>;
-  toggleDone: (habitId: string) => Promise<void>;
+  toggleDone: (habitId: string, note?: string | null) => Promise<void>;
+  freezeHabit: (habitId: string) => Promise<void>;
+  restoreHabit: (id: string) => Promise<void>;
+  permanentDeleteHabit: (id: string) => Promise<void>;
+  reorderHabit: (habitId: string, newOrder: number) => Promise<void>;
   refetch: () => Promise<void>;
 }
 
 export function useHabits(): UseHabitsReturn {
   const [habits, setHabits] = useState<HabitWithStreak[]>([]);
+  const [allLogs, setAllLogs] = useState<HabitLog[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -45,17 +51,19 @@ export function useHabits(): UseHabitsReturn {
 
       const userId = session.user.id;
 
-      // Fetch habits and ALL logs in parallel — avoids N+1 queries
+      // Fetch habits (non-archived) and ALL logs in parallel — avoids N+1 queries
       const [habitsResult, logsResult] = await Promise.all([
-        supabase.from('habits').select('*').eq('user_id', userId).order('created_at', { ascending: true }),
-        supabase.from('habit_logs').select('id, habit_id, log_date').eq('user_id', userId),
+        supabase.from('habits').select('*').eq('user_id', userId).eq('archived', false).order('sort_order', { ascending: true }).order('created_at', { ascending: true }),
+        supabase.from('habit_logs').select('*').eq('user_id', userId),
       ]);
 
       if (habitsResult.error) throw new Error(habitsResult.error.message);
       if (logsResult.error) throw new Error(logsResult.error.message);
 
       const rawHabits: Habit[] = habitsResult.data ?? [];
-      const rawLogs: { id: string; habit_id: string; log_date: string }[] = logsResult.data ?? [];
+      const rawLogs: HabitLog[] = logsResult.data ?? [];
+
+      setAllLogs(rawLogs);
 
       // Group logs by habit_id for efficient streak calculation
       const logsByHabitId = new Map<string, string[]>();
@@ -88,10 +96,11 @@ export function useHabits(): UseHabitsReturn {
 
         return {
           ...habit,
-          currentStreak: calculateCurrentStreak(logDates),
+          currentStreak: calculateCurrentStreak(logDates, habit.freeze_used_week),
           bestStreak: calculateBestStreak(logDates),
           recentLogs,
           isDoneToday: logDates.includes(today),
+          allLogDates: logDates,
         };
       });
 
@@ -144,7 +153,44 @@ export function useHabits(): UseHabitsReturn {
     }
   }, [fetchHabits]);
 
+  /** Archive a habit (soft delete) instead of permanent deletion */
   const deleteHabit = useCallback(async (id: string) => {
+    setError(null);
+    try {
+      const { error: archiveError } = await supabase
+        .from('habits')
+        .update({ archived: true, archived_at: new Date().toISOString() })
+        .eq('id', id);
+
+      if (archiveError) throw new Error(archiveError.message);
+      await fetchHabits();
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to archive habit';
+      setError(message);
+      throw err;
+    }
+  }, [fetchHabits]);
+
+  /** Restore an archived habit */
+  const restoreHabit = useCallback(async (id: string) => {
+    setError(null);
+    try {
+      const { error: restoreError } = await supabase
+        .from('habits')
+        .update({ archived: false, archived_at: null })
+        .eq('id', id);
+
+      if (restoreError) throw new Error(restoreError.message);
+      await fetchHabits();
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to restore habit';
+      setError(message);
+      throw err;
+    }
+  }, [fetchHabits]);
+
+  /** Permanently delete a habit and its logs */
+  const permanentDeleteHabit = useCallback(async (id: string) => {
     setError(null);
     try {
       const { error: deleteError } = await supabase
@@ -161,7 +207,8 @@ export function useHabits(): UseHabitsReturn {
     }
   }, [fetchHabits]);
 
-  const toggleDone = useCallback(async (habitId: string) => {
+  /** Toggle habit done for today, optionally with a note */
+  const toggleDone = useCallback(async (habitId: string, note?: string | null) => {
     setError(null);
     try {
       const { data: { session }, error: authError } = await supabase.auth.getSession();
@@ -187,10 +234,17 @@ export function useHabits(): UseHabitsReturn {
           .eq('id', existing.id);
         if (deleteError) throw new Error(deleteError.message);
       } else {
-        // Log today's completion
+        // Log today's completion with optional note
+        const insertData: { habit_id: string; user_id: string; log_date: string; note?: string | null } = {
+          habit_id: habitId,
+          user_id: session.user.id,
+          log_date: today,
+        };
+        if (note !== undefined) insertData.note = note;
+
         const { error: insertError } = await supabase
           .from('habit_logs')
-          .insert({ habit_id: habitId, user_id: session.user.id, log_date: today });
+          .insert(insertData);
         if (insertError) throw new Error(insertError.message);
       }
 
@@ -202,14 +256,58 @@ export function useHabits(): UseHabitsReturn {
     }
   }, [fetchHabits]);
 
+  /** Use weekly streak freeze on a habit */
+  const freezeHabit = useCallback(async (habitId: string) => {
+    setError(null);
+    try {
+      const { getCurrentWeekString } = await import('../lib/streakUtils');
+      const weekStr = getCurrentWeekString();
+
+      const { error: freezeError } = await supabase
+        .from('habits')
+        .update({ freeze_used_week: weekStr, streak_frozen: true })
+        .eq('id', habitId);
+
+      if (freezeError) throw new Error(freezeError.message);
+      await fetchHabits();
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to freeze habit';
+      setError(message);
+      throw err;
+    }
+  }, [fetchHabits]);
+
+  /** Reorder a habit by setting its sort_order */
+  const reorderHabit = useCallback(async (habitId: string, newOrder: number) => {
+    setError(null);
+    try {
+      const { error: reorderError } = await supabase
+        .from('habits')
+        .update({ sort_order: newOrder })
+        .eq('id', habitId);
+
+      if (reorderError) throw new Error(reorderError.message);
+      await fetchHabits();
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to reorder habit';
+      setError(message);
+      throw err;
+    }
+  }, [fetchHabits]);
+
   return {
     habits,
+    allLogs,
     loading,
     error,
     createHabit,
     updateHabit,
     deleteHabit,
     toggleDone,
+    freezeHabit,
+    restoreHabit,
+    permanentDeleteHabit,
+    reorderHabit,
     refetch: fetchHabits,
   };
 }

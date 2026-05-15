@@ -21,6 +21,14 @@ export interface Habit {
   reminder_time?: string; // "HH:MM" 24h format
   created_at: string;
   updated_at: string;
+  // Streak freeze
+  freeze_used_week?: string | null; // ISO week e.g. "2026-W20"
+  streak_frozen?: boolean;
+  // Archive
+  archived?: boolean;
+  archived_at?: string | null;
+  // Reordering
+  sort_order?: number;
 }
 
 export interface HabitLog {
@@ -29,6 +37,7 @@ export interface HabitLog {
   user_id: string;
   log_date: string; // "YYYY-MM-DD"
   created_at: string;
+  note?: string | null; // optional check-in note
 }
 
 /** Habit enriched with computed streak data for display */
@@ -37,6 +46,7 @@ export interface HabitWithStreak extends Habit {
   bestStreak: number;
   recentLogs: string[]; // last 7 days "YYYY-MM-DD" strings that have logs
   isDoneToday: boolean;
+  allLogDates: string[]; // all log dates for this habit (for charts)
 }
 
 export interface HabitSuggestion {

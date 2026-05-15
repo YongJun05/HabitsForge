@@ -8,12 +8,13 @@ import { supabase } from '../lib/supabase';
 import { signInWithGoogle } from '../lib/auth';
 import Navbar from '../components/layout/Navbar';
 import Footer from '../components/layout/Footer';
-import { LockKeyhole } from 'lucide-react';
+import { LockKeyhole, Eye, EyeOff } from 'lucide-react';
 
 const LoginPage: React.FC = () => {
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -87,14 +88,36 @@ const LoginPage: React.FC = () => {
 
             <div>
               <label style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 800, textTransform: 'uppercase', letterSpacing: '2px', fontSize: '12px', display: 'block', marginBottom: '6px' }}>PASSWORD</label>
-              <input
-                className="neo-input"
-                type="password"
-                placeholder="·······"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                onKeyDown={(e) => { if (e.key === 'Enter') handleLogin(); }}
-              />
+              <div style={{ position: 'relative' }}>
+                <input
+                  className="neo-input"
+                  type={showPassword ? 'text' : 'password'}
+                  placeholder="·······"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === 'Enter') handleLogin(); }}
+                  style={{ paddingRight: '44px' }}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  style={{
+                    position: 'absolute',
+                    right: '12px',
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    background: 'none',
+                    border: 'none',
+                    cursor: 'pointer',
+                    color: '#666',
+                    padding: '0',
+                    display: 'flex',
+                    alignItems: 'center',
+                  }}
+                >
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+              </div>
             </div>
 
             <button
@@ -106,8 +129,6 @@ const LoginPage: React.FC = () => {
                 color: '#FFFFFF',
                 padding: '10px 18px',
                 fontSize: '14px',
-                border: '3px solid #000000',
-                boxShadow: '4px 4px 0px #000000',
                 width: '100%',
                 fontFamily: "'Syne', sans-serif",
                 fontWeight: 800,

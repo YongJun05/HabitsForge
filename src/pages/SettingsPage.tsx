@@ -9,7 +9,9 @@ import Footer from '../components/layout/Footer';
 import Toast from '../components/ui/Toast';
 import { supabase } from '../lib/supabase';
 import { useNotifications } from '../hooks/useNotifications';
-import { User, Bell, AlertTriangle } from 'lucide-react';
+import { User, Bell, AlertTriangle, Archive, RotateCcw, Trash2 } from 'lucide-react';
+import type { Habit } from '../types';
+import HabitIcon from '../components/ui/HabitIcon';
 
 const SettingsPage: React.FC = () => {
   const navigate = useNavigate();
@@ -20,6 +22,8 @@ const SettingsPage: React.FC = () => {
   const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
   const [notifGlobal, setNotifGlobal] = useState(() => localStorage.getItem('habitforge_notifications') !== 'false');
+  const [archivedHabits, setArchivedHabits] = useState<Habit[]>([]);
+  const [archiveLoading, setArchiveLoading] = useState(false);
 
   useEffect(() => {
     document.title = 'HabitForge — Settings';
@@ -41,6 +45,29 @@ const SettingsPage: React.FC = () => {
 
     loadProfile();
   }, [navigate]);
+
+  // Fetch archived habits
+  useEffect(() => {
+    async function loadArchived() {
+      setArchiveLoading(true);
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+        const { data } = await supabase
+          .from('habits')
+          .select('*')
+          .eq('user_id', user.id)
+          .eq('archived', true)
+          .order('archived_at', { ascending: false });
+        setArchivedHabits((data as Habit[]) ?? []);
+      } catch (err) {
+        console.error('Failed to load archived habits:', err);
+      } finally {
+        setArchiveLoading(false);
+      }
+    }
+    loadArchived();
+  }, [toast]); // refetch when toast changes (after restore/delete)
 
   const handleSaveName = async () => {
     if (!displayName.trim()) return;
@@ -85,6 +112,33 @@ const SettingsPage: React.FC = () => {
       setToast({ message: 'All habits deleted', type: 'success' });
     } catch {
       setToast({ message: 'Failed to delete habits', type: 'error' });
+    }
+  };
+
+  const handleRestoreHabit = async (id: string) => {
+    try {
+      const { error } = await supabase
+        .from('habits')
+        .update({ archived: false, archived_at: null })
+        .eq('id', id);
+      if (error) throw error;
+      setToast({ message: 'HABIT RESTORED', type: 'success' });
+    } catch {
+      setToast({ message: 'Failed to restore habit', type: 'error' });
+    }
+  };
+
+  const handlePermanentDelete = async (id: string, name: string) => {
+    if (!window.confirm(`Permanently delete "${name}"? This cannot be undone.`)) return;
+    try {
+      const { error } = await supabase
+        .from('habits')
+        .delete()
+        .eq('id', id);
+      if (error) throw error;
+      setToast({ message: 'HABIT DELETED FOREVER', type: 'success' });
+    } catch {
+      setToast({ message: 'Failed to delete habit', type: 'error' });
     }
   };
 
@@ -185,6 +239,56 @@ const SettingsPage: React.FC = () => {
               />
             </button>
           </div>
+        </div>
+
+        {/* Archived Habits section */}
+        <div style={{ padding: '20px', marginBottom: '16px', background: '#FFFFFF', border: '3px solid #000000', boxShadow: '4px 4px 0px #000000' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
+            <div className="neo-icon-box" style={{ background: '#666', color: '#FFFFFF' }}>
+              <Archive size={22} strokeWidth={2} />
+            </div>
+            <h2 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: '16px', margin: 0 }}>
+              ARCHIVED HABITS
+            </h2>
+          </div>
+
+          {archiveLoading ? (
+            <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '13px', color: '#666' }}>Loading...</div>
+          ) : archivedHabits.length === 0 ? (
+            <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '13px', color: '#666' }}>No archived habits</div>
+          ) : (
+            archivedHabits.map((habit) => (
+              <div
+                key={habit.id}
+                style={{
+                  borderBottom: '2px solid #000',
+                  padding: '12px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '12px',
+                }}
+              >
+                <HabitIcon iconId={habit.icon} size={20} />
+                <span style={{ flex: 1, fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: '14px', textTransform: 'uppercase' }}>
+                  {habit.name}
+                </span>
+                <button
+                  className="neo-btn"
+                  onClick={() => handleRestoreHabit(habit.id)}
+                  style={{ background: '#2563EB', color: '#FFFFFF', border: '2px solid #000', boxShadow: '2px 2px 0 #000', padding: '6px 12px', fontSize: '11px', fontFamily: "'Syne', sans-serif", fontWeight: 800, display: 'flex', alignItems: 'center', gap: '4px' }}
+                >
+                  <RotateCcw size={14} /> RESTORE
+                </button>
+                <button
+                  className="neo-btn"
+                  onClick={() => handlePermanentDelete(habit.id, habit.name)}
+                  style={{ background: '#FF2D9B', color: '#FFFFFF', border: '2px solid #000', boxShadow: '2px 2px 0 #000', padding: '6px 12px', fontSize: '11px', fontFamily: "'Syne', sans-serif", fontWeight: 800, display: 'flex', alignItems: 'center', gap: '4px' }}
+                >
+                  <Trash2 size={14} /> DELETE FOREVER
+                </button>
+              </div>
+            ))
+          )}
         </div>
 
         {/* Danger zone */}

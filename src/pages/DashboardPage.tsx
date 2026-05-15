@@ -2,13 +2,16 @@
  * Dashboard page — main authenticated app surface.
  * Hosts a 3-tab layout for dashboard, add habit, and details.
  */
-import React, { useEffect, useState, useCallback, useMemo } from 'react';
-import { Bell, Plus, Trophy, BarChart2, RefreshCw } from 'lucide-react';
+import React, { useEffect, useState, useCallback, useMemo, useRef } from 'react';
+import { Bell, Plus, BarChart2, RefreshCw } from 'lucide-react';
+import confetti from 'canvas-confetti';
 import Navbar from '../components/layout/Navbar';
 import TabBar from '../components/layout/TabBar';
 import HabitCard from '../components/habits/HabitCard';
 import HabitForm from '../components/habits/HabitForm';
 import HabitHeatmap from '../components/habits/HabitHeatmap';
+import StatsCard from '../components/habits/StatsCard';
+import BestDayChart from '../components/habits/BestDayChart';
 import HabitIcon from '../components/ui/HabitIcon';
 import Spinner from '../components/ui/Spinner';
 import Toast from '../components/ui/Toast';
@@ -16,10 +19,11 @@ import Footer from '../components/layout/Footer';
 import { supabase } from '../lib/supabase';
 import { useHabits } from '../hooks/useHabits';
 import { useNotifications } from '../hooks/useNotifications';
+import { getMilestoneBadge } from '../lib/streakUtils';
 import type { Habit, HabitWithStreak } from '../types';
 
 const DashboardPage: React.FC = () => {
-    const { habits, loading, error, createHabit, updateHabit, deleteHabit, toggleDone } = useHabits();
+    const { habits, allLogs, loading, error, createHabit, updateHabit, deleteHabit, toggleDone, freezeHabit, reorderHabit } = useHabits();
     const { permission, requestPermission, isSupported, scheduleReminders } = useNotifications();
 
     const [activeTab, setActiveTab] = useState(0);
@@ -30,6 +34,16 @@ const DashboardPage: React.FC = () => {
     const [formKey, setFormKey] = useState(0);
     const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
     const [notifDismissed, setNotifDismissed] = useState(() => localStorage.getItem('habitforge_notif_dismissed') === 'true');
+
+    // Confetti: track previous done count to detect new full completion
+    const prevDoneCountRef = useRef<number>(-1);
+
+    // Drag and drop state
+    const [draggedHabitId, setDraggedHabitId] = useState<string | null>(null);
+    const [dragOverHabitId, setDragOverHabitId] = useState<string | null>(null);
+
+    // Detail tab: notes map for recent log
+    const [detailLogNotes, setDetailLogNotes] = useState<Map<string, string | null>>(new Map());
 
     useEffect(() => {
         document.title = 'HabitForge — Dashboard';
@@ -70,11 +84,25 @@ const DashboardPage: React.FC = () => {
         }
     };
 
-    const handleToggle = async (id: string) => {
+    const handleToggle = async (id: string, note?: string | null) => {
         try {
             const habit = habits.find((h) => h.id === id);
-            await toggleDone(id);
-            showToast(habit?.isDoneToday ? 'HABIT UNCHECKED' : 'HABIT CHECKED OFF!');
+            const prevStreak = habit?.currentStreak ?? 0;
+            await toggleDone(id, note);
+            if (habit && !habit.isDoneToday) {
+                showToast('HABIT CHECKED OFF!');
+                // Check for milestone achievement after toggle
+                const newStreak = prevStreak + 1;
+                const prevMilestone = getMilestoneBadge(prevStreak);
+                const newMilestone = getMilestoneBadge(newStreak);
+                if (newMilestone && (!prevMilestone || prevMilestone.label !== newMilestone.label)) {
+                    setTimeout(() => {
+                        setToast({ message: `🎉 MILESTONE UNLOCKED: ${newMilestone.label}!`, type: 'info' });
+                    }, 1500);
+                }
+            } else {
+                showToast('HABIT UNCHECKED');
+            }
         } catch {
             showToast('FAILED TO TOGGLE', 'error');
         }
@@ -87,7 +115,7 @@ const DashboardPage: React.FC = () => {
             if (selectedHabitId === id) {
                 setSelectedHabitId(null);
             }
-            showToast('HABIT DELETED');
+            showToast('HABIT ARCHIVED');
         } catch {
             showToast('FAILED TO DELETE', 'error');
         }
@@ -103,6 +131,52 @@ const DashboardPage: React.FC = () => {
         setActiveTab(1);
     };
 
+    const handleFreeze = async (id: string) => {
+        try {
+            await freezeHabit(id);
+            showToast('STREAK FREEZE ACTIVATED! 🧊');
+        } catch {
+            showToast('FAILED TO FREEZE', 'error');
+        }
+    };
+
+    // Drag and drop handlers
+    const handleDragStart = (_e: React.DragEvent, id: string) => {
+        setDraggedHabitId(id);
+    };
+
+    const handleDragOverCard = (e: React.DragEvent, id: string) => {
+        e.preventDefault();
+        setDragOverHabitId(id);
+    };
+
+    const handleDrop = async (_e: React.DragEvent, targetId: string) => {
+        if (!draggedHabitId || draggedHabitId === targetId) {
+            setDraggedHabitId(null);
+            setDragOverHabitId(null);
+            return;
+        }
+        const draggedIdx = habits.findIndex((h) => h.id === draggedHabitId);
+        const targetIdx = habits.findIndex((h) => h.id === targetId);
+        if (draggedIdx === -1 || targetIdx === -1) return;
+
+        // Update sort_order for all affected habits
+        const newHabits = [...habits];
+        const [moved] = newHabits.splice(draggedIdx, 1);
+        newHabits.splice(targetIdx, 0, moved);
+
+        // Assign new sort orders
+        const updates = newHabits.map((h, i) => reorderHabit(h.id, i));
+        try {
+            await Promise.all(updates);
+        } catch {
+            showToast('FAILED TO REORDER', 'error');
+        }
+
+        setDraggedHabitId(null);
+        setDragOverHabitId(null);
+    };
+
     const doneCount = habits.filter((h) => h.isDoneToday).length;
     const totalCount = habits.length;
     const progressPercent = totalCount > 0 ? Math.round((doneCount / totalCount) * 100) : 0;
@@ -113,6 +187,25 @@ const DashboardPage: React.FC = () => {
     const todayLabel = `${dayNames[today.getDay()]}, ${monthNames[today.getMonth()]} ${today.getDate()}`;
 
     const showNotifBanner = isSupported && permission === 'default' && !notifDismissed;
+
+    const allLogDates = useMemo(() => allLogs.map((l) => l.log_date), [allLogs]);
+
+    // Confetti on full completion
+    useEffect(() => {
+        if (prevDoneCountRef.current === -1) {
+            prevDoneCountRef.current = doneCount;
+            return;
+        }
+        if (doneCount === totalCount && totalCount > 0 && prevDoneCountRef.current < totalCount) {
+            confetti({
+                particleCount: 150,
+                spread: 80,
+                origin: { y: 0.6 },
+                colors: ['#FFE566', '#22C55E', '#FF2D9B', '#2563EB', '#000000'],
+            });
+        }
+        prevDoneCountRef.current = doneCount;
+    }, [doneCount, totalCount]);
 
     const selectedHabit = selectedHabitId ? habits.find((habit) => habit.id === selectedHabitId) ?? null : null;
 
@@ -130,15 +223,24 @@ const DashboardPage: React.FC = () => {
             try {
                 const { data, error: logError } = await supabase
                     .from('habit_logs')
-                    .select('log_date')
+                    .select('log_date, note')
                     .eq('habit_id', selectedHabitId)
                     .order('log_date', { ascending: false });
 
                 if (!isMounted) return;
 
                 if (logError) throw new Error(logError.message);
-                const logDates = (data ?? []).map((log: { log_date: string }) => log.log_date);
+                const logs = data ?? [];
+                const logDates = logs.map((log: { log_date: string }) => log.log_date);
                 setDetailLogs(logDates);
+
+                // Build notes map
+                const notesMap = new Map<string, string | null>();
+                for (const log of logs) {
+                    const l = log as { log_date: string; note?: string | null };
+                    if (l.note) notesMap.set(l.log_date, l.note);
+                }
+                setDetailLogNotes(notesMap);
             } catch (err) {
                 if (!isMounted) return;
                 console.error('Failed to load detail logs:', err);
@@ -179,7 +281,7 @@ const DashboardPage: React.FC = () => {
     }, [last30Days]);
 
     const recentLog = useMemo(() => {
-        const entries: { date: string; done: boolean }[] = [];
+        const entries: { date: string; done: boolean; note?: string | null }[] = [];
         const logSet = new Set(detailLogs);
         for (let i = 0; i < 14; i++) {
             const d = new Date();
@@ -188,10 +290,10 @@ const DashboardPage: React.FC = () => {
             const month = String(d.getMonth() + 1).padStart(2, '0');
             const day = String(d.getDate()).padStart(2, '0');
             const dateStr = `${year}-${month}-${day}`;
-            entries.push({ date: dateStr, done: logSet.has(dateStr) });
+            entries.push({ date: dateStr, done: logSet.has(dateStr), note: detailLogNotes.get(dateStr) ?? null });
         }
         return entries;
-    }, [detailLogs]);
+    }, [detailLogs, detailLogNotes]);
 
     // Full-page loading state — shown while habits are being fetched for the first time
     if (loading && habits.length === 0) {
@@ -257,52 +359,66 @@ const DashboardPage: React.FC = () => {
                             </div>
                         )}
 
-                        <div className="neo-card" style={{ padding: '24px', marginBottom: '16px' }}>
-                            <div style={{ fontWeight: 800, fontSize: '12px', letterSpacing: '2px', color: '#666', marginBottom: '6px' }}>
-                                TODAY'S PROGRESS
-                            </div>
-                            <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: '24px', marginBottom: '6px' }}>
-                                {todayLabel.toUpperCase()}
-                            </div>
-                            <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '18px', marginBottom: '10px' }}>
-                                {doneCount} / {totalCount} HABITS DONE
-                            </div>
+                        {/* Progress card / confetti banner */}
+                        {progressPercent === 100 && totalCount > 0 ? (
                             <div
                                 style={{
-                                    height: '24px',
-                                    background: '#f0f0f0',
+                                    background: '#FFE566',
                                     border: '3px solid #000000',
-                                    overflow: 'hidden',
+                                    boxShadow: '4px 4px 0px #000000',
+                                    padding: '16px',
+                                    textAlign: 'center',
+                                    marginBottom: '16px',
                                 }}
                             >
-                                <div
-                                    style={{
-                                        height: '100%',
-                                        width: `${progressPercent}%`,
-                                        background: '#22C55E',
-                                        transition: 'width 0.3s ease',
-                                    }}
-                                />
+                                <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: '20px', textTransform: 'uppercase' }}>
+                                    🎉 ALL HABITS DONE TODAY!
+                                </div>
                             </div>
-                            {progressPercent === 100 && totalCount > 0 && (
+                        ) : (
+                            <div className="neo-card" style={{ padding: '24px', marginBottom: '16px' }}>
+                                <div style={{ fontWeight: 800, fontSize: '12px', letterSpacing: '2px', color: '#666', marginBottom: '6px' }}>
+                                    TODAY'S PROGRESS
+                                </div>
+                                <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: '24px', marginBottom: '6px' }}>
+                                    {todayLabel.toUpperCase()}
+                                </div>
+                                <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '18px', marginBottom: '10px' }}>
+                                    {doneCount} / {totalCount} HABITS DONE
+                                </div>
                                 <div
                                     style={{
-                                        display: 'inline-flex',
-                                        alignItems: 'center',
-                                        gap: '6px',
-                                        background: '#000000',
-                                        color: '#FFFFFF',
-                                        padding: '6px 10px',
-                                        marginTop: '10px',
-                                        fontFamily: "'JetBrains Mono', monospace",
-                                        fontSize: '12px',
-                                        fontWeight: 800,
+                                        height: '24px',
+                                        background: '#f0f0f0',
+                                        border: '3px solid #000000',
+                                        overflow: 'hidden',
                                     }}
                                 >
-                                    <Trophy size={16} strokeWidth={2} /> ALL DONE TODAY!
+                                    <div
+                                        style={{
+                                            height: '100%',
+                                            width: `${progressPercent}%`,
+                                            background: '#22C55E',
+                                            transition: 'width 0.3s ease',
+                                        }}
+                                    />
                                 </div>
-                            )}
-                        </div>
+                            </div>
+                        )}
+
+                        {/* Stats Card */}
+                        {habits.length > 0 && (
+                            <div style={{ marginBottom: '16px' }}>
+                                <StatsCard habits={habits} allLogs={allLogs} />
+                            </div>
+                        )}
+
+                        {/* Best Day Chart */}
+                        {allLogDates.length > 0 && (
+                            <div style={{ marginBottom: '16px' }}>
+                                <BestDayChart logs={allLogDates} />
+                            </div>
+                        )}
 
                         <button
                             className="neo-btn"
@@ -354,10 +470,17 @@ const DashboardPage: React.FC = () => {
                                         onEdit={handleEdit}
                                         onDelete={handleDelete}
                                         onToggle={handleToggle}
+                                        onFreeze={handleFreeze}
                                         onViewDetail={(id) => {
                                             setSelectedHabitId(id);
                                             setActiveTab(2);
                                         }}
+                                        draggable
+                                        onDragStart={handleDragStart}
+                                        onDragOver={(e) => handleDragOverCard(e, habit.id)}
+                                        onDrop={handleDrop}
+                                        isDragOver={dragOverHabitId === habit.id}
+                                        isDragging={draggedHabitId === habit.id}
                                     />
                                 ))}
                             </div>
@@ -587,28 +710,38 @@ const DashboardPage: React.FC = () => {
                                                     style={{
                                                         borderBottom: idx < recentLog.length - 1 ? '2px solid #000000' : 'none',
                                                         padding: '12px 16px',
-                                                        display: 'flex',
-                                                        justifyContent: 'space-between',
-                                                        alignItems: 'center',
                                                     }}
                                                 >
-                                                    <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '14px', fontWeight: 600 }}>
-                                                        {entry.date}
-                                                    </span>
-                                                    <span
-                                                        style={{
-                                                            background: entry.done ? '#22C55E' : '#f0f0f0',
-                                                            color: entry.done ? '#FFFFFF' : '#666',
-                                                            border: '2px solid #000000',
-                                                            padding: '3px 12px',
-                                                            fontFamily: "'Syne', sans-serif",
-                                                            fontWeight: 800,
-                                                            fontSize: '11px',
-                                                            textTransform: 'uppercase',
-                                                        }}
-                                                    >
-                                                        {entry.done ? 'DONE' : 'MISSED'}
-                                                    </span>
+                                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                                        <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '14px', fontWeight: 600 }}>
+                                                            {entry.date}
+                                                        </span>
+                                                        <span
+                                                            style={{
+                                                                background: entry.done ? '#22C55E' : '#f0f0f0',
+                                                                color: entry.done ? '#FFFFFF' : '#666',
+                                                                border: '2px solid #000000',
+                                                                padding: '3px 12px',
+                                                                fontFamily: "'Syne', sans-serif",
+                                                                fontWeight: 800,
+                                                                fontSize: '11px',
+                                                                textTransform: 'uppercase',
+                                                            }}
+                                                        >
+                                                            {entry.done ? 'DONE' : 'MISSED'}
+                                                        </span>
+                                                    </div>
+                                                    {entry.note && (
+                                                        <div style={{
+                                                            fontFamily: "'JetBrains Mono', monospace",
+                                                            fontSize: '12px',
+                                                            color: '#666',
+                                                            fontStyle: 'italic',
+                                                            marginTop: '4px',
+                                                        }}>
+                                                            {entry.note}
+                                                        </div>
+                                                    )}
                                                 </div>
                                             ))
                                         )}
