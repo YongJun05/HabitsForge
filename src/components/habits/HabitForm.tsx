@@ -56,7 +56,7 @@ const HABIT_ICONS: { id: string; Icon: LucideIcon }[] = [
   { id: 'trophy', Icon: Trophy },
 ];
 
-const COLOR_OPTIONS = ['#ffe600', '#2563EB', '#FF2D9B', '#22C55E', '#000000', '#FFFFFF'];
+const COLOR_OPTIONS = ['#ffe600', '#2563EB', '#FF2D9B', '#22C55E', '#FFFFFF'];
 
 interface HabitFormProps {
   initialData?: Partial<Habit>;
