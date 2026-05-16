@@ -12,6 +12,10 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import type { HabitWithStreak, NotificationPermissionStatus } from '../types';
 
+/** Safe check — Notification API is absent on iOS Safari and some private modes. */
+export const isNotificationSupported =
+  typeof window !== 'undefined' && 'Notification' in window;
+
 interface UseNotificationsReturn {
   permission: NotificationPermissionStatus;
   requestPermission: () => Promise<void>;
@@ -24,6 +28,11 @@ export function useNotifications(): UseNotificationsReturn {
     if (typeof Notification === 'undefined') return 'unsupported';
     return Notification.permission as NotificationPermissionStatus;
   });
+
+  // Debug: log permission state on mount so we can verify in DevTools
+  useEffect(() => {
+    console.log('Notification permission:', typeof Notification !== 'undefined' ? Notification.permission : 'unsupported');
+  }, []);
 
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   // Track which reminders we've already fired this minute to avoid duplicates
@@ -72,6 +81,8 @@ export function useNotifications(): UseNotificationsReturn {
         try {
           new Notification('HabitsForge', {
             body: `Time for: ${habit.name}!`,
+            icon: '/vite.svg',
+            tag: habit.id, // prevents duplicate notifications for the same habit
           });
         } catch {
           // Notification creation can fail in some contexts — fail silently

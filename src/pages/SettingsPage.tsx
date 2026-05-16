@@ -8,7 +8,7 @@ import Navbar from '../components/layout/Navbar';
 import Footer from '../components/layout/Footer';
 import Toast from '../components/ui/Toast';
 import { supabase } from '../lib/supabase';
-import { useNotifications } from '../hooks/useNotifications';
+import { useNotifications, isNotificationSupported } from '../hooks/useNotifications';
 import { User, Bell, AlertTriangle, Archive, RotateCcw, Trash2 } from 'lucide-react';
 import type { Habit } from '../types';
 import HabitIcon from '../components/ui/HabitIcon';
@@ -190,7 +190,8 @@ const SettingsPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Notifications section */}
+        {/* Notifications section — hidden entirely on unsupported browsers (e.g. iOS Safari) */}
+        {isNotificationSupported && (
         <div style={{ padding: isMobile ? '16px' : '20px', marginBottom: '16px', background: '#FFFFFF', border: '3px solid #000000', boxShadow: '4px 4px 0px #000000', width: '100%', boxSizing: 'border-box' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
             <div className="neo-icon-box" style={{ background: '#2563EB', color: '#FFFFFF' }}>
@@ -213,6 +214,43 @@ const SettingsPage: React.FC = () => {
               </button>
             )}
           </div>
+
+          {/* Blocked message */}
+          {permission === 'denied' && (
+            <p style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '13px', color: '#888', margin: '0 0 12px' }}>
+              Notifications are blocked. Please enable them in your browser settings.
+            </p>
+          )}
+
+          {/* Test Notification button — only when permission is granted */}
+          {permission === 'granted' && (
+            <div style={{ marginBottom: '12px' }}>
+              <button
+                className="neo-btn"
+                onClick={() => {
+                  new Notification('HabitsForge', {
+                    body: 'Notifications are working!',
+                    icon: '/vite.svg',
+                  });
+                }}
+                style={{
+                  background: '#FFFFFF',
+                  color: '#000000',
+                  border: '2px solid #000000',
+                  boxShadow: '3px 3px 0 #000000',
+                  padding: '10px 20px',
+                  fontFamily: "'Syne', sans-serif",
+                  fontWeight: 800,
+                  fontSize: '12px',
+                  textTransform: 'uppercase',
+                  minHeight: '44px',
+                  cursor: 'pointer',
+                }}
+              >
+                TEST NOTIFICATION
+              </button>
+            </div>
+          )}
 
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '13px' }}>GLOBAL NOTIFICATIONS</span>
@@ -242,6 +280,7 @@ const SettingsPage: React.FC = () => {
             </button>
           </div>
         </div>
+        )}
 
         {/* Archived Habits section */}
         <div style={{ padding: isMobile ? '16px' : '20px', marginBottom: '16px', background: '#FFFFFF', border: '3px solid #000000', boxShadow: '4px 4px 0px #000000', width: '100%', boxSizing: 'border-box' }}>
