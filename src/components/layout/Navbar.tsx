@@ -178,8 +178,8 @@ const Navbar: React.FC<NavbarProps> = ({ variant = 'app' }) => {
                 onClick={() => navigate('/settings')}
                 aria-label="Settings"
                 style={{
-                  background: '#000000',
-                  color: '#FFFFFF',
+                  background: '#FFFFFF',
+                  color: '#000000',
                   padding: '8px 14px',
                   fontSize: '12px',
                   display: 'flex',
