@@ -11,6 +11,7 @@
  */
 import { useState, useCallback, useRef, useEffect } from 'react';
 import type { HabitWithStreak, NotificationPermissionStatus } from '../types';
+import { addStoredNotification } from '../lib/notificationStore';
 
 /** Safe check — Notification API is absent on iOS Safari and some private modes. */
 export const isNotificationSupported =
@@ -69,8 +70,10 @@ export function useNotifications(habits: HabitWithStreak[] = []): UseNotificatio
           new Notification('HabitsForge', {
             body: `Time for: ${habit.name}!`,
             icon: '/vite.svg',
-            tag: habit.id, // prevents duplicate OS-level notifications
+            tag: habit.id,
           });
+          // Also log to in-app notification center (bell badge in navbar)
+          addStoredNotification(habit.id, habit.name);
         } catch {
           // Notification creation can fail in some contexts — fail silently
         }
