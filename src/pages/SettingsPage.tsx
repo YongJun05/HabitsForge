@@ -12,9 +12,11 @@ import { useNotifications } from '../hooks/useNotifications';
 import { User, Bell, AlertTriangle, Archive, RotateCcw, Trash2 } from 'lucide-react';
 import type { Habit } from '../types';
 import HabitIcon from '../components/ui/HabitIcon';
+import { useWindowSize } from '../hooks/useWindowSize';
 
 const SettingsPage: React.FC = () => {
   const navigate = useNavigate();
+  const { isMobile } = useWindowSize();
   const { permission, requestPermission, isSupported } = useNotifications();
 
   const [displayName, setDisplayName] = useState('');
@@ -148,13 +150,13 @@ const SettingsPage: React.FC = () => {
     <div style={{ minHeight: '100vh' }}>
       <Navbar />
 
-      <div style={{ maxWidth: '720px', margin: '0 auto', padding: '32px 16px' }}>
+      <div style={{ maxWidth: isMobile ? '100%' : '640px', margin: '0 auto', padding: isMobile ? '16px' : '32px 16px', boxSizing: 'border-box', overflowX: 'hidden' }}>
         <h1 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: '24px', marginBottom: '20px' }}>
           SETTINGS
         </h1>
 
         {/* Account section */}
-        <div style={{ padding: '20px', marginBottom: '16px', background: '#FFFFFF', border: '3px solid #000000', boxShadow: '4px 4px 0px #000000' }}>
+        <div style={{ padding: isMobile ? '16px' : '20px', marginBottom: '16px', background: '#FFFFFF', border: '3px solid #000000', boxShadow: '4px 4px 0px #000000', width: '100%', boxSizing: 'border-box' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
             <div className="neo-icon-box" style={{ background: '#ffe600' }}>
               <User size={22} strokeWidth={2} />
@@ -169,7 +171,7 @@ const SettingsPage: React.FC = () => {
           </div>
           <div style={{ marginBottom: '12px' }}>
             <label style={{ fontWeight: 800, fontSize: '12px', letterSpacing: '2px', display: 'block', marginBottom: '6px' }}>DISPLAY NAME</label>
-            <div style={{ display: 'flex', gap: '8px' }}>
+            <div style={{ display: 'flex', gap: '8px', flexDirection: isMobile ? 'column' : 'row' }}>
               <input
                 className="neo-input"
                 value={displayName}
@@ -180,7 +182,7 @@ const SettingsPage: React.FC = () => {
                 className="neo-btn"
                 onClick={handleSaveName}
                 disabled={saving || !displayName.trim()}
-                style={{ background: '#2563EB', color: '#FFFFFF', padding: '10px 16px', fontSize: '12px', whiteSpace: 'nowrap' }}
+                style={{ background: '#2563EB', color: '#FFFFFF', padding: '10px 16px', fontSize: '12px', whiteSpace: 'nowrap', minHeight: '44px' }}
               >
                 {saving ? 'SAVING...' : 'SAVE CHANGES'}
               </button>
@@ -189,7 +191,7 @@ const SettingsPage: React.FC = () => {
         </div>
 
         {/* Notifications section */}
-        <div style={{ padding: '20px', marginBottom: '16px', background: '#FFFFFF', border: '3px solid #000000', boxShadow: '4px 4px 0px #000000' }}>
+        <div style={{ padding: isMobile ? '16px' : '20px', marginBottom: '16px', background: '#FFFFFF', border: '3px solid #000000', boxShadow: '4px 4px 0px #000000', width: '100%', boxSizing: 'border-box' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
             <div className="neo-icon-box" style={{ background: '#2563EB', color: '#FFFFFF' }}>
               <Bell size={22} strokeWidth={2} />
@@ -199,13 +201,13 @@ const SettingsPage: React.FC = () => {
             </h2>
           </div>
 
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: isMobile ? 'flex-start' : 'center', marginBottom: '12px', gap: '12px', flexDirection: isMobile ? 'column' : 'row' }}>
             <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '13px' }}>BROWSER PERMISSION: <strong>{permissionLabel.toUpperCase()}</strong></span>
             {isSupported && permission !== 'granted' && permission !== 'unsupported' && (
               <button
                 className="neo-btn"
                 onClick={requestPermission}
-                style={{ background: '#2563EB', color: '#FFFFFF', padding: '8px 12px', fontSize: '12px' }}
+                style={{ background: '#2563EB', color: '#FFFFFF', padding: '8px 12px', fontSize: '12px', minHeight: '44px' }}
               >
                 ENABLE NOTIFICATIONS
               </button>
@@ -242,7 +244,7 @@ const SettingsPage: React.FC = () => {
         </div>
 
         {/* Archived Habits section */}
-        <div style={{ padding: '20px', marginBottom: '16px', background: '#FFFFFF', border: '3px solid #000000', boxShadow: '4px 4px 0px #000000' }}>
+        <div style={{ padding: isMobile ? '16px' : '20px', marginBottom: '16px', background: '#FFFFFF', border: '3px solid #000000', boxShadow: '4px 4px 0px #000000', width: '100%', boxSizing: 'border-box' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
             <div className="neo-icon-box" style={{ background: '#666', color: '#FFFFFF' }}>
               <Archive size={22} strokeWidth={2} />
@@ -264,6 +266,7 @@ const SettingsPage: React.FC = () => {
                   borderBottom: '2px solid #000',
                   padding: '12px',
                   display: 'flex',
+                  flexWrap: isMobile ? 'wrap' : 'nowrap',
                   alignItems: 'center',
                   gap: '12px',
                 }}
@@ -275,14 +278,14 @@ const SettingsPage: React.FC = () => {
                 <button
                   className="neo-btn"
                   onClick={() => handleRestoreHabit(habit.id)}
-                  style={{ background: '#2563EB', color: '#FFFFFF', border: '2px solid #000', boxShadow: '2px 2px 0 #000', padding: '6px 12px', fontSize: '11px', fontFamily: "'Syne', sans-serif", fontWeight: 800, display: 'flex', alignItems: 'center', gap: '4px' }}
+                  style={{ background: '#2563EB', color: '#FFFFFF', border: '2px solid #000', boxShadow: '2px 2px 0 #000', padding: '6px 12px', fontSize: '11px', fontFamily: "'Syne', sans-serif", fontWeight: 800, display: 'flex', alignItems: 'center', gap: '4px', minHeight: '44px' }}
                 >
                   <RotateCcw size={14} /> RESTORE
                 </button>
                 <button
                   className="neo-btn"
                   onClick={() => handlePermanentDelete(habit.id, habit.name)}
-                  style={{ background: '#FF2D9B', color: '#FFFFFF', border: '2px solid #000', boxShadow: '2px 2px 0 #000', padding: '6px 12px', fontSize: '11px', fontFamily: "'Syne', sans-serif", fontWeight: 800, display: 'flex', alignItems: 'center', gap: '4px' }}
+                  style={{ background: '#FF2D9B', color: '#FFFFFF', border: '2px solid #000', boxShadow: '2px 2px 0 #000', padding: '6px 12px', fontSize: '11px', fontFamily: "'Syne', sans-serif", fontWeight: 800, display: 'flex', alignItems: 'center', gap: '4px', minHeight: '44px' }}
                 >
                   <Trash2 size={14} /> DELETE FOREVER
                 </button>
@@ -292,7 +295,7 @@ const SettingsPage: React.FC = () => {
         </div>
 
         {/* Danger zone */}
-        <div style={{ padding: '20px', border: '3px solid #FF2D9B', boxShadow: '4px 4px 0px #000000', background: '#FFFFFF' }}>
+        <div style={{ padding: isMobile ? '16px' : '20px', border: '3px solid #FF2D9B', boxShadow: '4px 4px 0px #000000', background: '#FFFFFF', width: '100%', boxSizing: 'border-box' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
             <div className="neo-icon-box" style={{ background: '#FF2D9B', color: '#FFFFFF' }}>
               <AlertTriangle size={22} strokeWidth={2} />
@@ -307,7 +310,7 @@ const SettingsPage: React.FC = () => {
           <button
             className="neo-btn"
             onClick={handleDeleteAllHabits}
-            style={{ background: '#FF2D9B', color: '#FFFFFF', padding: '10px 16px', fontSize: '12px' }}
+            style={{ background: '#FF2D9B', color: '#FFFFFF', padding: '10px 16px', fontSize: '12px', minHeight: '44px', width: isMobile ? '100%' : undefined }}
           >
             DELETE ALL HABITS
           </button>

@@ -3,6 +3,7 @@
  * days of the week have the most habit completions.
  */
 import React, { useMemo } from 'react';
+import { useWindowSize } from '../../hooks/useWindowSize';
 
 interface BestDayChartProps {
   logs: string[]; // array of all YYYY-MM-DD log dates across ALL habits
@@ -11,6 +12,7 @@ interface BestDayChartProps {
 const DAY_LABELS = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
 
 const BestDayChart: React.FC<BestDayChartProps> = ({ logs }) => {
+  const { isMobile } = useWindowSize();
   const data = useMemo(() => {
     // Count logs per day of week (0=Mon, 1=Tue, ... 6=Sun)
     const counts = [0, 0, 0, 0, 0, 0, 0];
@@ -37,7 +39,9 @@ const BestDayChart: React.FC<BestDayChartProps> = ({ logs }) => {
         background: '#FFFFFF',
         border: '3px solid #000',
         boxShadow: '4px 4px 0 #000',
-        padding: '20px',
+        padding: isMobile ? '16px' : '20px',
+        width: '100%',
+        boxSizing: 'border-box',
       }}
     >
       <div
@@ -59,7 +63,7 @@ const BestDayChart: React.FC<BestDayChartProps> = ({ logs }) => {
           style={{
             display: 'flex',
             alignItems: 'center',
-            gap: '12px',
+            gap: isMobile ? '8px' : '12px',
             marginBottom: '10px',
           }}
         >
@@ -67,8 +71,8 @@ const BestDayChart: React.FC<BestDayChartProps> = ({ logs }) => {
             style={{
               fontFamily: "'JetBrains Mono', monospace",
               fontWeight: 700,
-              width: '40px',
-              fontSize: '13px',
+              width: isMobile ? '34px' : '40px',
+              fontSize: isMobile ? '11px' : '13px',
             }}
           >
             {row.day}
@@ -76,7 +80,7 @@ const BestDayChart: React.FC<BestDayChartProps> = ({ logs }) => {
           <div
             style={{
               flex: 1,
-              height: '24px',
+              height: isMobile ? '20px' : '24px',
               background: '#f0f0f0',
               border: '2px solid #000',
               overflow: 'hidden',
@@ -94,7 +98,7 @@ const BestDayChart: React.FC<BestDayChartProps> = ({ logs }) => {
           <span
             style={{
               fontFamily: "'JetBrains Mono', monospace",
-              fontSize: '12px',
+              fontSize: isMobile ? '11px' : '12px',
               fontWeight: 700,
               width: '40px',
               textAlign: 'right',

@@ -4,14 +4,16 @@
  */
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Bell, Brain, Calendar, Flame, Sparkles } from 'lucide-react';
+import { Bell, Brain, Calendar, Flame, Sparkles, TrendingUp } from 'lucide-react';
 import Navbar from '../components/layout/Navbar';
 import Footer from '../components/layout/Footer';
 import { supabase } from '../lib/supabase';
+import { useWindowSize } from '../hooks/useWindowSize';
 
 const LandingPage: React.FC = () => {
   const navigate = useNavigate();
   const [authChecked, setAuthChecked] = useState(false);
+  const { isMobile, isTablet } = useWindowSize();
 
   useEffect(() => {
     document.title = 'HabitsForge';
@@ -61,7 +63,14 @@ const LandingPage: React.FC = () => {
     <div style={{ minHeight: '100vh' }}>
       <Navbar variant="landing" />
       <section className="landing-hero">
-        <div className="landing-hero__inner">
+        <div
+          className="landing-hero__inner"
+          style={{
+            gridTemplateColumns: isMobile ? '1fr' : undefined,
+            padding: isMobile ? '34px 16px 42px' : undefined,
+            gap: isMobile ? '24px' : undefined,
+          }}
+        >
           <div className="landing-hero__copy">
             <div className="landing-hero__eyebrow">AI HABIT COACH · V1.0</div>
             <h1 className="landing-hero__title">
@@ -71,10 +80,10 @@ const LandingPage: React.FC = () => {
               </span>
               <span>stick.</span>
             </h1>
-            <p className="landing-hero__text">
+            <p className="landing-hero__text" style={{ fontSize: isMobile ? '15px' : undefined }}>
               HabitsForge turns your goals into daily wins with an AI coach, streak tracking, and zero fluff.
             </p>
-            <div className="landing-hero__actions">
+            <div className="landing-hero__actions" style={{ flexDirection: isMobile ? 'column' : undefined, gap: isMobile ? '12px' : undefined }}>
               <button className="neo-btn landing-hero__primary" onClick={() => navigate('/signup')}>
                 Get Started Free →
               </button>
@@ -84,17 +93,33 @@ const LandingPage: React.FC = () => {
             </div>
           </div>
 
-          <div className="landing-hero__art" aria-hidden="true">
-            <div className="hero-tile hero-tile--blue" />
-            <div className="hero-tile hero-tile--pink" />
-            <div className="hero-stat">
+          <div
+            className="landing-hero__art"
+            aria-hidden="true"
+            style={{
+              minHeight: isMobile ? 'auto' : undefined,
+              display: isMobile ? 'flex' : undefined,
+              justifyContent: isMobile ? 'center' : undefined,
+              marginTop: isMobile ? '8px' : undefined,
+            }}
+          >
+            {!isMobile && <div className="hero-tile hero-tile--blue" />}
+            {!isMobile && <div className="hero-tile hero-tile--pink" />}
+            <div
+              className="hero-stat"
+              style={{
+                position: isMobile ? 'relative' : undefined,
+                left: isMobile ? 'auto' : undefined,
+                bottom: isMobile ? 'auto' : undefined,
+              }}
+            >
               <span>Today</span>
               <strong>7/8</strong>
               <small>habits done</small>
             </div>
-            <div className="hero-tile hero-tile--green">
+            {!isMobile && <div className="hero-tile hero-tile--green">
               <Flame size={78} strokeWidth={3.5} />
-            </div>
+            </div>}
           </div>
         </div>
       </section>
@@ -106,7 +131,10 @@ const LandingPage: React.FC = () => {
             <p>No gimmicks. Just bold, science-backed tracking with an AI in your corner.</p>
           </div>
 
-          <div className="landing-features__grid">
+          <div
+            className="landing-features__grid"
+            style={{ gridTemplateColumns: isMobile ? '1fr' : isTablet ? 'repeat(2, minmax(0, 1fr))' : undefined }}
+          >
             {[
               {
                 Icon: Brain,
@@ -125,6 +153,12 @@ const LandingPage: React.FC = () => {
                 title: '30-Day Heatmap',
                 text: 'See your consistency at a glance with a chunky brutalist heatmap.',
                 color: '#ffe600',
+              },
+              {
+                Icon: TrendingUp,
+                title: 'Weekly Insights',
+                text: 'Get a personalized recap every week. Celebrate wins, fix gaps.',
+                color: '#00f060',
               },
               {
                 Icon: Bell,

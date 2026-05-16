@@ -3,6 +3,7 @@
  * Hosts a 3-tab layout for dashboard, add habit, and details.
  */
 import React, { useEffect, useState, useCallback, useMemo, useRef } from 'react';
+import { useLocation } from 'react-router-dom';
 import { Bell, Plus, BarChart2, RefreshCw } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import Navbar from '../components/layout/Navbar';
@@ -21,8 +22,11 @@ import { useHabits } from '../hooks/useHabits';
 import { useNotifications } from '../hooks/useNotifications';
 import { getMilestoneBadge } from '../lib/streakUtils';
 import type { Habit, HabitWithStreak } from '../types';
+import { useWindowSize } from '../hooks/useWindowSize';
 
 const DashboardPage: React.FC = () => {
+    const location = useLocation();
+    const { isMobile } = useWindowSize();
     const { habits, allLogs, loading, error, createHabit, updateHabit, deleteHabit, toggleDone, freezeHabit, reorderHabit } = useHabits();
     const { permission, requestPermission, isSupported, scheduleReminders } = useNotifications();
 
@@ -48,6 +52,13 @@ const DashboardPage: React.FC = () => {
     useEffect(() => {
         document.title = 'HabitsForge — Dashboard';
     }, []);
+
+    useEffect(() => {
+        const state = location.state as { activeTab?: number } | null;
+        if (typeof state?.activeTab === 'number') {
+            setActiveTab(state.activeTab);
+        }
+    }, [location.state]);
 
     useEffect(() => {
         if (habits.length > 0) {
@@ -316,7 +327,7 @@ const DashboardPage: React.FC = () => {
             <Navbar />
             <TabBar activeTab={activeTab} onTabChange={setActiveTab} />
 
-            <div style={{ maxWidth: '860px', margin: '0 auto', padding: '24px 16px 48px' }}>
+            <div style={{ maxWidth: isMobile ? '100%' : '860px', margin: '0 auto', padding: isMobile ? '16px 16px 40px' : '24px 16px 48px', boxSizing: 'border-box', overflowX: 'hidden' }}>
                 {activeTab === 0 && (
                     <>
                         {showNotifBanner && (
@@ -325,9 +336,10 @@ const DashboardPage: React.FC = () => {
                                     background: '#ffe600',
                                     border: '3px solid #000000',
                                     boxShadow: '4px 4px 0px #000000',
-                                    padding: '14px 16px',
+                                    padding: isMobile ? '12px' : '14px 16px',
                                     marginBottom: '16px',
                                     display: 'flex',
+                                    flexDirection: isMobile ? 'column' : 'row',
                                     alignItems: 'center',
                                     justifyContent: 'space-between',
                                     gap: '12px',
@@ -341,7 +353,7 @@ const DashboardPage: React.FC = () => {
                                     <button
                                         className="neo-btn"
                                         onClick={requestPermission}
-                                        style={{ background: '#000000', color: '#FFFFFF', padding: '8px 12px', fontSize: '12px' }}
+                                        style={{ background: '#000000', color: '#FFFFFF', padding: '8px 12px', fontSize: '12px', minHeight: '44px' }}
                                     >
                                         Enable
                                     </button>
@@ -351,7 +363,7 @@ const DashboardPage: React.FC = () => {
                                             setNotifDismissed(true);
                                             localStorage.setItem('habitsforge_notif_dismissed', 'true');
                                         }}
-                                        style={{ background: '#FFFFFF', color: '#000000', padding: '8px 12px', fontSize: '12px', letterSpacing: '2px' }}
+                                        style={{ background: '#FFFFFF', color: '#000000', padding: '8px 12px', fontSize: '12px', letterSpacing: '2px', minHeight: '44px' }}
                                     >
                                         Dismiss
                                     </button>
@@ -366,7 +378,7 @@ const DashboardPage: React.FC = () => {
                                     background: '#FFE566',
                                     border: '3px solid #000000',
                                     boxShadow: '4px 4px 0px #000000',
-                                    padding: '16px',
+                                    padding: isMobile ? '16px' : '16px',
                                     textAlign: 'center',
                                     marginBottom: '16px',
                                 }}
@@ -376,11 +388,11 @@ const DashboardPage: React.FC = () => {
                                 </div>
                             </div>
                         ) : (
-                            <div className="neo-card" style={{ padding: '24px', marginBottom: '16px' }}>
+                            <div className="neo-card" style={{ padding: isMobile ? '16px' : '24px', marginBottom: '16px' }}>
                                 <div style={{ fontWeight: 800, fontSize: '12px', letterSpacing: '2px', color: '#666', marginBottom: '6px' }}>
                                     TODAY'S PROGRESS
                                 </div>
-                                <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: '24px', marginBottom: '6px' }}>
+                                <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: isMobile ? '18px' : '24px', marginBottom: '6px' }}>
                                     {todayLabel.toUpperCase()}
                                 </div>
                                 <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '18px', marginBottom: '10px' }}>
@@ -436,6 +448,7 @@ const DashboardPage: React.FC = () => {
                                 alignItems: 'center',
                                 justifyContent: 'center',
                                 gap: '8px',
+                                minHeight: '44px',
                             }}
                         >
                             <Plus size={20} strokeWidth={2} />
@@ -452,7 +465,7 @@ const DashboardPage: React.FC = () => {
                                     border: '3px solid #000000',
                                     boxShadow: '4px 4px 0px #000000',
                                     background: '#FFFFFF',
-                                    padding: '24px',
+                                    padding: isMobile ? '16px' : '24px',
                                     textAlign: 'center',
                                 }}
                             >
@@ -489,9 +502,9 @@ const DashboardPage: React.FC = () => {
                 )}
 
                 {activeTab === 1 && (
-                    <div style={{ background: '#FFFFFF', border: '3px solid #000000', boxShadow: '4px 4px 0px #000000', padding: '24px' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', marginBottom: '6px' }}>
-                            <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: '28px', textTransform: 'uppercase' }}>
+                    <div style={{ background: '#FFFFFF', border: '3px solid #000000', boxShadow: '4px 4px 0px #000000', padding: isMobile ? '16px' : '24px' }}>
+                        <div style={{ display: 'flex', alignItems: isMobile ? 'stretch' : 'center', justifyContent: 'space-between', gap: '12px', marginBottom: '6px', flexDirection: isMobile ? 'column' : 'row' }}>
+                            <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: isMobile ? '22px' : '28px', textTransform: 'uppercase' }}>
                                 {editingHabit ? 'EDIT HABIT' : 'ADD NEW HABIT'}
                             </div>
                             <button
@@ -500,7 +513,7 @@ const DashboardPage: React.FC = () => {
                                     setEditingHabit(undefined);
                                     setFormKey((prev) => prev + 1);
                                 }}
-                                style={{ background: '#FFE566', padding: '8px 14px', fontSize: '12px', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+                                style={{ background: '#FFE566', padding: '8px 14px', fontSize: '12px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '6px', minHeight: '44px' }}
                             >
                                 <RefreshCw size={14} />
                                 RESET
@@ -541,7 +554,7 @@ const DashboardPage: React.FC = () => {
                                 <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: '12px', letterSpacing: '2px', marginBottom: '10px', color: '#666' }}>
                                     SELECT HABIT
                                 </div>
-                                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                                     {habits.map((h) => (
                                         <button
                                             key={h.id}
@@ -558,6 +571,7 @@ const DashboardPage: React.FC = () => {
                                                 border: selectedHabitId === h.id ? '3px solid #000000' : '2px solid #000000',
                                                 boxShadow: selectedHabitId === h.id ? '2px 2px 0px #000000' : '3px 3px 0px #000000',
                                                 transform: selectedHabitId === h.id ? 'translate(1px, 1px)' : 'none',
+                                                minHeight: '44px',
                                             }}
                                         >
                                             <HabitIcon iconId={h.icon} size={14} />
@@ -574,7 +588,7 @@ const DashboardPage: React.FC = () => {
                                     border: '3px solid #000000',
                                     boxShadow: '4px 4px 0px #000000',
                                     background: '#FFFFFF',
-                                    padding: '32px',
+                                        padding: isMobile ? '20px' : '32px',
                                     textAlign: 'center',
                                 }}
                             >
@@ -608,7 +622,7 @@ const DashboardPage: React.FC = () => {
                                         background: selectedHabit.color,
                                         border: '3px solid #000000',
                                         boxShadow: '5px 5px 0 #000000',
-                                        padding: '24px',
+                                        padding: isMobile ? '16px' : '24px',
                                     }}
                                 >
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
@@ -626,7 +640,7 @@ const DashboardPage: React.FC = () => {
                                         >
                                             <HabitIcon iconId={selectedHabit.icon} size={28} />
                                         </div>
-                                        <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: '24px', textTransform: 'uppercase' }}>
+                                        <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: isMobile ? '20px' : '24px', textTransform: 'uppercase' }}>
                                             {selectedHabit.name}
                                         </div>
                                     </div>
@@ -637,7 +651,7 @@ const DashboardPage: React.FC = () => {
                                     )}
                                 </div>
 
-                                <div style={{ display: 'flex', gap: '12px', marginBottom: '0' }}>
+                                <div style={{ display: 'flex', gap: isMobile ? '8px' : '12px', marginBottom: '0' }}>
                                     {[
                                         { label: 'CURRENT STREAK', value: selectedHabit.currentStreak, prefix: '🔥 ' },
                                         { label: 'BEST STREAK', value: selectedHabit.bestStreak, prefix: '' },
@@ -649,19 +663,19 @@ const DashboardPage: React.FC = () => {
                                                 background: '#FFFFFF',
                                                 border: '3px solid #000000',
                                                 boxShadow: '3px 3px 0 #000000',
-                                                padding: '16px',
+                                                padding: isMobile ? '10px 8px' : '16px',
                                                 textAlign: 'center',
                                                 flex: 1,
                                             }}
                                         >
-                                            <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '36px', fontWeight: 700 }}>
+                                            <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: isMobile ? '24px' : '36px', fontWeight: 700 }}>
                                                 {`${stat.prefix}${stat.value}`}
                                             </div>
                                             <div
                                                 style={{
                                                     fontFamily: "'Syne', sans-serif",
                                                     fontWeight: 800,
-                                                    fontSize: '10px',
+                                                    fontSize: isMobile ? '9px' : '10px',
                                                     letterSpacing: '2px',
                                                     color: '#666',
                                                     marginTop: '4px',
@@ -679,7 +693,7 @@ const DashboardPage: React.FC = () => {
                                         background: '#FFFFFF',
                                         border: '3px solid #000000',
                                         boxShadow: '4px 4px 0 #000000',
-                                        padding: '20px',
+                                        padding: isMobile ? '12px' : '20px',
                                     }}
                                 >
                                     {detailLoading ? (
@@ -713,7 +727,7 @@ const DashboardPage: React.FC = () => {
                                                     }}
                                                 >
                                                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                                        <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '14px', fontWeight: 600 }}>
+                                                        <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: isMobile ? '13px' : '14px', fontWeight: 600 }}>
                                                             {entry.date}
                                                         </span>
                                                         <span
@@ -721,7 +735,7 @@ const DashboardPage: React.FC = () => {
                                                                 background: entry.done ? '#22C55E' : '#f0f0f0',
                                                                 color: entry.done ? '#FFFFFF' : '#666',
                                                                 border: '2px solid #000000',
-                                                                padding: '3px 12px',
+                                                                padding: isMobile ? '2px 8px' : '3px 12px',
                                                                 fontFamily: "'Syne', sans-serif",
                                                                 fontWeight: 800,
                                                                 fontSize: '11px',

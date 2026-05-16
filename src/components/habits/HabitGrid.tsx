@@ -4,6 +4,7 @@
  * Filled = done, empty = missed, today = special treatment.
  */
 import React from 'react';
+import { useWindowSize } from '../../hooks/useWindowSize';
 
 interface HabitGridProps {
   recentLogs: string[];
@@ -13,6 +14,7 @@ interface HabitGridProps {
 const DAY_LABELS = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
 
 const HabitGrid: React.FC<HabitGridProps> = ({ recentLogs, isDoneToday }) => {
+  const { isMobile } = useWindowSize();
   // Build the last 7 days with correct day-of-week mapping
   const days: { dateStr: string; dayLabel: string; isToday: boolean; isDone: boolean }[] = [];
 
@@ -42,8 +44,8 @@ const HabitGrid: React.FC<HabitGridProps> = ({ recentLogs, isDoneToday }) => {
           <span style={{ fontSize: '10px', fontWeight: 800, letterSpacing: '1px' }}>{day.dayLabel}</span>
           <div
             style={{
-              width: '32px',
-              height: '32px',
+              width: isMobile ? '26px' : '32px',
+              height: isMobile ? '26px' : '32px',
               border: '2px solid #000000',
               background: day.isToday
                 ? day.isDone

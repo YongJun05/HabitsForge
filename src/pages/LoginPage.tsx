@@ -9,10 +9,12 @@ import { signInWithGoogle } from '../lib/auth';
 import Navbar from '../components/layout/Navbar';
 import Footer from '../components/layout/Footer';
 import { LockKeyhole, Eye, EyeOff, CheckCircle2 } from 'lucide-react';
+import { useWindowSize } from '../hooks/useWindowSize';
 
 const LoginPage: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { isMobile } = useWindowSize();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -54,17 +56,17 @@ const LoginPage: React.FC = () => {
   return (
     <div style={{ minHeight: '100vh' }}>
       <Navbar variant="landing" />
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '40px 24px' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: isMobile ? '24px 16px' : '40px 24px' }}>
         
         {location.state?.message && (
           <div
             style={{
-              maxWidth: '480px',
+              maxWidth: isMobile ? 'none' : '480px',
               width: '100%',
               background: '#A3E635',
               border: '3px solid #000000',
-              boxShadow: '6px 6px 0px #000000',
-              padding: '16px',
+              boxShadow: isMobile ? 'none' : '6px 6px 0px #000000',
+              padding: isMobile ? '12px' : '16px',
               marginBottom: '24px',
               display: 'flex',
               alignItems: 'center',
@@ -80,12 +82,12 @@ const LoginPage: React.FC = () => {
 
         <div
           style={{
-            maxWidth: '480px',
+            maxWidth: isMobile ? 'none' : '480px',
             width: '100%',
             background: '#FFFFFF',
             border: '3px solid #000000',
-            boxShadow: '6px 6px 0px #000000',
-            padding: '32px',
+            boxShadow: isMobile ? 'none' : '6px 6px 0px #000000',
+            padding: isMobile ? '20px 16px' : '32px',
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
@@ -93,7 +95,7 @@ const LoginPage: React.FC = () => {
               <LockKeyhole size={22} strokeWidth={2} />
             </div>
             <div>
-              <div className="font-hero" style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: '32px' }}>WELCOME BACK.</div>
+              <div className="font-hero" style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: isMobile ? '28px' : '32px' }}>WELCOME BACK.</div>
               <div className="font-mono" style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '14px' }}>Log in to keep your streaks alive.</div>
             </div>
           </div>
@@ -107,6 +109,7 @@ const LoginPage: React.FC = () => {
                 placeholder="you@example.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                style={{ padding: isMobile ? '10px 12px' : undefined, fontSize: isMobile ? '16px' : undefined }}
               />
             </div>
 
@@ -120,7 +123,7 @@ const LoginPage: React.FC = () => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   onKeyDown={(e) => { if (e.key === 'Enter') handleLogin(); }}
-                  style={{ paddingRight: '44px' }}
+                  style={{ paddingRight: '44px', paddingTop: isMobile ? '10px' : undefined, paddingBottom: isMobile ? '10px' : undefined, fontSize: isMobile ? '16px' : undefined }}
                 />
                 <button
                   type="button"
@@ -135,6 +138,8 @@ const LoginPage: React.FC = () => {
                     cursor: 'pointer',
                     color: '#666',
                     padding: '0',
+                    minWidth: '44px',
+                    minHeight: '44px',
                     display: 'flex',
                     alignItems: 'center',
                   }}
@@ -158,6 +163,7 @@ const LoginPage: React.FC = () => {
                 fontWeight: 800,
                 textTransform: 'uppercase',
                 letterSpacing: '1px',
+                minHeight: '44px',
               }}
             >
               {loading ? 'LOGGING IN...' : 'LOG IN →'}
@@ -198,6 +204,7 @@ const LoginPage: React.FC = () => {
                 alignItems: 'center',
                 justifyContent: 'center',
                 gap: '10px',
+                minHeight: '44px',
               }}
             >
               <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">

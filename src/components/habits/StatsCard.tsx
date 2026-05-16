@@ -3,6 +3,7 @@
  */
 import React, { useMemo } from 'react';
 import type { HabitWithStreak, HabitLog } from '../../types';
+import { useWindowSize } from '../../hooks/useWindowSize';
 
 interface StatsCardProps {
   habits: HabitWithStreak[];
@@ -10,6 +11,7 @@ interface StatsCardProps {
 }
 
 const StatsCard: React.FC<StatsCardProps> = ({ habits, allLogs }) => {
+  const { isMobile } = useWindowSize();
   const stats = useMemo(() => {
     const totalCompleted = allLogs.length;
     const bestCurrentStreak = habits.length > 0
@@ -40,7 +42,7 @@ const StatsCard: React.FC<StatsCardProps> = ({ habits, allLogs }) => {
 
   const numStyle: React.CSSProperties = {
     fontFamily: "'JetBrains Mono', monospace",
-    fontSize: '28px',
+    fontSize: isMobile ? '20px' : '28px',
     fontWeight: 700,
   };
 
@@ -56,7 +58,7 @@ const StatsCard: React.FC<StatsCardProps> = ({ habits, allLogs }) => {
 
   const boxStyle: React.CSSProperties = {
     border: '2px solid #000',
-    padding: '14px',
+    padding: isMobile ? '10px' : '14px',
     textAlign: 'center',
   };
 
@@ -66,7 +68,7 @@ const StatsCard: React.FC<StatsCardProps> = ({ habits, allLogs }) => {
         background: '#FFFFFF',
         border: '3px solid #000',
         boxShadow: '4px 4px 0 #000',
-        padding: '20px',
+        padding: isMobile ? '16px' : '20px',
       }}
     >
       <div
@@ -86,7 +88,7 @@ const StatsCard: React.FC<StatsCardProps> = ({ habits, allLogs }) => {
         style={{
           display: 'grid',
           gridTemplateColumns: '1fr 1fr',
-          gap: '12px',
+          gap: isMobile ? '12px' : '12px',
         }}
       >
         <div style={boxStyle}>

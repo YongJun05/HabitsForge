@@ -31,6 +31,7 @@ import { suggestHabits } from '../../lib/gemini';
 import Spinner from '../ui/Spinner';
 import HabitIcon from '../ui/HabitIcon';
 import type { Habit, HabitSuggestion } from '../../types';
+import { useWindowSize } from '../../hooks/useWindowSize';
 
 const HABIT_ICONS: { id: string; Icon: LucideIcon }[] = [
   { id: 'flame', Icon: Flame },
@@ -64,6 +65,7 @@ interface HabitFormProps {
 }
 
 const HabitForm: React.FC<HabitFormProps> = ({ initialData, onSave, onCancel }) => {
+  const { isMobile } = useWindowSize();
   const [name, setName] = useState(initialData?.name ?? '');
   const [description, setDescription] = useState(initialData?.description ?? '');
   const [icon, setIcon] = useState(initialData?.icon ?? 'target');
@@ -126,13 +128,13 @@ const HabitForm: React.FC<HabitFormProps> = ({ initialData, onSave, onCancel }) 
 
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: isMobile ? '12px' : '16px' }}>
       {/* AI Coach Banner */}
       <div
         style={{
           background: '#F0E6FF',
           border: '3px solid #000000',
-          padding: '16px',
+          padding: isMobile ? '12px' : '16px',
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
@@ -140,13 +142,14 @@ const HabitForm: React.FC<HabitFormProps> = ({ initialData, onSave, onCancel }) 
           <span style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800 }}>AI HABIT COACH</span>
         </div>
 
-        <div style={{ display: 'flex', gap: '8px' }}>
+        <div style={{ display: 'flex', gap: '8px', flexDirection: isMobile ? 'column' : 'row' }}>
           <input
             className="neo-input"
             placeholder="Describe your goal..."
             value={goal}
             onChange={(e) => setGoal(e.target.value)}
             onKeyDown={(e) => { if (e.key === 'Enter') handleSuggest(); }}
+            style={{ fontSize: isMobile ? '16px' : undefined }}
           />
           <button
             className="neo-btn"
@@ -158,6 +161,8 @@ const HabitForm: React.FC<HabitFormProps> = ({ initialData, onSave, onCancel }) 
               padding: '12px 16px',
               fontSize: '12px',
               whiteSpace: 'nowrap',
+              minHeight: '44px',
+              width: isMobile ? '100%' : undefined,
             }}
           >
             {aiLoading ? 'SUGGESTING...' : 'SUGGEST'}
@@ -177,7 +182,7 @@ const HabitForm: React.FC<HabitFormProps> = ({ initialData, onSave, onCancel }) 
 
         {/* Suggestion cards */}
         {suggestions.length > 0 && (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '8px', marginTop: '12px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fit, minmax(160px, 1fr))', gap: '8px', marginTop: '12px' }}>
             {suggestions.map((s, i) => (
               <div
                 key={i}
@@ -218,6 +223,7 @@ const HabitForm: React.FC<HabitFormProps> = ({ initialData, onSave, onCancel }) 
           value={name}
           onChange={(e) => setName(e.target.value.slice(0, 50))}
           maxLength={50}
+          style={{ fontSize: isMobile ? '16px' : undefined }}
         />
         <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '11px', textAlign: 'right', marginTop: '2px' }}>
           {name.length}/50
@@ -236,7 +242,7 @@ const HabitForm: React.FC<HabitFormProps> = ({ initialData, onSave, onCancel }) 
           onChange={(e) => setDescription(e.target.value.slice(0, 200))}
           maxLength={200}
           rows={2}
-          style={{ resize: 'vertical' }}
+          style={{ resize: 'vertical', fontSize: isMobile ? '16px' : undefined }}
         />
         <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '11px', textAlign: 'right', marginTop: '2px' }}>
           {description.length}/200
@@ -248,15 +254,17 @@ const HabitForm: React.FC<HabitFormProps> = ({ initialData, onSave, onCancel }) 
         <label style={{ fontWeight: 800, fontSize: '12px', letterSpacing: '2px', display: 'block', marginBottom: '6px' }}>
           CHOOSE ICON
         </label>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, 48px)', gap: '8px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: `repeat(${isMobile ? 4 : 5}, ${isMobile ? 44 : 48}px)`, gap: '8px' }}>
           {HABIT_ICONS.map(({ id, Icon }) => (
             <button
               key={id}
               onClick={() => setIcon(id)}
               aria-label={`Choose ${id} icon`}
               style={{
-                width: '48px',
-                height: '48px',
+                width: isMobile ? '44px' : '48px',
+                height: isMobile ? '44px' : '48px',
+                minWidth: '44px',
+                minHeight: '44px',
                 border: '2px solid #000000',
                 boxShadow: icon === id ? '2px 2px 0px #000000' : '3px 3px 0px #000000',
                 background: icon === id ? '#FFE566' : '#FFFFFF',
@@ -279,14 +287,15 @@ const HabitForm: React.FC<HabitFormProps> = ({ initialData, onSave, onCancel }) 
         <label style={{ fontWeight: 800, fontSize: '12px', letterSpacing: '2px', display: 'block', marginBottom: '6px' }}>
           CARD COLOR
         </label>
-        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', gap: '8px', flexWrap: isMobile ? 'nowrap' : 'wrap', justifyContent: isMobile ? 'space-between' : undefined }}>
           {COLOR_OPTIONS.map((c) => (
             <button
               key={c}
               onClick={() => setColor(c)}
               style={{
-                width: '36px',
-                height: '36px',
+                width: isMobile ? '40px' : '36px',
+                height: isMobile ? '40px' : '36px',
+                minWidth: '40px',
                 background: c,
                 border: '2px solid #000000',
                 cursor: 'pointer',
@@ -322,7 +331,7 @@ const HabitForm: React.FC<HabitFormProps> = ({ initialData, onSave, onCancel }) 
             className="neo-input"
             value={reminderTime}
             onChange={(e) => setReminderTime(e.target.value)}
-            style={{ marginTop: '8px', maxWidth: '160px' }}
+            style={{ marginTop: '8px', maxWidth: isMobile ? '100%' : '160px', fontSize: isMobile ? '16px' : undefined }}
           />
         )}
       </div>
@@ -347,6 +356,7 @@ const HabitForm: React.FC<HabitFormProps> = ({ initialData, onSave, onCancel }) 
             width: '100%',
             fontFamily: "'Syne', sans-serif",
             fontWeight: 800,
+            minHeight: '44px',
           }}
         >
           {initialData ? 'SAVE CHANGES' : 'ADD HABIT'}
@@ -360,6 +370,7 @@ const HabitForm: React.FC<HabitFormProps> = ({ initialData, onSave, onCancel }) 
             padding: '12px 24px',
             fontSize: '14px',
             width: '100%',
+            minHeight: '44px',
           }}
         >
           CANCEL

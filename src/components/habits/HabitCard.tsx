@@ -10,6 +10,7 @@ import type { HabitWithStreak } from '../../types';
 import { getCurrentWeekString, getMilestoneBadge } from '../../lib/streakUtils';
 import HabitGrid from './HabitGrid';
 import HabitIcon from '../ui/HabitIcon';
+import { useWindowSize } from '../../hooks/useWindowSize';
 
 interface HabitCardProps {
   habit: HabitWithStreak;
@@ -31,6 +32,7 @@ const HabitCard: React.FC<HabitCardProps> = ({
   habit, onEdit, onDelete, onToggle, onViewDetail, onFreeze,
   draggable, onDragStart, onDragOver, onDrop, isDragOver, isDragging,
 }) => {
+  const { isMobile } = useWindowSize();
   const [showNotePanel, setShowNotePanel] = useState(false);
   const [noteText, setNoteText] = useState('');
   const [noteLoading, setNoteLoading] = useState(false);
@@ -96,7 +98,7 @@ const HabitCard: React.FC<HabitCardProps> = ({
         border: '3px solid #000000',
         boxShadow: '4px 4px 0px #000000',
         background: '#FFFFFF',
-        padding: '20px',
+        padding: isMobile ? '16px' : '20px',
         position: 'relative',
         borderLeft: streakHighlight ?? '3px solid #000000',
         opacity: isDragging ? 0.5 : 1,
@@ -105,7 +107,7 @@ const HabitCard: React.FC<HabitCardProps> = ({
       }}
     >
       {/* Top row: drag handle + icon + name + streak badge + freeze */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '10px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? '8px' : '12px', marginBottom: '10px', flexWrap: isMobile ? 'wrap' : 'nowrap' }}>
         {draggable && (
           <div style={{ color: '#999', cursor: 'grab', padding: '0 8px 0 0', display: 'flex', alignItems: 'center' }}>
             <GripVertical size={18} />
@@ -114,7 +116,7 @@ const HabitCard: React.FC<HabitCardProps> = ({
         <div className="neo-icon-box" style={{ background: habit.color }}>
           <HabitIcon iconId={habit.icon} />
         </div>
-        <span style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: '18px', flex: 1, textTransform: 'uppercase' }}>
+        <span style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: isMobile ? '15px' : '18px', flex: 1, textTransform: 'uppercase', minWidth: isMobile ? '140px' : undefined }}>
           {habit.name}
         </span>
         {habit.currentStreak > 0 && (
@@ -123,8 +125,8 @@ const HabitCard: React.FC<HabitCardProps> = ({
               background: '#ffe600',
               color: '#000000',
               border: '2px solid #000000',
-              padding: '4px 12px',
-              fontSize: '12px',
+              padding: isMobile ? '3px 8px' : '4px 12px',
+              fontSize: isMobile ? '10px' : '12px',
               fontWeight: 800,
               fontFamily: "'JetBrains Mono', monospace",
               display: 'flex',
@@ -143,8 +145,9 @@ const HabitCard: React.FC<HabitCardProps> = ({
               border: '2px solid #000',
               boxShadow: '2px 2px 0 #000',
               background: 'white',
-              padding: '4px 10px',
-              fontSize: '12px',
+              padding: isMobile ? '4px 8px' : '4px 10px',
+              fontSize: isMobile ? '10px' : '12px',
+              minHeight: '44px',
               fontFamily: "'Syne', sans-serif",
               fontWeight: 800,
               cursor: 'pointer',
@@ -218,6 +221,9 @@ const HabitCard: React.FC<HabitCardProps> = ({
             display: 'flex',
             alignItems: 'center',
             gap: '6px',
+            flex: isMobile ? 1 : undefined,
+            justifyContent: 'center',
+            minHeight: '44px',
           }}
         >
           {habit.isDoneToday ? (
@@ -239,7 +245,14 @@ const HabitCard: React.FC<HabitCardProps> = ({
             background: '#ffe600',
             border: '2px solid #000000',
             boxShadow: '2px 2px 0px #000000',
-            padding: '6px 8px',
+            padding: isMobile ? 0 : '6px 8px',
+            width: isMobile ? '32px' : undefined,
+            height: isMobile ? '32px' : undefined,
+            minWidth: isMobile ? '44px' : '44px',
+            minHeight: '44px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
           }}
           title="Edit habit"
         >
@@ -255,7 +268,14 @@ const HabitCard: React.FC<HabitCardProps> = ({
             color: '#FFFFFF',
             border: '2px solid #000000',
             boxShadow: '2px 2px 0px #000000',
-            padding: '6px 8px',
+            padding: isMobile ? 0 : '6px 8px',
+            width: isMobile ? '32px' : undefined,
+            height: isMobile ? '32px' : undefined,
+            minWidth: '44px',
+            minHeight: '44px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
           }}
           title="View details"
         >
@@ -271,7 +291,14 @@ const HabitCard: React.FC<HabitCardProps> = ({
             color: '#FFFFFF',
             border: '2px solid #000000',
             boxShadow: '2px 2px 0px #000000',
-            padding: '6px 8px',
+            padding: isMobile ? 0 : '6px 8px',
+            width: isMobile ? '32px' : undefined,
+            height: isMobile ? '32px' : undefined,
+            minWidth: '44px',
+            minHeight: '44px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
           }}
           title="Archive habit"
         >

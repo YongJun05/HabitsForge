@@ -9,10 +9,12 @@ import { supabase } from '../lib/supabase';
 import { signInWithGoogle } from '../lib/auth';
 import Navbar from '../components/layout/Navbar';
 import Footer from '../components/layout/Footer';
-import { Sparkles, Mail, Eye, EyeOff } from 'lucide-react';
+import { Sparkles, Eye, EyeOff } from 'lucide-react';
+import { useWindowSize } from '../hooks/useWindowSize';
 
 const SignupPage: React.FC = () => {
   const navigate = useNavigate();
+  const { isMobile } = useWindowSize();
   const [displayName, setDisplayName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -66,17 +68,17 @@ const SignupPage: React.FC = () => {
 
   const labelStyle: React.CSSProperties = { fontFamily: "'DM Sans', sans-serif", fontWeight: 800, textTransform: 'uppercase', letterSpacing: '2px', fontSize: '12px', display: 'block', marginBottom: '6px' };
   const errStyle: React.CSSProperties = { fontFamily: "'JetBrains Mono', monospace", fontSize: '12px', color: '#FF2D9B', marginTop: '4px' };
-  const eyeBtnStyle: React.CSSProperties = { position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#666', padding: '0', display: 'flex', alignItems: 'center' };
+  const eyeBtnStyle: React.CSSProperties = { position: 'absolute', right: '8px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#666', padding: '0', display: 'flex', alignItems: 'center', justifyContent: 'center', minWidth: '44px', minHeight: '44px' };
 
   return (
     <div style={{ minHeight: '100vh' }}>
       <Navbar variant="landing" />
-      <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '40px 24px' }}>
-        <div style={{ maxWidth: '480px', width: '100%', background: '#FFFFFF', border: '3px solid #000000', boxShadow: '6px 6px 0px #000000', padding: '32px' }}>
+      <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: isMobile ? '24px 16px' : '40px 24px' }}>
+        <div style={{ maxWidth: isMobile ? 'none' : '480px', width: '100%', background: '#FFFFFF', border: '3px solid #000000', boxShadow: isMobile ? 'none' : '6px 6px 0px #000000', padding: isMobile ? '20px 16px' : '32px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
             <div className="neo-icon-box" style={{ background: '#FF2D9B' }}><Sparkles size={22} strokeWidth={2} /></div>
             <div>
-              <div className="font-hero" style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: '32px' }}>CREATE ACCOUNT.</div>
+              <div className="font-hero" style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: isMobile ? '28px' : '32px' }}>CREATE ACCOUNT.</div>
               <div className="font-mono" style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '14px' }}>Start building streaks that stick.</div>
             </div>
           </div>
@@ -84,13 +86,13 @@ const SignupPage: React.FC = () => {
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
             <div>
               <label style={labelStyle}>DISPLAY NAME</label>
-              <input className="neo-input" placeholder="Your name" value={displayName} onChange={(e) => setDisplayName(e.target.value)} />
+              <input className="neo-input" placeholder="Your name" value={displayName} onChange={(e) => setDisplayName(e.target.value)} style={{ padding: isMobile ? '10px 12px' : undefined, fontSize: isMobile ? '16px' : undefined }} />
               {errors.includes('Display name is required') && <div style={errStyle}>Display name is required</div>}
             </div>
 
             <div>
               <label style={labelStyle}>EMAIL</label>
-              <input className="neo-input" type="email" placeholder="you@example.com" value={email} onChange={(e) => setEmail(e.target.value)} />
+              <input className="neo-input" type="email" placeholder="you@example.com" value={email} onChange={(e) => setEmail(e.target.value)} style={{ padding: isMobile ? '10px 12px' : undefined, fontSize: isMobile ? '16px' : undefined }} />
               {errors.includes('Email is required') && <div style={errStyle}>Email is required</div>}
               {errors.includes('Invalid email format') && <div style={errStyle}>Invalid email format</div>}
             </div>
@@ -98,7 +100,7 @@ const SignupPage: React.FC = () => {
             <div>
               <label style={labelStyle}>PASSWORD</label>
               <div style={{ position: 'relative' }}>
-                <input className="neo-input" type={showPassword ? 'text' : 'password'} placeholder="·······" value={password} onChange={(e) => setPassword(e.target.value)} style={{ paddingRight: '44px' }} />
+                <input className="neo-input" type={showPassword ? 'text' : 'password'} placeholder="·······" value={password} onChange={(e) => setPassword(e.target.value)} style={{ paddingRight: '52px', paddingTop: isMobile ? '10px' : undefined, paddingBottom: isMobile ? '10px' : undefined, fontSize: isMobile ? '16px' : undefined }} />
                 <button type="button" onClick={() => setShowPassword(!showPassword)} style={eyeBtnStyle}>
                   {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
@@ -110,7 +112,7 @@ const SignupPage: React.FC = () => {
             <div>
               <label style={labelStyle}>CONFIRM PASSWORD</label>
               <div style={{ position: 'relative' }}>
-                <input className="neo-input" type={showConfirmPassword ? 'text' : 'password'} placeholder="·······" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') handleSignup(); }} style={{ paddingRight: '44px' }} />
+                <input className="neo-input" type={showConfirmPassword ? 'text' : 'password'} placeholder="·······" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') handleSignup(); }} style={{ paddingRight: '52px', paddingTop: isMobile ? '10px' : undefined, paddingBottom: isMobile ? '10px' : undefined, fontSize: isMobile ? '16px' : undefined }} />
                 <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)} style={eyeBtnStyle}>
                   {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
@@ -122,13 +124,13 @@ const SignupPage: React.FC = () => {
               <div style={errStyle}>{errors[0]}</div>
             )}
 
-            <button className="neo-btn" onClick={handleSignup} disabled={loading} style={{ background: '#2563EB', color: '#FFFFFF', padding: '10px 18px', fontSize: '14px', width: '100%', fontFamily: "'Syne', sans-serif", fontWeight: 800, textTransform: 'uppercase', letterSpacing: '1px' }}>
+            <button className="neo-btn" onClick={handleSignup} disabled={loading} style={{ background: '#2563EB', color: '#FFFFFF', padding: '10px 18px', fontSize: '14px', width: '100%', fontFamily: "'Syne', sans-serif", fontWeight: 800, textTransform: 'uppercase', letterSpacing: '1px', minHeight: '44px' }}>
               {loading ? 'CREATING...' : 'GET STARTED →'}
             </button>
 
             <div style={{ textAlign: 'center', color: '#666', fontSize: '12px', margin: '16px 0' }}>— OR —</div>
 
-            <button className="neo-btn" onClick={handleGoogleSignup} disabled={googleLoading} style={{ background: '#FFFFFF', color: '#000000', padding: '12px', fontSize: '14px', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
+            <button className="neo-btn" onClick={handleGoogleSignup} disabled={googleLoading} style={{ background: '#FFFFFF', color: '#000000', padding: '12px', fontSize: '14px', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', minHeight: '44px' }}>
               <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
                 <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" />
                 <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />

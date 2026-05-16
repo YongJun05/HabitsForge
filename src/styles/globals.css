@@ -11,6 +11,15 @@ body {
   color: #000000;
   margin: 0;
   padding: 0;
+  overflow-x: hidden;
+}
+
+html {
+  overflow-x: hidden;
+}
+
+* {
+  box-sizing: border-box;
 }
 
 h1,
@@ -29,6 +38,10 @@ button {
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 1px;
+}
+
+button {
+  min-height: 44px;
 }
 
 label {
