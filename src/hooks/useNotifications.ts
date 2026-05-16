@@ -1,13 +1,13 @@
 /**
  * Hook for browser notification support and habit reminders.
  *
- * Schedules a 60-second interval that checks if any habit's reminder_time
- * matches the current time. If so, and the habit isn't done today,
- * a browser notification is fired.
+ * Accepts the current habits list directly and manages a 60-second
+ * interval internally. Uses a ref to always read the LATEST habits/permission
+ * inside the interval callback, avoiding stale closure bugs.
  *
- * Important: the interval is cleared on component unmount to avoid memory leaks.
- * Also handles the case where the Notification API is not supported
- * (e.g. Firefox private mode, iOS Safari).
+ * Clears the interval on unmount to prevent memory leaks.
+ * Gracefully handles browsers where the Notification API is absent
+ * (e.g. iOS Safari, Firefox private mode).
  */
 import { useState, useCallback, useRef, useEffect } from 'react';
 import type { HabitWithStreak, NotificationPermissionStatus } from '../types';
@@ -20,55 +20,42 @@ interface UseNotificationsReturn {
   permission: NotificationPermissionStatus;
   requestPermission: () => Promise<void>;
   isSupported: boolean;
-  scheduleReminders: (habits: HabitWithStreak[]) => void;
 }
 
-export function useNotifications(): UseNotificationsReturn {
+export function useNotifications(habits: HabitWithStreak[] = []): UseNotificationsReturn {
   const [permission, setPermission] = useState<NotificationPermissionStatus>(() => {
-    if (typeof Notification === 'undefined') return 'unsupported';
+    if (!isNotificationSupported) return 'unsupported';
     return Notification.permission as NotificationPermissionStatus;
   });
 
-  // Debug: log permission state on mount so we can verify in DevTools
+  // Debug: log permission on mount — check DevTools console to verify
   useEffect(() => {
-    console.log('Notification permission:', typeof Notification !== 'undefined' ? Notification.permission : 'unsupported');
+    console.log('[HabitsForge] Notification permission:', isNotificationSupported ? Notification.permission : 'unsupported');
   }, []);
 
-  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  // Track which reminders we've already fired this minute to avoid duplicates
+  // Keep a ref to the latest habits and permission so the interval
+  // callback always sees fresh values without needing to be recreated.
+  const habitsRef = useRef<HabitWithStreak[]>(habits);
+  const permissionRef = useRef<NotificationPermissionStatus>(permission);
+
+  useEffect(() => { habitsRef.current = habits; }, [habits]);
+  useEffect(() => { permissionRef.current = permission; }, [permission]);
+
+  // Track which reminders have already fired this minute to avoid duplicates
   const firedRef = useRef<Set<string>>(new Set());
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  const isSupported = typeof Notification !== 'undefined';
+  // Start the interval once on mount; it reads from refs so it never goes stale
+  useEffect(() => {
+    if (!isNotificationSupported) return;
 
-  const requestPermission = useCallback(async () => {
-    if (!isSupported) return;
-
-    try {
-      const result = await Notification.requestPermission();
-      setPermission(result as NotificationPermissionStatus);
-    } catch {
-      setPermission('denied');
-    }
-  }, [isSupported]);
-
-  const scheduleReminders = useCallback((habits: HabitWithStreak[]) => {
-    // Clear any existing interval before setting a new one
-    if (intervalRef.current) {
-      clearInterval(intervalRef.current);
-      intervalRef.current = null;
-    }
-
-    if (!isSupported || permission !== 'granted') return;
-
-    // Reset fired set when rescheduling
-    firedRef.current = new Set();
-
-    // Check every 60 seconds if any habit needs a reminder
     intervalRef.current = setInterval(() => {
+      if (permissionRef.current !== 'granted') return;
+
       const now = new Date();
       const currentTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
 
-      for (const habit of habits) {
+      for (const habit of habitsRef.current) {
         if (!habit.reminder_enabled || !habit.reminder_time) continue;
         if (habit.isDoneToday) continue;
         if (habit.reminder_time !== currentTime) continue;
@@ -82,24 +69,31 @@ export function useNotifications(): UseNotificationsReturn {
           new Notification('HabitsForge', {
             body: `Time for: ${habit.name}!`,
             icon: '/vite.svg',
-            tag: habit.id, // prevents duplicate notifications for the same habit
+            tag: habit.id, // prevents duplicate OS-level notifications
           });
         } catch {
           // Notification creation can fail in some contexts — fail silently
         }
       }
     }, 60000);
-  }, [isSupported, permission]);
 
-  // Cleanup interval on unmount
-  useEffect(() => {
     return () => {
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
         intervalRef.current = null;
       }
     };
+  }, []); // intentionally empty — interval runs once, reads via refs
+
+  const requestPermission = useCallback(async () => {
+    if (!isNotificationSupported) return;
+    try {
+      const result = await Notification.requestPermission();
+      setPermission(result as NotificationPermissionStatus);
+    } catch {
+      setPermission('denied');
+    }
   }, []);
 
-  return { permission, requestPermission, isSupported, scheduleReminders };
+  return { permission, requestPermission, isSupported: isNotificationSupported };
 }
