@@ -1,3 +1,3 @@
-# HabitForge
+# HabitsForge
 
-HabitForge is a habit tracking app with streaks, reminders, and insights.
+HabitsForge is a habit tracking app with streaks, reminders, and insights.

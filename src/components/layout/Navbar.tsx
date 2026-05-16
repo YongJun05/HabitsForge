@@ -1,5 +1,5 @@
 /**
- * Top navigation bar. Shows the HabitForge logo on the left
+ * Top navigation bar. Shows the HabitsForge logo on the left
  * and user info + logout on the right.
  * Fetches display_name from the profiles table on mount.
  */
@@ -108,7 +108,7 @@ const Navbar: React.FC<NavbarProps> = ({ variant = 'app' }) => {
           <Flame size={22} strokeWidth={3} />
         </div>
         <span style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: '22px', cursor: 'pointer', textTransform: 'uppercase', letterSpacing: '1px' }}>
-          HabitForge
+          HabitsForge
         </span>
       </div>
 

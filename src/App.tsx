@@ -26,7 +26,7 @@ function App() {
             style={{ maxWidth: '640px', margin: '0 auto', padding: '24px', textAlign: 'center', background: '#FFFFFF', border: '3px solid #000000', boxShadow: '4px 4px 0px #000000' }}
           >
             <h1 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: '28px', marginBottom: '12px' }}>
-              HabitForge setup required
+              HabitsForge setup required
             </h1>
             <p style={{ margin: '0 0 16px', color: '#333', lineHeight: 1.5 }}>
               Add your Supabase credentials to a .env file so the app can connect.

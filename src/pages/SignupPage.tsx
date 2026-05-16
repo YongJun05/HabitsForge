@@ -24,7 +24,7 @@ const SignupPage: React.FC = () => {
   const [errors, setErrors] = useState<string[]>([]);
 
   useEffect(() => {
-    document.title = 'HabitForge — Sign Up';
+    document.title = 'HabitsForge — Sign Up';
   }, []);
 
   const validate = (): string[] => {

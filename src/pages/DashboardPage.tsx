@@ -33,7 +33,7 @@ const DashboardPage: React.FC = () => {
     const [editingHabit, setEditingHabit] = useState<HabitWithStreak | undefined>(undefined);
     const [formKey, setFormKey] = useState(0);
     const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
-    const [notifDismissed, setNotifDismissed] = useState(() => localStorage.getItem('habitforge_notif_dismissed') === 'true');
+    const [notifDismissed, setNotifDismissed] = useState(() => localStorage.getItem('habitsforge_notif_dismissed') === 'true');
 
     // Confetti: track previous done count to detect new full completion
     const prevDoneCountRef = useRef<number>(-1);
@@ -46,7 +46,7 @@ const DashboardPage: React.FC = () => {
     const [detailLogNotes, setDetailLogNotes] = useState<Map<string, string | null>>(new Map());
 
     useEffect(() => {
-        document.title = 'HabitForge — Dashboard';
+        document.title = 'HabitsForge — Dashboard';
     }, []);
 
     useEffect(() => {
@@ -349,7 +349,7 @@ const DashboardPage: React.FC = () => {
                                         className="neo-btn"
                                         onClick={() => {
                                             setNotifDismissed(true);
-                                            localStorage.setItem('habitforge_notif_dismissed', 'true');
+                                            localStorage.setItem('habitsforge_notif_dismissed', 'true');
                                         }}
                                         style={{ background: '#FFFFFF', color: '#000000', padding: '8px 12px', fontSize: '12px', letterSpacing: '2px' }}
                                     >

@@ -21,12 +21,12 @@ const SettingsPage: React.FC = () => {
   const [email, setEmail] = useState('');
   const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
-  const [notifGlobal, setNotifGlobal] = useState(() => localStorage.getItem('habitforge_notifications') !== 'false');
+  const [notifGlobal, setNotifGlobal] = useState(() => localStorage.getItem('habitsforge_notifications') !== 'false');
   const [archivedHabits, setArchivedHabits] = useState<Habit[]>([]);
   const [archiveLoading, setArchiveLoading] = useState(false);
 
   useEffect(() => {
-    document.title = 'HabitForge — Settings';
+    document.title = 'HabitsForge — Settings';
 
     async function loadProfile() {
       const { data: { user } } = await supabase.auth.getUser();
@@ -93,7 +93,7 @@ const SettingsPage: React.FC = () => {
   const handleToggleNotifGlobal = () => {
     const newVal = !notifGlobal;
     setNotifGlobal(newVal);
-    localStorage.setItem('habitforge_notifications', String(newVal));
+    localStorage.setItem('habitsforge_notifications', String(newVal));
     setToast({ message: newVal ? 'Notifications enabled' : 'Notifications disabled', type: 'info' });
   };
 

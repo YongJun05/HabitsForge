@@ -59,7 +59,7 @@ const Toast: React.FC<ToastProps> = ({ message, type, visible, onClose }) => {
 };
 
 // Inject slide-in animation
-const styleId = 'habitforge-toast-style';
+const styleId = 'habitsforge-toast-style';
 if (typeof document !== 'undefined' && !document.getElementById(styleId)) {
   const style = document.createElement('style');
   style.id = styleId;

@@ -9,7 +9,7 @@ import Footer from '../components/layout/Footer';
 
 const NotFoundPage: React.FC = () => {
   useEffect(() => {
-    document.title = 'HabitForge — 404';
+    document.title = 'HabitsForge — 404';
   }, []);
 
   return (

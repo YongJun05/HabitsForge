@@ -70,7 +70,7 @@ export function useNotifications(): UseNotificationsReturn {
         firedRef.current.add(key);
 
         try {
-          new Notification('HabitForge', {
+          new Notification('HabitsForge', {
             body: `Time for: ${habit.name}!`,
           });
         } catch {

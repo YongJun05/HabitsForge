@@ -14,7 +14,7 @@ const LandingPage: React.FC = () => {
   const [authChecked, setAuthChecked] = useState(false);
 
   useEffect(() => {
-    document.title = 'HabitForge — Build Better Habits';
+    document.title = 'HabitsForge — Build Better Habits';
   }, []);
 
   useEffect(() => {
@@ -72,7 +72,7 @@ const LandingPage: React.FC = () => {
               <span>stick.</span>
             </h1>
             <p className="landing-hero__text">
-              HabitForge turns your goals into daily wins with an AI coach, streak tracking, and zero fluff.
+              HabitsForge turns your goals into daily wins with an AI coach, streak tracking, and zero fluff.
             </p>
             <div className="landing-hero__actions">
               <button className="neo-btn landing-hero__primary" onClick={() => navigate('/signup')}>
@@ -102,7 +102,7 @@ const LandingPage: React.FC = () => {
       <section className="landing-features">
         <div className="landing-features__inner">
           <div className="landing-features__intro">
-            <h2>Why HabitForge?</h2>
+            <h2>Why HabitsForge?</h2>
             <p>No gimmicks. Just bold, science-backed tracking with an AI in your corner.</p>
           </div>
 

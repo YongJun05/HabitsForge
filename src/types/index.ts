@@ -1,5 +1,5 @@
 /**
- * TypeScript type definitions for HabitForge.
+ * TypeScript type definitions for HabitsForge.
  * These types mirror the database schema and add computed fields
  * used by the UI layer (streaks, recent logs, etc.).
  */
