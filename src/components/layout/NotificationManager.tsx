@@ -14,7 +14,8 @@
  */
 import React, { useEffect, useRef } from 'react';
 import { supabase } from '../../lib/supabase';
-import { isNotificationSupported, addStoredNotification } from '../../lib/notificationStore';
+import { addStoredNotification } from '../../lib/notificationStore';
+import { isNotificationSupported } from '../../hooks/useNotifications';
 
 interface ReminderHabit {
   id: string;
