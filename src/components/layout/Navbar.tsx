@@ -4,7 +4,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
-import { Flame, LogOut, Menu, X } from 'lucide-react';
+import { Flame, LogOut, Menu, Settings, X } from 'lucide-react';
 import { useWindowSize } from '../../hooks/useWindowSize';
 
 interface NavbarProps {
@@ -173,6 +173,30 @@ const Navbar: React.FC<NavbarProps> = ({ variant = 'app' }) => {
               >
                 {initial}
               </div>
+              <button
+                className="neo-btn"
+                onClick={() => navigate('/settings')}
+                style={{
+                  background: '#FFFFFF',
+                  color: '#000000',
+                  border: '2px solid #000000',
+                  boxShadow: '2px 2px 0 #000000',
+                  padding: '6px 14px',
+                  fontSize: '13px',
+                  fontFamily: "'Syne', sans-serif",
+                  fontWeight: 800,
+                  textTransform: 'uppercase',
+                  borderRadius: 0,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  minHeight: '44px',
+                  cursor: 'pointer',
+                }}
+              >
+                <Settings size={14} />
+                Settings
+              </button>
               <button
                 className="neo-btn"
                 onClick={handleLogout}
