@@ -7,6 +7,7 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import AuthGuard from './components/layout/AuthGuard';
 import Navbar from './components/layout/Navbar';
+import NotificationManager from './components/layout/NotificationManager';
 import { isSupabaseConfigured } from './lib/supabase';
 import LandingPage from './pages/LandingPage';
 import LoginPage from './pages/LoginPage';
@@ -55,6 +56,8 @@ function App() {
 
   return (
     <BrowserRouter>
+      {/* Persistent background component — keeps reminder interval alive across all routes */}
+      <NotificationManager />
       <Routes>
         <Route path="/" element={<LandingPage />} />
         <Route path="/login" element={<LoginPage />} />

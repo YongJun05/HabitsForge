@@ -28,7 +28,7 @@ const DashboardPage: React.FC = () => {
     const location = useLocation();
     const { isMobile } = useWindowSize();
     const { habits, allLogs, loading, error, createHabit, updateHabit, deleteHabit, toggleDone, freezeHabit, reorderHabit } = useHabits();
-    const { permission, requestPermission, isSupported } = useNotifications(habits);
+    const { permission, requestPermission, isSupported } = useNotifications();
 
     const [activeTab, setActiveTab] = useState(0);
     const [selectedHabitId, setSelectedHabitId] = useState<string | null>(null);
