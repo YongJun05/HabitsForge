@@ -14,7 +14,7 @@ const LandingPage: React.FC = () => {
   const [authChecked, setAuthChecked] = useState(false);
 
   useEffect(() => {
-    document.title = 'HabitsForge — Build Better Habits';
+    document.title = 'HabitsForge';
   }, []);
 
   useEffect(() => {

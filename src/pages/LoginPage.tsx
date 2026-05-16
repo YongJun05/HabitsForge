@@ -21,7 +21,7 @@ const LoginPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    document.title = 'HabitsForge — Login';
+    document.title = 'HabitsForge';
   }, []);
 
   const handleLogin = async () => {

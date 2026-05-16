@@ -108,7 +108,7 @@ const Navbar: React.FC<NavbarProps> = ({ variant = 'app' }) => {
           <Flame size={22} strokeWidth={3} />
         </div>
         <span style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: '22px', cursor: 'pointer', textTransform: 'uppercase', letterSpacing: '1px' }}>
-          HabitsForge
+          HABITSFORGE
         </span>
       </div>
 
