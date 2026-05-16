@@ -49,17 +49,20 @@ const StatsCard: React.FC<StatsCardProps> = ({ habits, allLogs }) => {
   const labelStyle: React.CSSProperties = {
     fontFamily: "'Syne', sans-serif",
     fontWeight: 800,
-    fontSize: '10px',
+    fontSize: isMobile ? '9px' : '11px',
     textTransform: 'uppercase',
-    letterSpacing: '2px',
+    letterSpacing: isMobile ? '0.5px' : '2px',
     color: '#666',
     marginTop: '4px',
   };
 
   const boxStyle: React.CSSProperties = {
     border: '2px solid #000',
-    padding: isMobile ? '10px' : '14px',
+    padding: isMobile ? '12px 8px' : '16px',
     textAlign: 'center',
+    minWidth: 0,
+    overflow: 'hidden',
+    ...(isMobile ? { width: '100%' } : { flex: 1 }),
   };
 
   return (
@@ -68,14 +71,16 @@ const StatsCard: React.FC<StatsCardProps> = ({ habits, allLogs }) => {
         background: '#FFFFFF',
         border: '3px solid #000',
         boxShadow: '4px 4px 0 #000',
-        padding: isMobile ? '16px' : '20px',
+        padding: isMobile ? '14px' : '20px',
+        minWidth: 0,
+        overflow: 'hidden',
       }}
     >
       <div
         style={{
           fontFamily: "'Syne', sans-serif",
           fontWeight: 800,
-          fontSize: '14px',
+          fontSize: isMobile ? '14px' : '16px',
           textTransform: 'uppercase',
           letterSpacing: '2px',
           marginBottom: '16px',
@@ -88,7 +93,7 @@ const StatsCard: React.FC<StatsCardProps> = ({ habits, allLogs }) => {
         style={{
           display: 'grid',
           gridTemplateColumns: '1fr 1fr',
-          gap: isMobile ? '12px' : '12px',
+          gap: isMobile ? '10px' : '12px',
         }}
       >
         <div style={boxStyle}>
@@ -104,7 +109,7 @@ const StatsCard: React.FC<StatsCardProps> = ({ habits, allLogs }) => {
           <div style={labelStyle}>OVERALL RATE</div>
         </div>
         <div style={boxStyle}>
-          <div style={{ ...numStyle, fontSize: '18px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+          <div style={{ ...numStyle, fontSize: isMobile ? '13px' : '18px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '100%' }}>
             {stats.bestHabitName}
           </div>
           <div style={labelStyle}>MOST CONSISTENT</div>
