@@ -58,6 +58,7 @@ const NotificationManager: React.FC = () => {
   const habitsRef = useRef<ReminderHabit[]>([]);
   const firedRef = useRef<Set<string>>(new Set());
   const lastFiredMinuteRef = useRef<string>('');
+  const userIdRef = useRef<string | null>(null);
 
   /**
    * Tick — check all habits against current time.
@@ -67,6 +68,7 @@ const NotificationManager: React.FC = () => {
    */
   const tick = useCallback(() => {
     const currentTime = getCurrentHHMM();
+    const userId = userIdRef.current;
 
     // Reset fired set when the minute changes
     if (currentTime !== lastFiredMinuteRef.current) {
@@ -75,7 +77,7 @@ const NotificationManager: React.FC = () => {
     }
 
     const habits = habitsRef.current;
-    if (habits.length === 0) return;
+    if (habits.length === 0 || !userId) return;
 
     for (const habit of habits) {
       if (!habit.reminder_enabled || !habit.reminder_time) continue;
@@ -90,7 +92,7 @@ const NotificationManager: React.FC = () => {
       firedRef.current.add(key);
 
       // Always add to in-app store so bell updates immediately (works on mobile too)
-      addStoredNotification(habit.id, habit.name);
+      addStoredNotification(userId, habit.id, habit.name);
 
       // Only try to show system notification if supported and granted
       if (isNotificationSupported && typeof Notification !== 'undefined' && Notification.permission === 'granted') {
@@ -118,8 +120,11 @@ const NotificationManager: React.FC = () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session?.user) {
         habitsRef.current = [];
+        userIdRef.current = null;
         return;
       }
+      
+      userIdRef.current = session.user.id;
 
       const today = new Date();
       const todayStr = [

@@ -31,6 +31,7 @@ interface BellButtonProps {
   notifications: AppNotification[];
   onOpen: () => void;
   onClearAll: () => void;
+  onMarkAllRead: () => void;
 }
 
 const BellButton: React.FC<BellButtonProps> = ({
@@ -38,6 +39,7 @@ const BellButton: React.FC<BellButtonProps> = ({
   notifications,
   onOpen,
   onClearAll,
+  onMarkAllRead,
 }) => {
   const [open, setOpen] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
@@ -57,7 +59,7 @@ const BellButton: React.FC<BellButtonProps> = ({
 
   const handleClick = () => {
     if (!open) {
-      markAllRead();
+      onMarkAllRead();
       onOpen();
     }
     setOpen((o) => !o);
@@ -294,6 +296,7 @@ const Navbar: React.FC<NavbarProps> = ({ variant = 'app' }) => {
   const navigate = useNavigate();
   const [displayName, setDisplayName] = useState('');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [userId, setUserId] = useState<string | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
   const [notifications, setNotifications] = useState<AppNotification[]>([]);
@@ -311,6 +314,7 @@ const Navbar: React.FC<NavbarProps> = ({ variant = 'app' }) => {
 
         if (session?.user) {
           setIsAuthenticated(true);
+          setUserId(session.user.id);
           const { data } = await supabase
             .from('profiles')
             .select('display_name')
@@ -333,11 +337,13 @@ const Navbar: React.FC<NavbarProps> = ({ variant = 'app' }) => {
           }
         } else {
           setIsAuthenticated(false);
+          setUserId(null);
           setDisplayName('');
         }
       } catch {
         if (!isMounted) return;
         setIsAuthenticated(false);
+        setUserId(null);
         setDisplayName('');
       }
     }
@@ -357,13 +363,18 @@ const Navbar: React.FC<NavbarProps> = ({ variant = 'app' }) => {
   // Notification store — initialise and listen for updates via custom event
   useEffect(() => {
     const refresh = () => {
-      setUnreadCount(getUnreadCount());
-      setNotifications(getStoredNotifications());
+      if (userId) {
+        setUnreadCount(getUnreadCount(userId));
+        setNotifications(getStoredNotifications(userId));
+      } else {
+        setUnreadCount(0);
+        setNotifications([]);
+      }
     };
     refresh();
     window.addEventListener(NOTIF_EVENT, refresh);
     return () => window.removeEventListener(NOTIF_EVENT, refresh);
-  }, []);
+  }, [userId]);
 
   const handleLogout = async () => {
     try {
@@ -373,6 +384,7 @@ const Navbar: React.FC<NavbarProps> = ({ variant = 'app' }) => {
       // Ignore logout errors silently and just navigate away
     } finally {
       setIsAuthenticated(false);
+      setUserId(null);
       setDisplayName('');
       navigate('/', { replace: true });
     }
@@ -404,10 +416,17 @@ const Navbar: React.FC<NavbarProps> = ({ variant = 'app' }) => {
     unreadCount,
     notifications,
     onOpen: () => {
-      setUnreadCount(getUnreadCount());
-      setNotifications(getStoredNotifications());
+      if (userId) {
+        setUnreadCount(getUnreadCount(userId));
+        setNotifications(getStoredNotifications(userId));
+      }
     },
-    onClearAll: clearAllNotifications,
+    onClearAll: () => {
+      if (userId) clearAllNotifications(userId);
+    },
+    onMarkAllRead: () => {
+      if (userId) markAllRead(userId);
+    },
   };
 
   return (

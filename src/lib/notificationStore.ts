@@ -14,20 +14,22 @@ export interface AppNotification {
   read: boolean;
 }
 
-const STORAGE_KEY = 'habitsforge_notif_center';
+const getStorageKey = (userId: string) => `habitsforge_notif_center_${userId}`;
 const MAX_NOTIFICATIONS = 30;
 export const NOTIF_EVENT = 'habitsforge:notification';
 
-export function getStoredNotifications(): AppNotification[] {
+export function getStoredNotifications(userId: string): AppNotification[] {
+  if (!userId) return [];
   try {
-    return JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '[]');
+    return JSON.parse(localStorage.getItem(getStorageKey(userId)) ?? '[]');
   } catch {
     return [];
   }
 }
 
-export function addStoredNotification(habitId: string, habitName: string): void {
-  const existing = getStoredNotifications();
+export function addStoredNotification(userId: string, habitId: string, habitName: string): void {
+  if (!userId) return;
+  const existing = getStoredNotifications(userId);
   const newNotif: AppNotification = {
     id: `${habitId}-${Date.now()}`,
     habitId,
@@ -37,23 +39,26 @@ export function addStoredNotification(habitId: string, habitName: string): void 
   };
   // Prepend newest first, cap at MAX
   const updated = [newNotif, ...existing].slice(0, MAX_NOTIFICATIONS);
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+  localStorage.setItem(getStorageKey(userId), JSON.stringify(updated));
   window.dispatchEvent(new CustomEvent(NOTIF_EVENT));
 }
 
-export function markAllRead(): void {
-  const updated = getStoredNotifications().map((n) => ({ ...n, read: true }));
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+export function markAllRead(userId: string): void {
+  if (!userId) return;
+  const updated = getStoredNotifications(userId).map((n) => ({ ...n, read: true }));
+  localStorage.setItem(getStorageKey(userId), JSON.stringify(updated));
   window.dispatchEvent(new CustomEvent(NOTIF_EVENT));
 }
 
-export function clearAllNotifications(): void {
-  localStorage.removeItem(STORAGE_KEY);
+export function clearAllNotifications(userId: string): void {
+  if (!userId) return;
+  localStorage.removeItem(getStorageKey(userId));
   window.dispatchEvent(new CustomEvent(NOTIF_EVENT));
 }
 
-export function getUnreadCount(): number {
-  return getStoredNotifications().filter((n) => !n.read).length;
+export function getUnreadCount(userId: string): number {
+  if (!userId) return 0;
+  return getStoredNotifications(userId).filter((n) => !n.read).length;
 }
 
 /** Human-readable relative timestamp, e.g. "2 min ago", "Today 08:00" */
