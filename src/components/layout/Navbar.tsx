@@ -19,6 +19,7 @@ import {
   getStoredNotifications,
   getUnreadCount,
   markAllRead,
+  removeNotification,
   NOTIF_EVENT,
   type AppNotification,
 } from '../../lib/notificationStore';
@@ -32,6 +33,7 @@ interface BellButtonProps {
   onOpen: () => void;
   onClearAll: () => void;
   onMarkAllRead: () => void;
+  onRemoveNotification: (notificationId: string) => void;
 }
 
 const BellButton: React.FC<BellButtonProps> = ({
@@ -40,6 +42,7 @@ const BellButton: React.FC<BellButtonProps> = ({
   onOpen,
   onClearAll,
   onMarkAllRead,
+  onRemoveNotification,
 }) => {
   const [open, setOpen] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
@@ -192,6 +195,7 @@ const BellButton: React.FC<BellButtonProps> = ({
                   key={n.id}
                   onClick={() => {
                     navigate('/dashboard', { state: { activeTab: 2, selectedHabitId: n.habitId } });
+                    onRemoveNotification(n.id);
                     setOpen(false);
                   }}
                   style={{
@@ -426,6 +430,9 @@ const Navbar: React.FC<NavbarProps> = ({ variant = 'app' }) => {
     },
     onMarkAllRead: () => {
       if (userId) markAllRead(userId);
+    },
+    onRemoveNotification: (id: string) => {
+      if (userId) removeNotification(userId, id);
     },
   };
 

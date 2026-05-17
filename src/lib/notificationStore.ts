@@ -61,6 +61,13 @@ export function getUnreadCount(userId: string): number {
   return getStoredNotifications(userId).filter((n) => !n.read).length;
 }
 
+export function removeNotification(userId: string, notificationId: string): void {
+  if (!userId) return;
+  const updated = getStoredNotifications(userId).filter((n) => n.id !== notificationId);
+  localStorage.setItem(getStorageKey(userId), JSON.stringify(updated));
+  window.dispatchEvent(new CustomEvent(NOTIF_EVENT));
+}
+
 /** Human-readable relative timestamp, e.g. "2 min ago", "Today 08:00" */
 export function formatNotifTime(firedAt: number): string {
   const diff = Date.now() - firedAt;

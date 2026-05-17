@@ -290,9 +290,21 @@ const DashboardPage: React.FC = () => {
     }, [last30Days]);
 
     const recentLog = useMemo(() => {
+        if (!selectedHabit) return [];
         const entries: { date: string; done: boolean; note?: string | null }[] = [];
         const logSet = new Set(detailLogs);
-        for (let i = 0; i < 14; i++) {
+
+        const createdDate = new Date(selectedHabit.created_at);
+        createdDate.setHours(0, 0, 0, 0);
+        
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        
+        const diffTime = today.getTime() - createdDate.getTime();
+        const daysSinceCreation = Math.max(0, Math.floor(diffTime / (1000 * 60 * 60 * 24)));
+        const maxDays = Math.min(14, daysSinceCreation + 1);
+
+        for (let i = 0; i < maxDays; i++) {
             const d = new Date();
             d.setDate(d.getDate() - i);
             const year = d.getFullYear();
@@ -302,7 +314,7 @@ const DashboardPage: React.FC = () => {
             entries.push({ date: dateStr, done: logSet.has(dateStr), note: detailLogNotes.get(dateStr) ?? null });
         }
         return entries;
-    }, [detailLogs, detailLogNotes]);
+    }, [detailLogs, detailLogNotes, selectedHabit]);
 
     // Full-page loading state — shown while habits are being fetched for the first time
     if (loading && habits.length === 0) {
