@@ -39,6 +39,7 @@ const BellButton: React.FC<BellButtonProps> = ({
 }) => {
   const [open, setOpen] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
+  const navigate = useNavigate();
 
   // Close on outside click
   useEffect(() => {
@@ -185,30 +186,38 @@ const BellButton: React.FC<BellButtonProps> = ({
               {notifications.map((n, idx) => (
                 <div
                   key={n.id}
+                  onClick={() => {
+                    navigate('/dashboard', { state: { activeTab: 2, selectedHabitId: n.habitId } });
+                    setOpen(false);
+                  }}
                   style={{
-                    padding: '10px 14px',
+                    padding: '12px 14px',
                     borderBottom: idx < notifications.length - 1 ? '1px solid #e0e0e0' : 'none',
                     background: n.read ? '#FFFFFF' : '#fffde7',
                     display: 'flex',
-                    gap: '10px',
+                    gap: '12px',
                     alignItems: 'flex-start',
+                    cursor: 'pointer',
                   }}
+                  onMouseEnter={(e) => { e.currentTarget.style.background = n.read ? '#f9f9f9' : '#fff9c4'; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.background = n.read ? '#FFFFFF' : '#fffde7'; }}
                 >
                   {/* Icon */}
                   <div
                     style={{
-                      width: '28px',
-                      height: '28px',
+                      width: '32px',
+                      height: '32px',
                       border: '2px solid #000',
                       background: '#ffe600',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
                       flexShrink: 0,
-                      marginTop: '1px',
+                      marginTop: '2px',
+                      boxShadow: '2px 2px 0px #000000',
                     }}
                   >
-                    <Bell size={12} />
+                    <Bell size={14} />
                   </div>
 
                   {/* Text */}
@@ -217,7 +226,7 @@ const BellButton: React.FC<BellButtonProps> = ({
                       style={{
                         fontFamily: "'Syne', sans-serif",
                         fontWeight: 800,
-                        fontSize: '12px',
+                        fontSize: '13px',
                         textTransform: 'uppercase',
                         whiteSpace: 'nowrap',
                         overflow: 'hidden',
@@ -229,9 +238,20 @@ const BellButton: React.FC<BellButtonProps> = ({
                     <div
                       style={{
                         fontFamily: "'JetBrains Mono', monospace",
+                        fontSize: '11px',
+                        color: '#333',
+                        marginTop: '4px',
+                        lineHeight: 1.3,
+                      }}
+                    >
+                      It's time to complete your habit! Click to view details.
+                    </div>
+                    <div
+                      style={{
+                        fontFamily: "'JetBrains Mono', monospace",
                         fontSize: '10px',
                         color: '#888',
-                        marginTop: '2px',
+                        marginTop: '6px',
                       }}
                     >
                       {formatNotifTime(n.firedAt)}

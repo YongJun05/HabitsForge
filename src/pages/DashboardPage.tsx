@@ -54,9 +54,12 @@ const DashboardPage: React.FC = () => {
     }, []);
 
     useEffect(() => {
-        const state = location.state as { activeTab?: number } | null;
+        const state = location.state as { activeTab?: number; selectedHabitId?: string } | null;
         if (typeof state?.activeTab === 'number') {
             setActiveTab(state.activeTab);
+        }
+        if (state?.selectedHabitId) {
+            setSelectedHabitId(state.selectedHabitId);
         }
     }, [location.state]);
 

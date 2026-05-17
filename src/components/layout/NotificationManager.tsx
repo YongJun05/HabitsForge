@@ -49,9 +49,7 @@ const NotificationManager: React.FC = () => {
   // Tick — check all habits against current time
   // ------------------------------------------------------------------
   const tick = () => {
-    if (!isNotificationSupported) return;
-    if (typeof Notification === 'undefined') return;
-    if (Notification.permission !== 'granted') return;
+
 
     const currentTime = getCurrentHHMM();
 
@@ -80,15 +78,20 @@ const NotificationManager: React.FC = () => {
 
       console.log(`[HabitsForge] 🔔 Firing reminder for "${habit.name}" (${habitTime} === ${currentTime})`);
 
-      try {
-        new Notification('HabitsForge 🔥', {
-          body: `Time for: ${habit.name}!`,
-          icon: '/vite.svg',
-          tag: habit.id,
-        });
-        addStoredNotification(habit.id, habit.name);
-      } catch (err) {
-        console.error('[HabitsForge] Notification constructor error:', err);
+      // Always add to in-app store so bell updates immediately (works on mobile too)
+      addStoredNotification(habit.id, habit.name);
+
+      // Only try to show system notification if supported and granted
+      if (isNotificationSupported && typeof Notification !== 'undefined' && Notification.permission === 'granted') {
+        try {
+          new Notification('HabitsForge 🔥', {
+            body: `Time for: ${habit.name}!`,
+            icon: '/vite.svg',
+            tag: habit.id,
+          });
+        } catch (err) {
+          console.error('[HabitsForge] Notification constructor error:', err);
+        }
       }
     }
   };
@@ -162,12 +165,7 @@ const NotificationManager: React.FC = () => {
   };
 
   useEffect(() => {
-    if (!isNotificationSupported) {
-      console.log('[HabitsForge] NotificationManager: Notification API not supported');
-      return;
-    }
-
-    console.log('[HabitsForge] NotificationManager: mounted, permission =', Notification.permission);
+    console.log('[HabitsForge] NotificationManager: mounted, push supported =', isNotificationSupported);
 
     // Initial fetch (+ immediate tick inside fetchHabits)
     fetchHabits();
