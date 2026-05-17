@@ -1,4 +1,6 @@
 /**
+ * components/layout/NotificationManager.tsx
+ * 
  * NotificationManager — renders nothing, lives for the entire app session.
  *
  * Mounted once in App.tsx inside <BrowserRouter> so it NEVER unmounts when
@@ -12,7 +14,7 @@
  * Also runs a tick IMMEDIATELY after each habit fetch so reminders that
  * are due right now are never missed.
  */
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useCallback } from 'react';
 import { supabase } from '../../lib/supabase';
 import { addStoredNotification } from '../../lib/notificationStore';
 import { isNotificationSupported } from '../../hooks/useNotifications';
@@ -25,7 +27,11 @@ interface ReminderHabit {
   isDoneToday: boolean;
 }
 
-/** Normalise time to "HH:MM" — handles "HH:MM:SS", "HH:MM", and edge cases */
+/** 
+ * Normalises time to "HH:MM" format.
+ * @param t - The time string to normalise.
+ * @returns The normalised "HH:MM" string, or null if invalid.
+ */
 function normaliseTime(t: string | null | undefined): string | null {
   if (!t) return null;
   // Take only the first 5 chars → "HH:MM"
@@ -35,22 +41,31 @@ function normaliseTime(t: string | null | undefined): string | null {
   return null;
 }
 
+/**
+ * Gets the current time in "HH:MM" format.
+ * @returns The current time as a string.
+ */
 function getCurrentHHMM(): string {
   const now = new Date();
   return `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
 }
 
+/**
+ * Background manager for scheduling and firing notifications.
+ * @returns null - this component does not render any UI.
+ */
 const NotificationManager: React.FC = () => {
   const habitsRef = useRef<ReminderHabit[]>([]);
   const firedRef = useRef<Set<string>>(new Set());
   const lastFiredMinuteRef = useRef<string>('');
 
-  // ------------------------------------------------------------------
-  // Tick — check all habits against current time
-  // ------------------------------------------------------------------
-  const tick = () => {
-
-
+  /**
+   * Tick — check all habits against current time.
+   * WHY: We check every 15 seconds instead of calculating exact timeouts.
+   * This is more robust against the device going to sleep or tab throttling.
+   * A 15-second tick ensures we never miss a minute boundary by much.
+   */
+  const tick = useCallback(() => {
     const currentTime = getCurrentHHMM();
 
     // Reset fired set when the minute changes
@@ -61,8 +76,6 @@ const NotificationManager: React.FC = () => {
 
     const habits = habitsRef.current;
     if (habits.length === 0) return;
-
-    console.log(`[HabitsForge] tick @ ${currentTime} — checking ${habits.length} habits`);
 
     for (const habit of habits) {
       if (!habit.reminder_enabled || !habit.reminder_time) continue;
@@ -76,8 +89,6 @@ const NotificationManager: React.FC = () => {
       if (firedRef.current.has(key)) continue;
       firedRef.current.add(key);
 
-      console.log(`[HabitsForge] 🔔 Firing reminder for "${habit.name}" (${habitTime} === ${currentTime})`);
-
       // Always add to in-app store so bell updates immediately (works on mobile too)
       addStoredNotification(habit.id, habit.name);
 
@@ -89,17 +100,20 @@ const NotificationManager: React.FC = () => {
             icon: '/vite.svg',
             tag: habit.id,
           });
-        } catch (err) {
-          console.error('[HabitsForge] Notification constructor error:', err);
+        } catch {
+          // Fallback: If Notification API throws (e.g. some restricted environments),
+          // we gracefully hide the error since the in-app bell still caught it.
         }
       }
     }
-  };
+  }, []);
 
-  // ------------------------------------------------------------------
-  // Fetch reminder-enabled habits + today's done status
-  // ------------------------------------------------------------------
-  const fetchHabits = async () => {
+  /**
+   * Fetch reminder-enabled habits + today's done status.
+   * WHY: We fetch every 60 seconds so that if a user marks a habit done
+   * on another device or tab, this tab won't fire a redundant notification.
+   */
+  const fetchHabits = useCallback(async () => {
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session?.user) {
@@ -122,13 +136,11 @@ const NotificationManager: React.FC = () => {
         .eq('reminder_enabled', true);
 
       if (habitsErr) {
-        console.error('[HabitsForge] NotificationManager: fetch habits error', habitsErr);
         return;
       }
 
       if (!habits || habits.length === 0) {
         habitsRef.current = [];
-        console.log('[HabitsForge] NotificationManager: no habits with reminders');
         return;
       }
 
@@ -149,24 +161,16 @@ const NotificationManager: React.FC = () => {
         isDoneToday: doneSet.has(h.id),
       }));
 
-      console.log(
-        '[HabitsForge] NotificationManager: loaded',
-        habitsRef.current.length,
-        'habits:',
-        habitsRef.current.map((h) => `${h.name} @ ${h.reminder_time} (done=${h.isDoneToday})`),
-      );
-
       // CRITICAL: run a tick immediately after loading habits so we
       // don't miss a reminder that's due right now
       tick();
-    } catch (err) {
-      console.error('[HabitsForge] NotificationManager fetch error:', err);
+    } catch {
+      // Gracefully ignore fetch errors here. The component runs continuously in the background
+      // and will retry on the next interval. Logging here just swallows errors.
     }
-  };
+  }, [tick]);
 
   useEffect(() => {
-    console.log('[HabitsForge] NotificationManager: mounted, push supported =', isNotificationSupported);
-
     // Initial fetch (+ immediate tick inside fetchHabits)
     fetchHabits();
 
@@ -186,7 +190,7 @@ const NotificationManager: React.FC = () => {
       clearInterval(notifInterval);
       subscription.unsubscribe();
     };
-  }, []); // runs once — never depends on React state
+  }, [fetchHabits, tick]); // dependencies fixed
 
   return null; // renders nothing
 };

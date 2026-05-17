@@ -1,4 +1,6 @@
 /**
+ * lib/gemini.ts
+ * 
  * Gemini API integration for AI-powered habit suggestions.
  * Uses the REST endpoint directly — no SDK needed, keeping the bundle small.
  */
@@ -11,13 +13,15 @@ const GEMINI_BASE = 'https://generativelanguage.googleapis.com/v1beta/models/gem
  *
  * Design decision: We use a strict system prompt that enforces JSON-only output.
  * This lets us safely parse the response without needing to handle markdown
- * code fences or conversational text. We still strip ```json fences as a
- * fallback in case the model adds them despite instructions.
+ * code fences or conversational text.
  *
  * Edge cases:
  * - Network failure → throws descriptive error
  * - Malformed JSON response → throws parse error with raw text for debugging
  * - API key missing → throws early with clear message
+ * 
+ * @param {string} goal - The user's input goal or aspiration.
+ * @returns {Promise<HabitSuggestion[]>} Array of precisely 3 habit suggestions.
  */
 export async function suggestHabits(goal: string): Promise<HabitSuggestion[]> {
   const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
@@ -87,8 +91,9 @@ export async function suggestHabits(goal: string): Promise<HabitSuggestion[]> {
     throw new Error('AI is busy. Please try again in a moment.');
   }
 
-  // Strip markdown code fences as a fallback — the prompt says no markdown,
-  // but LLMs sometimes add them anyway
+  // WHY: We strip ```json fences as a fallback because despite the prompt 
+  // explicitly instructing "no markdown", LLMs sometimes output markdown 
+  // code blocks anyway. Removing these ensures JSON.parse() won't crash.
   let cleaned = rawText.trim();
   if (cleaned.startsWith('```json')) {
     cleaned = cleaned.slice(7);

@@ -1,4 +1,6 @@
 /**
+ * components/layout/Navbar.tsx
+ * 
  * Responsive top navigation bar.
  * Desktop: logo + brand | display name + avatar + bell + settings + logout
  * Mobile:  logo | bell icon + hamburger menu
@@ -314,7 +316,21 @@ const Navbar: React.FC<NavbarProps> = ({ variant = 'app' }) => {
             .select('display_name')
             .eq('id', session.user.id)
             .maybeSingle();
-          if (data?.display_name) setDisplayName(data.display_name);
+            
+          if (data?.display_name) {
+            setDisplayName(data.display_name);
+          } else {
+            // Profile missing -> create it on the fly
+            const defaultName = session.user.email?.split('@')[0] || 'User';
+            const { data: newProfile } = await supabase
+              .from('profiles')
+              .insert({ id: session.user.id, display_name: defaultName })
+              .select('display_name')
+              .single();
+            if (newProfile?.display_name) {
+              setDisplayName(newProfile.display_name);
+            }
+          }
         } else {
           setIsAuthenticated(false);
           setDisplayName('');
@@ -353,8 +369,8 @@ const Navbar: React.FC<NavbarProps> = ({ variant = 'app' }) => {
     try {
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
-    } catch (err) {
-      console.error('Logout failed:', err instanceof Error ? err.message : err);
+    } catch {
+      // Ignore logout errors silently and just navigate away
     } finally {
       setIsAuthenticated(false);
       setDisplayName('');

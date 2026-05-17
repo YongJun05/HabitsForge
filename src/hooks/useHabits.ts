@@ -1,4 +1,5 @@
 /**
+ * hooks/useHabits.ts
  * Central data hook for habits. Fetches habits + logs from Supabase,
  * enriches each habit with streak data, and exposes CRUD operations.
  *
@@ -8,12 +9,16 @@
  * - toggleDone: if log exists for today → delete it (undo); if not → insert it
  * - After any mutation → call refetch to keep UI in sync
  * - Uses getSession instead of getUser for faster auth checks
+ * - Streak calculations are wrapped in useMemo to avoid recalculating on every render
  */
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { supabase } from '../lib/supabase';
 import { calculateCurrentStreak, calculateBestStreak, getTodayString, getCurrentWeekString } from '../lib/streakUtils';
 import type { Habit, HabitLog, HabitWithStreak } from '../types';
 
+/**
+ * Interface representing the return values and functions provided by the useHabits hook.
+ */
 interface UseHabitsReturn {
   habits: HabitWithStreak[];
   allLogs: HabitLog[];
@@ -30,12 +35,22 @@ interface UseHabitsReturn {
   refetch: () => Promise<void>;
 }
 
+/**
+ * Custom hook to manage all habit-related data and operations.
+ * Handles fetching, creating, updating, archiving, deleting, and logging habits.
+ * 
+ * @returns {UseHabitsReturn} An object containing habit state and CRUD operations.
+ */
 export function useHabits(): UseHabitsReturn {
-  const [habits, setHabits] = useState<HabitWithStreak[]>([]);
+  const [rawHabits, setRawHabits] = useState<Habit[]>([]);
   const [allLogs, setAllLogs] = useState<HabitLog[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  /**
+   * Fetches all habits and their logs from Supabase.
+   * Batches logs in a single query to prevent N+1 performance issues.
+   */
   const fetchHabits = useCallback(async () => {
     setLoading(true);
     setError(null);
@@ -60,51 +75,8 @@ export function useHabits(): UseHabitsReturn {
       if (habitsResult.error) throw new Error(habitsResult.error.message);
       if (logsResult.error) throw new Error(logsResult.error.message);
 
-      const rawHabits: Habit[] = habitsResult.data ?? [];
-      const rawLogs: HabitLog[] = logsResult.data ?? [];
-
-      setAllLogs(rawLogs);
-
-      // Group logs by habit_id for efficient streak calculation
-      const logsByHabitId = new Map<string, string[]>();
-      for (const log of rawLogs) {
-        const existing = logsByHabitId.get(log.habit_id) ?? [];
-        existing.push(log.log_date);
-        logsByHabitId.set(log.habit_id, existing);
-      }
-
-      const today = getTodayString();
-
-      // Enrich each habit with computed streak data
-      const enriched: HabitWithStreak[] = rawHabits.map((habit) => {
-        const habitLogs = logsByHabitId.get(habit.id) ?? [];
-        const logDates = habitLogs.map((l) => l); // already YYYY-MM-DD strings
-
-        // Last 7 days: check which of the past 7 days have logs
-        const recentLogs: string[] = [];
-        for (let i = 6; i >= 0; i--) {
-          const d = new Date();
-          d.setDate(d.getDate() - i);
-          const year = d.getFullYear();
-          const month = String(d.getMonth() + 1).padStart(2, '0');
-          const day = String(d.getDate()).padStart(2, '0');
-          const dateStr = `${year}-${month}-${day}`;
-          if (logDates.includes(dateStr)) {
-            recentLogs.push(dateStr);
-          }
-        }
-
-        return {
-          ...habit,
-          currentStreak: calculateCurrentStreak(logDates, habit.freeze_used_week),
-          bestStreak: calculateBestStreak(logDates),
-          recentLogs,
-          isDoneToday: logDates.includes(today),
-          allLogDates: logDates,
-        };
-      });
-
-      setHabits(enriched);
+      setRawHabits(habitsResult.data ?? []);
+      setAllLogs(logsResult.data ?? []);
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to fetch habits';
       setError(message);
@@ -117,7 +89,54 @@ export function useHabits(): UseHabitsReturn {
     fetchHabits();
   }, [fetchHabits]);
 
+  // Wrap streak calculations in useMemo to avoid recalculating on every render
+  const habits = useMemo(() => {
+    // Group logs by habit_id upfront to avoid O(n²) lookup 
+    // when enriching each habit with its streak data
+    const logsByHabitId = new Map<string, string[]>();
+    for (const log of allLogs) {
+      const existing = logsByHabitId.get(log.habit_id) ?? [];
+      existing.push(log.log_date);
+      logsByHabitId.set(log.habit_id, existing);
+    }
+
+    const today = getTodayString();
+
+    return rawHabits.map((habit) => {
+      const habitLogs = logsByHabitId.get(habit.id) ?? [];
+      const logDates = habitLogs.map((l) => l); // already YYYY-MM-DD strings
+
+      // Last 7 days: check which of the past 7 days have logs
+      const recentLogs: string[] = [];
+      for (let i = 6; i >= 0; i--) {
+        const d = new Date();
+        d.setDate(d.getDate() - i);
+        const year = d.getFullYear();
+        const month = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        const dateStr = `${year}-${month}-${day}`;
+        if (logDates.includes(dateStr)) {
+          recentLogs.push(dateStr);
+        }
+      }
+
+      return {
+        ...habit,
+        currentStreak: calculateCurrentStreak(logDates, habit.freeze_used_week),
+        bestStreak: calculateBestStreak(logDates),
+        recentLogs,
+        isDoneToday: logDates.includes(today),
+        allLogDates: logDates,
+      };
+    });
+  }, [rawHabits, allLogs]);
+
+  /**
+   * Creates a new habit for the current user.
+   * @param data - The habit data to create (excluding auto-generated fields).
+   */
   const createHabit = useCallback(async (data: Omit<Habit, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => {
+    setLoading(true);
     setError(null);
     try {
       const { data: { session }, error: authError } = await supabase.auth.getSession();
@@ -133,10 +152,18 @@ export function useHabits(): UseHabitsReturn {
       const message = err instanceof Error ? err.message : 'Failed to create habit';
       setError(message);
       throw err;
+    } finally {
+      setLoading(false);
     }
   }, [fetchHabits]);
 
+  /**
+   * Updates an existing habit.
+   * @param id - The ID of the habit to update.
+   * @param data - The partial habit data to update.
+   */
   const updateHabit = useCallback(async (id: string, data: Partial<Omit<Habit, 'id' | 'user_id'>>) => {
+    setLoading(true);
     setError(null);
     try {
       const { error: updateError } = await supabase
@@ -150,11 +177,17 @@ export function useHabits(): UseHabitsReturn {
       const message = err instanceof Error ? err.message : 'Failed to update habit';
       setError(message);
       throw err;
+    } finally {
+      setLoading(false);
     }
   }, [fetchHabits]);
 
-  /** Archive a habit (soft delete) instead of permanent deletion */
+  /**
+   * Archives a habit (soft delete) instead of permanent deletion.
+   * @param id - The ID of the habit to archive.
+   */
   const deleteHabit = useCallback(async (id: string) => {
+    setLoading(true);
     setError(null);
     try {
       const { error: archiveError } = await supabase
@@ -168,11 +201,17 @@ export function useHabits(): UseHabitsReturn {
       const message = err instanceof Error ? err.message : 'Failed to archive habit';
       setError(message);
       throw err;
+    } finally {
+      setLoading(false);
     }
   }, [fetchHabits]);
 
-  /** Restore an archived habit */
+  /**
+   * Restores an archived habit.
+   * @param id - The ID of the habit to restore.
+   */
   const restoreHabit = useCallback(async (id: string) => {
+    setLoading(true);
     setError(null);
     try {
       const { error: restoreError } = await supabase
@@ -186,11 +225,17 @@ export function useHabits(): UseHabitsReturn {
       const message = err instanceof Error ? err.message : 'Failed to restore habit';
       setError(message);
       throw err;
+    } finally {
+      setLoading(false);
     }
   }, [fetchHabits]);
 
-  /** Permanently delete a habit and its logs */
+  /**
+   * Permanently deletes a habit and all associated logs.
+   * @param id - The ID of the habit to permanently delete.
+   */
   const permanentDeleteHabit = useCallback(async (id: string) => {
+    setLoading(true);
     setError(null);
     try {
       const { error: deleteError } = await supabase
@@ -204,11 +249,21 @@ export function useHabits(): UseHabitsReturn {
       const message = err instanceof Error ? err.message : 'Failed to delete habit';
       setError(message);
       throw err;
+    } finally {
+      setLoading(false);
     }
   }, [fetchHabits]);
 
-  /** Toggle habit done for today, optionally with a note */
+  /**
+   * Toggles a habit's completion status for today.
+   * If a log exists for today, it deletes it. If not, it creates one.
+   * @param habitId - The ID of the habit.
+   * @param note - Optional note for the log.
+   */
   const toggleDone = useCallback(async (habitId: string, note?: string | null) => {
+    // Show loading state immediately to prevent double-clicks
+    // while the Supabase insert is in flight
+    setLoading(true);
     setError(null);
     try {
       const { data: { session }, error: authError } = await supabase.auth.getSession();
@@ -253,11 +308,17 @@ export function useHabits(): UseHabitsReturn {
       const message = err instanceof Error ? err.message : 'Failed to toggle habit';
       setError(message);
       throw err;
+    } finally {
+      setLoading(false);
     }
   }, [fetchHabits]);
 
-  /** Use weekly streak freeze on a habit */
+  /**
+   * Freezes a habit's streak for the current week.
+   * @param habitId - The ID of the habit to freeze.
+   */
   const freezeHabit = useCallback(async (habitId: string) => {
+    setLoading(true);
     setError(null);
     try {
       const weekStr = getCurrentWeekString();
@@ -273,11 +334,18 @@ export function useHabits(): UseHabitsReturn {
       const message = err instanceof Error ? err.message : 'Failed to freeze habit';
       setError(message);
       throw err;
+    } finally {
+      setLoading(false);
     }
   }, [fetchHabits]);
 
-  /** Reorder a habit by setting its sort_order */
+  /**
+   * Reorders a habit by updating its sort_order.
+   * @param habitId - The ID of the habit.
+   * @param newOrder - The new sorting position.
+   */
   const reorderHabit = useCallback(async (habitId: string, newOrder: number) => {
+    setLoading(true);
     setError(null);
     try {
       const { error: reorderError } = await supabase
@@ -291,6 +359,8 @@ export function useHabits(): UseHabitsReturn {
       const message = err instanceof Error ? err.message : 'Failed to reorder habit';
       setError(message);
       throw err;
+    } finally {
+      setLoading(false);
     }
   }, [fetchHabits]);
 

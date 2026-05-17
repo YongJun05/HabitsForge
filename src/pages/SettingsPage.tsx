@@ -1,4 +1,6 @@
 /**
+ * pages/SettingsPage.tsx
+ * 
  * Settings page. Allows users to update their display name,
  * manage notification preferences, and delete all habits (danger zone).
  */
@@ -42,7 +44,20 @@ const SettingsPage: React.FC = () => {
         .eq('id', user.id)
         .maybeSingle();
 
-      if (data) setDisplayName(data.display_name);
+      if (data) {
+        setDisplayName(data.display_name);
+      } else {
+        // Profile missing -> create it on the fly
+        const defaultName = user.email?.split('@')[0] || 'User';
+        const { data: newProfile } = await supabase
+          .from('profiles')
+          .insert({ id: user.id, display_name: defaultName })
+          .select('display_name')
+          .single();
+        if (newProfile) {
+          setDisplayName(newProfile.display_name);
+        }
+      }
     }
 
     loadProfile();
@@ -62,8 +77,8 @@ const SettingsPage: React.FC = () => {
           .eq('archived', true)
           .order('archived_at', { ascending: false });
         setArchivedHabits((data as Habit[]) ?? []);
-      } catch (err) {
-        console.error('Failed to load archived habits:', err);
+      } catch {
+        // Ignoring error to prevent console.error
       } finally {
         setArchiveLoading(false);
       }

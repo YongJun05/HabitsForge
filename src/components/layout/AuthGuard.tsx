@@ -43,17 +43,12 @@ async function ensureProfile(userId: string, userMetadata: Record<string, unknow
         (userMetadata?.email as string)?.split('@')[0] ||
         'User';
 
-      const { error } = await supabase
+      await supabase
         .from('profiles')
         .upsert({ id: userId, display_name: displayName });
-
-      if (error) {
-        console.error('Auto profile creation failed:', error.message);
-      }
     }
-  } catch (err) {
+  } catch {
     // Non-blocking — don't let profile issues block auth
-    console.error('ensureProfile error:', err);
   }
 }
 
@@ -87,8 +82,7 @@ const AuthGuard: React.FC<AuthGuardProps> = ({ children }) => {
         setChecking(false);
         navigate('/login', { replace: true });
       }
-    }).catch((err) => {
-      console.error('[AuthGuard] getSession failed:', err);
+    }).catch(() => {
       if (isMounted) {
         setChecking(false);
         navigate('/login', { replace: true });

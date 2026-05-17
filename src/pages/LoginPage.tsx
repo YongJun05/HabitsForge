@@ -1,4 +1,6 @@
 /**
+ * pages/LoginPage.tsx
+ * 
  * Login page. Authenticates users via Supabase email/password or OAuth.
  * Shows inline error messages and disables the button while loading.
  */
@@ -23,7 +25,7 @@ const LoginPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    document.title = 'HabitsForge';
+    document.title = 'HabitsForge — Login';
   }, []);
 
   const handleLogin = async () => {
@@ -49,6 +51,7 @@ const LoginPage: React.FC = () => {
       await signInWithGoogle();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Google login failed');
+    } finally {
       setGoogleLoading(false);
     }
   };

@@ -1,4 +1,6 @@
 /**
+ * pages/SignupPage.tsx
+ * 
  * Signup page. Creates a new user via Supabase Auth (email/password or OAuth)
  * and inserts a profile row. Validates all fields before submitting.
  * If profile insert fails after successful signup, still navigates to dashboard.
@@ -26,7 +28,7 @@ const SignupPage: React.FC = () => {
   const [errors, setErrors] = useState<string[]>([]);
 
   useEffect(() => {
-    document.title = 'HabitsForge';
+    document.title = 'HabitsForge — Signup';
   }, []);
 
   const validate = (): string[] => {
@@ -49,7 +51,11 @@ const SignupPage: React.FC = () => {
       if (authError) throw authError;
       if (data.user) {
         const { error: profileError } = await supabase.from('profiles').insert({ id: data.user.id, display_name: displayName.trim() });
-        if (profileError) console.error('Profile insert failed:', profileError.message);
+        if (profileError) {
+          // If profile insert fails, we throw to show it to the user.
+          // They can log in later and it will be created on the fly if needed.
+          throw profileError;
+        }
       }
       if (data.session) {
         await supabase.auth.signOut();
@@ -62,8 +68,13 @@ const SignupPage: React.FC = () => {
 
   const handleGoogleSignup = async () => {
     setErrors([]); setGoogleLoading(true);
-    try { await signInWithGoogle(); }
-    catch (err) { setErrors([err instanceof Error ? err.message : 'Google signup failed']); setGoogleLoading(false); }
+    try { 
+      await signInWithGoogle(); 
+    } catch (err) { 
+      setErrors([err instanceof Error ? err.message : 'Google signup failed']); 
+    } finally {
+      setGoogleLoading(false);
+    }
   };
 
   const labelStyle: React.CSSProperties = { fontFamily: "'DM Sans', sans-serif", fontWeight: 800, textTransform: 'uppercase', letterSpacing: '2px', fontSize: '12px', display: 'block', marginBottom: '6px' };
