@@ -63,6 +63,25 @@ const DashboardPage: React.FC = () => {
         }
     }, [location.state]);
 
+    // Scroll to habit card when selected in Dashboard tab (e.g. from notification)
+    useEffect(() => {
+        if (activeTab === 0 && selectedHabitId) {
+            setTimeout(() => {
+                const element = document.getElementById(`habit-card-${selectedHabitId}`);
+                if (element) {
+                    element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    // Briefly highlight the card
+                    const originalShadow = element.style.boxShadow;
+                    element.style.transition = 'box-shadow 0.3s ease';
+                    element.style.boxShadow = '0 0 0 4px #FF2D9B, 4px 4px 0px #000000';
+                    setTimeout(() => {
+                        element.style.boxShadow = originalShadow;
+                    }, 2000);
+                }
+            }, 100);
+        }
+    }, [activeTab, selectedHabitId, habits]);
+
 
     // Auto-select first habit for details tab if none selected
     useEffect(() => {

@@ -90,6 +90,7 @@ const HabitCard: React.FC<HabitCardProps> = ({
 
   return (
     <div
+      id={`habit-card-${habit.id}`}
       draggable={draggable}
       onDragStart={draggable && onDragStart ? (e) => onDragStart(e, habit.id) : undefined}
       onDragOver={onDragOver}

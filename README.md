@@ -32,7 +32,7 @@ Most people fail to build habits because they lack clear direction and actionabl
 🔔 **Browser Reminders** — Custom reminder time per habit  
 🎉 **Confetti Celebration** — Fires when all habits are done for the day  
 ↕️ **Drag to Reorder** — Organise habits in your preferred order  
-🔐 **Authentication** — Email verification + Google OAuth via Supabase  
+🔐 **Authentication** — Email signup + Google OAuth via Supabase  
 
 ---
 

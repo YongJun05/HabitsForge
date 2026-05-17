@@ -194,7 +194,7 @@ const BellButton: React.FC<BellButtonProps> = ({
                 <div
                   key={n.id}
                   onClick={() => {
-                    navigate('/dashboard', { state: { activeTab: 2, selectedHabitId: n.habitId } });
+                    navigate('/dashboard', { state: { activeTab: 0, selectedHabitId: n.habitId } });
                     onRemoveNotification(n.id);
                     setOpen(false);
                   }}
@@ -252,7 +252,7 @@ const BellButton: React.FC<BellButtonProps> = ({
                         lineHeight: 1.3,
                       }}
                     >
-                      It's time to complete your habit! Click to view details.
+                      It's time to complete your habit! Click to jump to it.
                     </div>
                     <div
                       style={{
