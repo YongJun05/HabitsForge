@@ -29,7 +29,8 @@ Most people fail to build habits because they lack clear direction and actionabl
 🏅 **Milestone Badges** — Week Warrior (7), Monthly Master (30), Century Club (100)  
 📝 **Habit Notes** — Add a note when checking in each day  
 🗄️ **Archive Habits** — Soft-delete with full history preserved  
-🔔 **Browser Reminders** — Custom reminder time per habit  
+🔔 **Smart Notifications** — Persistent in-app notification center with unread badges, user-scoped storage, and quick routing  
+⚙️ **Settings** — Dedicated settings interface for testing notifications and managing preferences  
 🎉 **Confetti Celebration** — Fires when all habits are done for the day  
 ↕️ **Drag to Reorder** — Organise habits in your preferred order  
 🔐 **Authentication** — Email signup + Google OAuth via Supabase  
@@ -174,6 +175,9 @@ The Gemini AI habit coach uses a strict system prompt that forces JSON-only outp
 
 **Neobrutalism design choice**  
 I deliberately chose a bold, high-contrast neobrutalist design system to make HabitsForge memorable and visually distinctive from typical, minimalist habit trackers. The hard shadows, thick borders, and highly saturated colors command attention. Visual consistency is strictly enforced via CSS variables and global rules applied universally across all interactive components.
+
+**Persistent Notification Architecture**  
+Habit reminders are managed by a robust, router-level component that ensures notifications fire consistently without being interrupted by page navigation. In-app notifications are securely stored in `localStorage` strictly scoped to the authenticated user ID (preventing cross-account data leaks on shared devices) and allow users to instantly route directly to the specific habit card on the dashboard when clicked.
 
 ---
 
