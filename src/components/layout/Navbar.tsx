@@ -417,8 +417,8 @@ const Navbar: React.FC<NavbarProps> = ({ variant = 'app' }) => {
         style={{
           background: isLanding ? '#FFFFFF' : '#ffe600',
           borderBottom: '3px solid #000000',
-          padding: isMobile ? '0 16px' : isLanding ? '0 clamp(20px, 8vw, 146px)' : '0 24px',
-          minHeight: '64px',
+          padding: isMobile ? '12px 16px' : isLanding ? '16px clamp(20px, 8vw, 146px)' : '16px 24px',
+          minHeight: '72px',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
