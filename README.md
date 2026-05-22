@@ -45,7 +45,7 @@ Most people fail to build habits because they lack clear direction and actionabl
 | Styling | Tailwind CSS + Neobrutalism | Custom design system with bold aesthetics |
 | Backend | Supabase (PostgreSQL) | Database with Row Level Security |
 | Auth | Supabase Auth | Email + Google OAuth |
-| AI | Google Gemini API | Habit suggestions + weekly insights |
+| AI | Google Gemini API | Habit suggestions |
 | Deployment | Vercel | Auto-deploy from GitHub |
 
 ---
