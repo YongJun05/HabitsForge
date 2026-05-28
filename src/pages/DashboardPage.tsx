@@ -4,7 +4,7 @@
  */
 import React, { useEffect, useState, useCallback, useMemo, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
-import { Bell, Plus, BarChart2, RefreshCw } from 'lucide-react';
+import { Bell, Plus, BarChart2, RefreshCw, Search, X } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import Navbar from '../components/layout/Navbar';
 import TabBar from '../components/layout/TabBar';
@@ -45,6 +45,11 @@ const DashboardPage: React.FC = () => {
     // Drag and drop state
     const [draggedHabitId, setDraggedHabitId] = useState<string | null>(null);
     const [dragOverHabitId, setDragOverHabitId] = useState<string | null>(null);
+
+    // Search, sort & filter state
+    const [searchQuery, setSearchQuery] = useState('');
+    const [sortBy, setSortBy] = useState<'default' | 'name' | 'streak' | 'newest' | 'status'>('default');
+    const [filterBy, setFilterBy] = useState<'all' | 'done' | 'not-done'>('all');
 
     // Detail tab: notes map for recent log
     const [detailLogNotes, setDetailLogNotes] = useState<Map<string, string | null>>(new Map());
@@ -217,6 +222,49 @@ const DashboardPage: React.FC = () => {
     const showNotifBanner = isSupported && permission === 'default' && !notifDismissed;
 
     const allLogDates = useMemo(() => allLogs.map((l) => l.log_date), [allLogs]);
+
+    // Search, sort & filter logic
+    const isCustomView = searchQuery.trim() !== '' || sortBy !== 'default' || filterBy !== 'all';
+
+    const filteredHabits = useMemo(() => {
+        let result = [...habits];
+
+        // Search filter
+        if (searchQuery.trim()) {
+            const q = searchQuery.toLowerCase();
+            result = result.filter(h =>
+                h.name.toLowerCase().includes(q) ||
+                (h.description?.toLowerCase().includes(q) ?? false)
+            );
+        }
+
+        // Status filter
+        if (filterBy === 'done') {
+            result = result.filter(h => h.isDoneToday);
+        } else if (filterBy === 'not-done') {
+            result = result.filter(h => !h.isDoneToday);
+        }
+
+        // Sort
+        switch (sortBy) {
+            case 'name':
+                result.sort((a, b) => a.name.localeCompare(b.name));
+                break;
+            case 'streak':
+                result.sort((a, b) => b.currentStreak - a.currentStreak);
+                break;
+            case 'newest':
+                result.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+                break;
+            case 'status':
+                result.sort((a, b) => Number(a.isDoneToday) - Number(b.isDoneToday));
+                break;
+            default:
+                break;
+        }
+
+        return result;
+    }, [habits, searchQuery, sortBy, filterBy]);
 
     // Confetti on full completion
     useEffect(() => {
@@ -504,28 +552,221 @@ const DashboardPage: React.FC = () => {
                         )}
 
                         {habits.length > 0 && (
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                                {habits.map((habit) => (
-                                    <HabitCard
-                                        key={habit.id}
-                                        habit={habit}
-                                        onEdit={handleEdit}
-                                        onDelete={handleDelete}
-                                        onToggle={handleToggle}
-                                        onFreeze={handleFreeze}
-                                        onViewDetail={(id) => {
-                                            setSelectedHabitId(id);
-                                            setActiveTab(2);
+                            <>
+                                {/* Search, Sort & Filter Toolbar */}
+                                <div
+                                    style={{
+                                        background: '#FFFFFF',
+                                        border: '3px solid #000000',
+                                        boxShadow: '4px 4px 0px #000000',
+                                        padding: isMobile ? '12px' : '16px',
+                                        marginBottom: '12px',
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        gap: '12px',
+                                    }}
+                                >
+                                    {/* Search input */}
+                                    <div style={{ position: 'relative' }}>
+                                        <Search
+                                            size={16}
+                                            strokeWidth={2.5}
+                                            style={{
+                                                position: 'absolute',
+                                                left: '12px',
+                                                top: '50%',
+                                                transform: 'translateY(-50%)',
+                                                color: '#999',
+                                                pointerEvents: 'none',
+                                            }}
+                                        />
+                                        <input
+                                            className="neo-input"
+                                            type="text"
+                                            placeholder="Search habits..."
+                                            value={searchQuery}
+                                            onChange={(e) => setSearchQuery(e.target.value)}
+                                            style={{
+                                                paddingLeft: '36px',
+                                                paddingRight: searchQuery ? '36px' : undefined,
+                                                fontSize: isMobile ? '16px' : '14px',
+                                            }}
+                                        />
+                                        {searchQuery && (
+                                            <button
+                                                type="button"
+                                                onClick={() => setSearchQuery('')}
+                                                style={{
+                                                    position: 'absolute',
+                                                    right: '8px',
+                                                    top: '50%',
+                                                    transform: 'translateY(-50%)',
+                                                    background: '#000',
+                                                    border: 'none',
+                                                    cursor: 'pointer',
+                                                    color: '#FFF',
+                                                    padding: '2px',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center',
+                                                    width: '20px',
+                                                    height: '20px',
+                                                }}
+                                            >
+                                                <X size={12} strokeWidth={3} />
+                                            </button>
+                                        )}
+                                    </div>
+
+                                    {/* Filter chips + Sort dropdown */}
+                                    <div
+                                        style={{
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: '8px',
+                                            flexWrap: 'wrap',
                                         }}
-                                        draggable
-                                        onDragStart={handleDragStart}
-                                        onDragOver={(e) => handleDragOverCard(e, habit.id)}
-                                        onDrop={handleDrop}
-                                        isDragOver={dragOverHabitId === habit.id}
-                                        isDragging={draggedHabitId === habit.id}
-                                    />
-                                ))}
-                            </div>
+                                    >
+                                        {(['all', 'not-done', 'done'] as const).map((f) => {
+                                            const labels: Record<typeof f, string> = { all: 'ALL', 'not-done': 'NOT DONE', done: 'DONE ✓' };
+                                            const isActive = filterBy === f;
+                                            return (
+                                                <button
+                                                    key={f}
+                                                    onClick={() => setFilterBy(f)}
+                                                    style={{
+                                                        background: isActive ? '#000000' : '#FFFFFF',
+                                                        color: isActive ? '#FFFFFF' : '#000000',
+                                                        border: '2px solid #000000',
+                                                        padding: isMobile ? '8px 12px' : '6px 14px',
+                                                        fontFamily: "'Syne', sans-serif",
+                                                        fontWeight: 800,
+                                                        fontSize: '11px',
+                                                        letterSpacing: '1px',
+                                                        cursor: 'pointer',
+                                                        textTransform: 'uppercase',
+                                                        boxShadow: isActive ? 'none' : '2px 2px 0px #000000',
+                                                        transform: isActive ? 'translate(2px, 2px)' : 'none',
+                                                        transition: 'all 0.1s ease',
+                                                        minHeight: isMobile ? '40px' : '34px',
+                                                    }}
+                                                >
+                                                    {labels[f]}
+                                                </button>
+                                            );
+                                        })}
+
+                                        <div style={{ flex: 1 }} />
+
+                                        {/* Sort dropdown */}
+                                        <select
+                                            value={sortBy}
+                                            onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
+                                            style={{
+                                                border: '2px solid #000000',
+                                                boxShadow: '2px 2px 0px #000000',
+                                                padding: isMobile ? '8px 10px' : '6px 10px',
+                                                fontFamily: "'JetBrains Mono', monospace",
+                                                fontSize: '11px',
+                                                fontWeight: 700,
+                                                background: '#FFFFFF',
+                                                cursor: 'pointer',
+                                                textTransform: 'uppercase',
+                                                letterSpacing: '1px',
+                                                minHeight: isMobile ? '40px' : '34px',
+                                                borderRadius: 0,
+                                            }}
+                                        >
+                                            <option value="default">SORT: DEFAULT</option>
+                                            <option value="name">SORT: NAME A→Z</option>
+                                            <option value="streak">SORT: STREAK ↓</option>
+                                            <option value="newest">SORT: NEWEST</option>
+                                            <option value="status">SORT: UNDONE FIRST</option>
+                                        </select>
+                                    </div>
+
+                                    {/* Results count when filtered */}
+                                    {isCustomView && (
+                                        <div
+                                            style={{
+                                                fontFamily: "'JetBrains Mono', monospace",
+                                                fontSize: '12px',
+                                                color: '#666',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'space-between',
+                                            }}
+                                        >
+                                            <span>
+                                                Showing {filteredHabits.length} of {habits.length} habits
+                                            </span>
+                                            <button
+                                                onClick={() => {
+                                                    setSearchQuery('');
+                                                    setSortBy('default');
+                                                    setFilterBy('all');
+                                                }}
+                                                style={{
+                                                    background: 'none',
+                                                    border: 'none',
+                                                    cursor: 'pointer',
+                                                    fontFamily: "'JetBrains Mono', monospace",
+                                                    fontSize: '12px',
+                                                    fontWeight: 700,
+                                                    color: '#2563EB',
+                                                    textDecoration: 'underline',
+                                                    padding: 0,
+                                                }}
+                                            >
+                                                Clear filters
+                                            </button>
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Habit cards */}
+                                {filteredHabits.length > 0 ? (
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                                        {filteredHabits.map((habit) => (
+                                            <HabitCard
+                                                key={habit.id}
+                                                habit={habit}
+                                                onEdit={handleEdit}
+                                                onDelete={handleDelete}
+                                                onToggle={handleToggle}
+                                                onFreeze={handleFreeze}
+                                                onViewDetail={(id) => {
+                                                    setSelectedHabitId(id);
+                                                    setActiveTab(2);
+                                                }}
+                                                draggable={!isCustomView}
+                                                onDragStart={handleDragStart}
+                                                onDragOver={(e) => handleDragOverCard(e, habit.id)}
+                                                onDrop={handleDrop}
+                                                isDragOver={dragOverHabitId === habit.id}
+                                                isDragging={draggedHabitId === habit.id}
+                                            />
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <div
+                                        style={{
+                                            border: '3px solid #000000',
+                                            boxShadow: '4px 4px 0px #000000',
+                                            background: '#FFFFFF',
+                                            padding: isMobile ? '16px' : '24px',
+                                            textAlign: 'center',
+                                        }}
+                                    >
+                                        <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: '20px', marginBottom: '6px' }}>
+                                            NO MATCHING HABITS
+                                        </div>
+                                        <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '13px', color: '#666' }}>
+                                            Try adjusting your search or filters.
+                                        </div>
+                                    </div>
+                                )}
+                            </>
                         )}
                     </>
                 )}
