@@ -152,6 +152,21 @@ const LoginPage: React.FC = () => {
               </div>
             </div>
 
+            <div style={{ textAlign: 'right', marginTop: '-4px' }}>
+              <Link
+                to="/forgot-password"
+                style={{
+                  fontFamily: "'JetBrains Mono', monospace",
+                  fontSize: '12px',
+                  fontWeight: 700,
+                  color: '#2563EB',
+                  textDecoration: 'underline',
+                }}
+              >
+                Forgot password?
+              </Link>
+            </div>
+
             <button
               className="neo-btn"
               onClick={handleLogin}

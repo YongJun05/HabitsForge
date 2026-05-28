@@ -15,3 +15,16 @@ export async function signInWithGoogle() {
 
     if (error) throw error;
 }
+
+/**
+ * Send a password-reset email via Supabase.
+ * The link in the email will redirect the user to /reset-password
+ * where they can choose a new password.
+ */
+export async function resetPassword(email: string) {
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/reset-password`,
+    });
+
+    if (error) throw error;
+}
