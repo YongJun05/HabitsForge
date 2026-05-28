@@ -1,37 +1,77 @@
 /**
- * Best Day of Week chart — horizontal bar chart showing which
- * days of the week have the most habit completions.
+ * Best Day of Week chart — horizontal bar chart showing actual
+ * completion rates per day of the week over the last 28 days.
+ *
+ * Each bar shows: completions / possible completions as a percentage.
+ * "Possible" accounts for when each habit was created, so new habits
+ * don't deflate the rate unfairly.
  */
 import React, { useMemo } from 'react';
+import type { HabitWithStreak } from '../../types';
 import { useWindowSize } from '../../hooks/useWindowSize';
 
 interface BestDayChartProps {
-  logs: string[]; // array of all YYYY-MM-DD log dates across ALL habits
+  habits: HabitWithStreak[];
 }
 
 const DAY_LABELS = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
 
-const BestDayChart: React.FC<BestDayChartProps> = ({ logs }) => {
+/** Format a Date to YYYY-MM-DD in local time */
+function toDateStr(d: Date): string {
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+const BestDayChart: React.FC<BestDayChartProps> = ({ habits }) => {
   const { isMobile } = useWindowSize();
+
   const data = useMemo(() => {
-    // Count logs per day of week (0=Mon, 1=Tue, ... 6=Sun)
-    const counts = [0, 0, 0, 0, 0, 0, 0];
-    for (const dateStr of logs) {
-      const d = new Date(dateStr + 'T00:00:00');
-      // JS getDay: 0=Sun, 1=Mon ... 6=Sat → remap to Mon=0 ... Sun=6
-      const jsDay = d.getDay();
-      const idx = jsDay === 0 ? 6 : jsDay - 1;
-      counts[idx]++;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    // Track completions and possible per day of week (Mon=0 ... Sun=6)
+    const completions = [0, 0, 0, 0, 0, 0, 0];
+    const possible = [0, 0, 0, 0, 0, 0, 0];
+
+    // Pre-build log sets per habit for O(1) lookups
+    const habitLogSets = habits.map((h) => new Set(h.allLogDates));
+
+    // Look at the last 28 days (4 full weeks — each day appears exactly 4 times)
+    for (let i = 27; i >= 0; i--) {
+      const d = new Date(today);
+      d.setDate(d.getDate() - i);
+      const jsDay = d.getDay(); // 0=Sun, 1=Mon ... 6=Sat
+      const idx = jsDay === 0 ? 6 : jsDay - 1; // Remap to Mon=0 ... Sun=6
+      const dateStr = toDateStr(d);
+
+      habits.forEach((habit, hIdx) => {
+        const created = new Date(habit.created_at);
+        created.setHours(0, 0, 0, 0);
+        if (created <= d) {
+          possible[idx]++;
+          if (habitLogSets[hIdx].has(dateStr)) {
+            completions[idx]++;
+          }
+        }
+      });
     }
 
-    const maxCount = Math.max(...counts, 1);
-    return counts.map((count, i) => ({
-      day: DAY_LABELS[i],
-      count,
-      percent: Math.round((count / maxCount) * 100),
-      isBest: count === maxCount && count > 0,
+    const rates = completions.map((count, i) => {
+      const rate =
+        possible[i] > 0 ? Math.round((count / possible[i]) * 100) : 0;
+      return { day: DAY_LABELS[i], rate, count, possible: possible[i] };
+    });
+
+    const maxRate = Math.max(...rates.map((r) => r.rate), 1);
+
+    return rates.map((r) => ({
+      ...r,
+      barPercent: Math.round((r.rate / maxRate) * 100), // relative scaling for bars
+      isBest: r.rate === maxRate && r.rate > 0,
     }));
-  }, [logs]);
+  }, [habits]);
 
   return (
     <div
@@ -51,10 +91,20 @@ const BestDayChart: React.FC<BestDayChartProps> = ({ logs }) => {
           fontSize: '14px',
           textTransform: 'uppercase',
           letterSpacing: '2px',
-          marginBottom: '16px',
+          marginBottom: '4px',
         }}
       >
         BEST DAY OF WEEK
+      </div>
+      <div
+        style={{
+          fontFamily: "'JetBrains Mono', monospace",
+          fontSize: '11px',
+          color: '#999',
+          marginBottom: '16px',
+        }}
+      >
+        COMPLETION RATE · LAST 28 DAYS
       </div>
 
       {data.map((row) => (
@@ -89,7 +139,7 @@ const BestDayChart: React.FC<BestDayChartProps> = ({ logs }) => {
             <div
               style={{
                 height: '100%',
-                width: `${row.percent}%`,
+                width: `${row.barPercent}%`,
                 background: row.isBest ? '#FFE566' : '#22C55E',
                 transition: 'width 0.3s ease',
               }}
@@ -104,7 +154,7 @@ const BestDayChart: React.FC<BestDayChartProps> = ({ logs }) => {
               textAlign: 'right',
             }}
           >
-            {row.percent}%
+            {row.rate}%
           </span>
         </div>
       ))}

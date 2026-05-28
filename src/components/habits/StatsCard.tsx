@@ -1,44 +1,134 @@
 /**
  * Overall stats card — shows key metrics across all habits in a 2×2 grid.
+ *
+ * Metrics:
+ * - This Week: completions / possible this week (Mon → today), creation-aware
+ * - Best All-Time Streak: highest best streak across all habits
+ * - Last 7 Days Rate: creation-aware completion percentage
+ * - Most Consistent: habit with highest 30-day completion rate
  */
 import React, { useMemo } from 'react';
-import type { HabitWithStreak, HabitLog } from '../../types';
+import type { HabitWithStreak } from '../../types';
 import { useWindowSize } from '../../hooks/useWindowSize';
 
 interface StatsCardProps {
   habits: HabitWithStreak[];
-  allLogs: HabitLog[];
 }
 
-const StatsCard: React.FC<StatsCardProps> = ({ habits, allLogs }) => {
+/** Format a Date to YYYY-MM-DD in local time */
+function toDateStr(d: Date): string {
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+const StatsCard: React.FC<StatsCardProps> = ({ habits }) => {
   const { isMobile } = useWindowSize();
+
   const stats = useMemo(() => {
-    const totalCompleted = allLogs.length;
-    const bestCurrentStreak = habits.length > 0
-      ? Math.max(...habits.map((h) => h.currentStreak))
-      : 0;
-    const bestHabit = habits.length > 0
-      ? habits.reduce((best, h) => h.currentStreak > best.currentStreak ? h : best, habits[0])
-      : null;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
 
-    // Overall rate: last 30 days logs / (habits.length * 30)
-    const now = new Date();
-    const thirtyDaysAgo = new Date();
-    thirtyDaysAgo.setDate(now.getDate() - 30);
-    const thirtyDaysAgoStr = `${thirtyDaysAgo.getFullYear()}-${String(thirtyDaysAgo.getMonth() + 1).padStart(2, '0')}-${String(thirtyDaysAgo.getDate()).padStart(2, '0')}`;
+    // Pre-build log sets per habit for O(1) lookups
+    const habitLogSets = habits.map((h) => new Set(h.allLogDates));
 
-    const last30Logs = allLogs.filter((l) => l.log_date >= thirtyDaysAgoStr);
-    const overallRate = habits.length > 0
-      ? Math.round((last30Logs.length / (habits.length * 30)) * 100)
-      : 0;
+    // ── This Week (Mon → today) ──
+    const jsDay = today.getDay(); // 0=Sun, 1=Mon, ..., 6=Sat
+    const daysSinceMonday = jsDay === 0 ? 6 : jsDay - 1;
+
+    let weekCompletions = 0;
+    let weekPossible = 0;
+
+    for (let i = daysSinceMonday; i >= 0; i--) {
+      const d = new Date(today);
+      d.setDate(d.getDate() - i);
+      const dateStr = toDateStr(d);
+
+      habits.forEach((habit, idx) => {
+        const created = new Date(habit.created_at);
+        created.setHours(0, 0, 0, 0);
+        if (created <= d) {
+          weekPossible++;
+          if (habitLogSets[idx].has(dateStr)) {
+            weekCompletions++;
+          }
+        }
+      });
+    }
+
+    // ── Best All-Time Streak ──
+    const bestAllTimeStreak =
+      habits.length > 0 ? Math.max(...habits.map((h) => h.bestStreak)) : 0;
+
+    // ── Last 7 Days Rate (creation-aware) ──
+    let last7Completions = 0;
+    let last7Possible = 0;
+
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date(today);
+      d.setDate(d.getDate() - i);
+      const dateStr = toDateStr(d);
+
+      habits.forEach((habit, idx) => {
+        const created = new Date(habit.created_at);
+        created.setHours(0, 0, 0, 0);
+        if (created <= d) {
+          last7Possible++;
+          if (habitLogSets[idx].has(dateStr)) {
+            last7Completions++;
+          }
+        }
+      });
+    }
+
+    const last7Rate =
+      last7Possible > 0
+        ? Math.round((last7Completions / last7Possible) * 100)
+        : 0;
+
+    // ── Most Consistent (30-day completion rate per habit) ──
+    let mostConsistentName = '—';
+    let bestRate = -1;
+
+    habits.forEach((habit, idx) => {
+      const created = new Date(habit.created_at);
+      created.setHours(0, 0, 0, 0);
+
+      let possible = 0;
+      let completed = 0;
+
+      for (let i = 29; i >= 0; i--) {
+        const d = new Date(today);
+        d.setDate(d.getDate() - i);
+        if (created <= d) {
+          possible++;
+          const dateStr = toDateStr(d);
+          if (habitLogSets[idx].has(dateStr)) {
+            completed++;
+          }
+        }
+      }
+
+      const rate = possible > 0 ? completed / possible : 0;
+      if (rate > bestRate || (rate === bestRate && completed > 0)) {
+        bestRate = rate;
+        mostConsistentName = habit.name;
+      }
+    });
+
+    const mostConsistentRate =
+      bestRate >= 0 ? Math.round(bestRate * 100) : 0;
 
     return {
-      totalCompleted,
-      bestCurrentStreak,
-      bestHabitName: bestHabit ? bestHabit.name : '—',
-      overallRate: Math.min(overallRate, 100),
+      weekCompletions,
+      weekPossible,
+      bestAllTimeStreak,
+      last7Rate,
+      mostConsistentName,
+      mostConsistentRate,
     };
-  }, [habits, allLogs]);
+  }, [habits]);
 
   const numStyle: React.CSSProperties = {
     fontFamily: "'JetBrains Mono', monospace",
@@ -96,23 +186,53 @@ const StatsCard: React.FC<StatsCardProps> = ({ habits, allLogs }) => {
           gap: isMobile ? '10px' : '12px',
         }}
       >
+        {/* This Week */}
         <div style={boxStyle}>
-          <div style={numStyle}>{stats.totalCompleted}</div>
-          <div style={labelStyle}>ALL-TIME COMPLETIONS</div>
-        </div>
-        <div style={boxStyle}>
-          <div style={numStyle}>🔥 {stats.bestCurrentStreak}</div>
-          <div style={labelStyle}>BEST ACTIVE STREAK</div>
-        </div>
-        <div style={boxStyle}>
-          <div style={numStyle}>{stats.overallRate}%</div>
-          <div style={labelStyle}>OVERALL RATE</div>
-        </div>
-        <div style={boxStyle}>
-          <div style={{ ...numStyle, fontSize: isMobile ? '13px' : '18px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '100%' }}>
-            {stats.bestHabitName}
+          <div style={numStyle}>
+            {stats.weekCompletions}
+            <span
+              style={{
+                fontSize: isMobile ? '14px' : '18px',
+                color: '#999',
+              }}
+            >
+              {' '}
+              / {stats.weekPossible}
+            </span>
           </div>
-          <div style={labelStyle}>MOST CONSISTENT</div>
+          <div style={labelStyle}>THIS WEEK</div>
+        </div>
+
+        {/* Best All-Time Streak */}
+        <div style={boxStyle}>
+          <div style={numStyle}>🏆 {stats.bestAllTimeStreak}</div>
+          <div style={labelStyle}>BEST ALL-TIME STREAK</div>
+        </div>
+
+        {/* Last 7 Days Rate */}
+        <div style={boxStyle}>
+          <div style={numStyle}>{stats.last7Rate}%</div>
+          <div style={labelStyle}>LAST 7 DAYS</div>
+        </div>
+
+        {/* Most Consistent Habit */}
+        <div style={boxStyle}>
+          <div
+            style={{
+              ...numStyle,
+              fontSize: isMobile ? '13px' : '16px',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
+              maxWidth: '100%',
+            }}
+          >
+            {stats.mostConsistentName}
+          </div>
+          <div style={labelStyle}>
+            MOST CONSISTENT
+            {stats.mostConsistentRate > 0 ? ` · ${stats.mostConsistentRate}%` : ''}
+          </div>
         </div>
       </div>
     </div>

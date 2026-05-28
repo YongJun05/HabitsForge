@@ -498,14 +498,14 @@ const DashboardPage: React.FC = () => {
                         {/* Stats Card */}
                         {habits.length > 0 && (
                             <div style={{ marginBottom: '16px' }}>
-                                <StatsCard habits={habits} allLogs={allLogs} />
+                                <StatsCard habits={habits} />
                             </div>
                         )}
 
                         {/* Best Day Chart */}
-                        {allLogDates.length > 0 && (
+                        {habits.some(h => h.allLogDates.length > 0) && (
                             <div style={{ marginBottom: '16px' }}>
-                                <BestDayChart logs={allLogDates} />
+                                <BestDayChart habits={habits} />
                             </div>
                         )}
 
