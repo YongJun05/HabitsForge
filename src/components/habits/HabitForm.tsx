@@ -150,7 +150,7 @@ const HabitForm: React.FC<HabitFormProps> = ({ initialData, onSave, onCancel }) 
       >
         <div className="neo-section-heading" style={{ color: '#7C3AED', marginBottom: '12px' }}>
           <Sparkles size={14} strokeWidth={2.5} />
-          <span>AI COACH</span>
+          <span>AI HABITS COACH</span>
         </div>
 
         <div style={{ display: 'flex', gap: '8px', flexDirection: isMobile ? 'column' : 'row' }}>
