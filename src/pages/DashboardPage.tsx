@@ -28,7 +28,7 @@ const DashboardPage: React.FC = () => {
     const location = useLocation();
     const { isMobile } = useWindowSize();
     const { habits, allLogs, loading, error, createHabit, updateHabit, deleteHabit, toggleDone, freezeHabit, reorderHabit } = useHabits();
-    const { permission, requestPermission, isSupported } = useNotifications();
+    const { permission, requestPermission, isSupported, handleSubscribePush } = useNotifications();
 
     const [activeTab, setActiveTab] = useState(0);
     const [selectedHabitId, setSelectedHabitId] = useState<string | null>(null);
@@ -429,7 +429,10 @@ const DashboardPage: React.FC = () => {
                                 <div style={{ display: 'flex', gap: '8px' }}>
                                     <button
                                         className="neo-btn"
-                                        onClick={requestPermission}
+                                        onClick={async () => {
+                                            await requestPermission();
+                                            await handleSubscribePush();
+                                        }}
                                         style={{ background: '#000000', color: '#FFFFFF', padding: '8px 12px', fontSize: '12px', minHeight: '44px' }}
                                     >
                                         Enable

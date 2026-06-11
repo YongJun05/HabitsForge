@@ -19,7 +19,7 @@ import { useWindowSize } from '../hooks/useWindowSize';
 const SettingsPage: React.FC = () => {
   const navigate = useNavigate();
   const { isMobile } = useWindowSize();
-  const { permission, requestPermission, isSupported } = useNotifications();
+  const { permission, requestPermission, isSupported, pushSubscribed, pushLoading, isPushAvailable, handleSubscribePush, handleUnsubscribePush } = useNotifications();
 
   const [displayName, setDisplayName] = useState('');
   const [email, setEmail] = useState('');
@@ -242,11 +242,20 @@ const SettingsPage: React.FC = () => {
             <div style={{ marginBottom: '12px' }}>
               <button
                 className="neo-btn"
-                onClick={() => {
-                  new Notification('HabitsForge', {
-                    body: 'Notifications are working!',
-                    icon: '/vite.svg',
-                  });
+                onClick={async () => {
+                  // Test via service worker if available, otherwise fallback
+                  if ('serviceWorker' in navigator) {
+                    const reg = await navigator.serviceWorker.ready;
+                    reg.showNotification('HabitsForge 🔥', {
+                      body: 'Push notifications are working!',
+                      icon: '/favicon.svg',
+                    });
+                  } else {
+                    new Notification('HabitsForge', {
+                      body: 'Notifications are working!',
+                      icon: '/favicon.svg',
+                    });
+                  }
                 }}
                 style={{
                   background: '#FFFFFF',
@@ -264,6 +273,47 @@ const SettingsPage: React.FC = () => {
               >
                 TEST NOTIFICATION
               </button>
+            </div>
+          )}
+
+          {/* Push Notification Subscription */}
+          {isPushAvailable && permission === 'granted' && (
+            <div style={{ marginBottom: '12px', padding: '12px', background: '#f8f8f8', border: '2px solid #000000' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: isMobile ? 'flex-start' : 'center', gap: '12px', flexDirection: isMobile ? 'column' : 'row' }}>
+                <div>
+                  <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '13px', fontWeight: 700, marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span style={{
+                      width: '8px',
+                      height: '8px',
+                      borderRadius: '50%',
+                      background: pushSubscribed ? '#22C55E' : '#999',
+                      display: 'inline-block',
+                    }} />
+                    PUSH NOTIFICATIONS: <strong>{pushSubscribed ? 'ACTIVE' : 'INACTIVE'}</strong>
+                  </div>
+                  <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '11px', color: '#666' }}>
+                    {pushSubscribed
+                      ? 'You will receive reminders even when the browser is closed.'
+                      : 'Enable to receive reminders even when the browser is closed.'}
+                  </div>
+                </div>
+                <button
+                  className="neo-btn"
+                  onClick={pushSubscribed ? handleUnsubscribePush : handleSubscribePush}
+                  disabled={pushLoading}
+                  style={{
+                    background: pushSubscribed ? '#FF2D9B' : '#22C55E',
+                    color: '#FFFFFF',
+                    padding: '8px 14px',
+                    fontSize: '11px',
+                    minHeight: '44px',
+                    whiteSpace: 'nowrap',
+                    opacity: pushLoading ? 0.6 : 1,
+                  }}
+                >
+                  {pushLoading ? 'PROCESSING...' : pushSubscribed ? 'UNSUBSCRIBE' : 'ENABLE PUSH'}
+                </button>
+              </div>
             </div>
           )}
 

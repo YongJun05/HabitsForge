@@ -1,0 +1,17 @@
+{
+  "name": "HabitsForge",
+  "short_name": "HabitsForge",
+  "description": "Build habits that stick — brutalist habit tracker",
+  "start_url": "/dashboard",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#ffe600",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

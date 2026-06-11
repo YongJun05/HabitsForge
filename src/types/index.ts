@@ -57,4 +57,14 @@ export interface HabitSuggestion {
   color: string;
 }
 
+/** Mirrors the push_subscriptions database table */
+export interface PushSubscriptionRecord {
+  id: string;
+  user_id: string;
+  endpoint: string;
+  p256dh: string;
+  auth: string;
+  created_at: string;
+}
+
 export type NotificationPermissionStatus = 'granted' | 'denied' | 'default' | 'unsupported';
