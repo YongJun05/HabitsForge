@@ -15,6 +15,7 @@ export interface Habit {
   user_id: string;
   name: string;
   description?: string;
+  category?: string;
   icon: string;
   color: string;
   reminder_enabled: boolean;

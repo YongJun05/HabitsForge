@@ -27,7 +27,7 @@ import { useWindowSize } from '../hooks/useWindowSize';
 const DashboardPage: React.FC = () => {
     const location = useLocation();
     const { isMobile } = useWindowSize();
-    const { habits, allLogs, loading, error, createHabit, updateHabit, deleteHabit, toggleDone, freezeHabit, reorderHabit } = useHabits();
+    const { habits, loading, error, createHabit, updateHabit, deleteHabit, toggleDone, freezeHabit, reorderHabit } = useHabits();
     const { permission, requestPermission, isSupported, handleSubscribePush } = useNotifications();
 
     const [activeTab, setActiveTab] = useState(0);
@@ -50,6 +50,7 @@ const DashboardPage: React.FC = () => {
     const [searchQuery, setSearchQuery] = useState('');
     const [sortBy, setSortBy] = useState<'default' | 'name' | 'streak' | 'newest' | 'status'>('default');
     const [filterBy, setFilterBy] = useState<'all' | 'done' | 'not-done'>('all');
+    const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
     // Detail tab: notes map for recent log
     const [detailLogNotes, setDetailLogNotes] = useState<Map<string, string | null>>(new Map());
@@ -221,10 +222,16 @@ const DashboardPage: React.FC = () => {
 
     const showNotifBanner = isSupported && permission === 'default' && !notifDismissed;
 
-    const allLogDates = useMemo(() => allLogs.map((l) => l.log_date), [allLogs]);
+    const categories = useMemo(() => {
+        const cats = new Set<string>();
+        habits.forEach(h => {
+            if (h.category) cats.add(h.category);
+        });
+        return Array.from(cats).sort();
+    }, [habits]);
 
     // Search, sort & filter logic
-    const isCustomView = searchQuery.trim() !== '' || sortBy !== 'default' || filterBy !== 'all';
+    const isCustomView = searchQuery.trim() !== '' || sortBy !== 'default' || filterBy !== 'all' || selectedCategory !== null;
 
     const filteredHabits = useMemo(() => {
         let result = [...habits];
@@ -243,6 +250,11 @@ const DashboardPage: React.FC = () => {
             result = result.filter(h => h.isDoneToday);
         } else if (filterBy === 'not-done') {
             result = result.filter(h => !h.isDoneToday);
+        }
+
+        // Category filter
+        if (selectedCategory) {
+            result = result.filter(h => h.category === selectedCategory);
         }
 
         // Sort
@@ -264,7 +276,7 @@ const DashboardPage: React.FC = () => {
         }
 
         return result;
-    }, [habits, searchQuery, sortBy, filterBy]);
+    }, [habits, searchQuery, sortBy, filterBy, selectedCategory]);
 
     // Confetti on full completion
     useEffect(() => {
@@ -687,6 +699,65 @@ const DashboardPage: React.FC = () => {
                                             <option value="status">SORT: UNDONE FIRST</option>
                                         </select>
                                     </div>
+
+                                    {/* Category Filter */}
+                                    {categories.length > 0 && (
+                                        <div
+                                            style={{
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                gap: '8px',
+                                                flexWrap: 'wrap',
+                                                marginTop: '4px',
+                                                paddingTop: '12px',
+                                                borderTop: '2px dashed #e0e0e0',
+                                            }}
+                                        >
+                                            <button
+                                                onClick={() => setSelectedCategory(null)}
+                                                style={{
+                                                    background: selectedCategory === null ? '#000000' : '#FFFFFF',
+                                                    color: selectedCategory === null ? '#FFFFFF' : '#000000',
+                                                    border: '2px solid #000000',
+                                                    padding: '4px 10px',
+                                                    fontFamily: "'Syne', sans-serif",
+                                                    fontWeight: 800,
+                                                    fontSize: '10px',
+                                                    letterSpacing: '1px',
+                                                    cursor: 'pointer',
+                                                    textTransform: 'uppercase',
+                                                    boxShadow: selectedCategory === null ? 'none' : '2px 2px 0px #000000',
+                                                    transform: selectedCategory === null ? 'translate(2px, 2px)' : 'none',
+                                                    transition: 'all 0.1s ease',
+                                                }}
+                                            >
+                                                ALL CATEGORIES
+                                            </button>
+                                            {categories.map((cat) => (
+                                                <button
+                                                    key={cat}
+                                                    onClick={() => setSelectedCategory(cat)}
+                                                    style={{
+                                                        background: selectedCategory === cat ? '#000000' : '#FFFFFF',
+                                                        color: selectedCategory === cat ? '#FFFFFF' : '#000000',
+                                                        border: '2px solid #000000',
+                                                        padding: '4px 10px',
+                                                        fontFamily: "'Syne', sans-serif",
+                                                        fontWeight: 800,
+                                                        fontSize: '10px',
+                                                        letterSpacing: '1px',
+                                                        cursor: 'pointer',
+                                                        textTransform: 'uppercase',
+                                                        boxShadow: selectedCategory === cat ? 'none' : '2px 2px 0px #000000',
+                                                        transform: selectedCategory === cat ? 'translate(2px, 2px)' : 'none',
+                                                        transition: 'all 0.1s ease',
+                                                    }}
+                                                >
+                                                    # {cat}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    )}
 
                                     {/* Results count when filtered */}
                                     {isCustomView && (

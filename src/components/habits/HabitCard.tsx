@@ -162,24 +162,44 @@ const HabitCard: React.FC<HabitCardProps> = ({
         )}
       </div>
 
-      {/* Milestone badge */}
-      {milestone && (
-        <div style={{ marginBottom: '8px' }}>
-          <span
-            style={{
-              background: '#000',
-              color: 'white',
-              border: '2px solid #000',
-              padding: '2px 10px',
-              fontFamily: "'JetBrains Mono', monospace",
-              fontSize: '11px',
-              fontWeight: 700,
-              textTransform: 'uppercase',
-              display: 'inline-block',
-            }}
-          >
-            {milestone.emoji} {milestone.label}
-          </span>
+      {/* Badges: Milestone & Category */}
+      {(milestone || habit.category) && (
+        <div style={{ marginBottom: '8px', display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+          {milestone && (
+            <span
+              style={{
+                background: '#000',
+                color: 'white',
+                border: '2px solid #000',
+                padding: '2px 10px',
+                fontFamily: "'JetBrains Mono', monospace",
+                fontSize: '11px',
+                fontWeight: 700,
+                textTransform: 'uppercase',
+                display: 'inline-block',
+              }}
+            >
+              {milestone.emoji} {milestone.label}
+            </span>
+          )}
+          {habit.category && (
+            <span
+              style={{
+                background: 'white',
+                color: 'black',
+                border: '2px solid #000',
+                boxShadow: '2px 2px 0 #000',
+                padding: '2px 10px',
+                fontFamily: "'JetBrains Mono', monospace",
+                fontSize: '11px',
+                fontWeight: 700,
+                textTransform: 'uppercase',
+                display: 'inline-block',
+              }}
+            >
+              # {habit.category}
+            </span>
+          )}
         </div>
       )}
 

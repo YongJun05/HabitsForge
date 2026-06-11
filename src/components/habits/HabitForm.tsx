@@ -68,6 +68,7 @@ const HabitForm: React.FC<HabitFormProps> = ({ initialData, onSave, onCancel }) 
   const { isMobile } = useWindowSize();
   const [name, setName] = useState(initialData?.name ?? '');
   const [description, setDescription] = useState(initialData?.description ?? '');
+  const [category, setCategory] = useState(initialData?.category ?? '');
   const [icon, setIcon] = useState(initialData?.icon ?? 'target');
   const [color, setColor] = useState(initialData?.color ?? '#ffe600');
   const [reminderEnabled, setReminderEnabled] = useState(initialData?.reminder_enabled ?? false);
@@ -115,6 +116,7 @@ const HabitForm: React.FC<HabitFormProps> = ({ initialData, onSave, onCancel }) 
       await onSave({
         name: name.trim(),
         description: description.trim() || undefined,
+        category: category.trim() || undefined,
         icon,
         color,
         reminder_enabled: reminderEnabled,
@@ -246,6 +248,33 @@ const HabitForm: React.FC<HabitFormProps> = ({ initialData, onSave, onCancel }) 
         />
         <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '11px', textAlign: 'right', marginTop: '2px' }}>
           {description.length}/200
+        </div>
+      </div>
+
+      {/* Category */}
+      <div>
+        <label style={{ fontWeight: 800, fontSize: '12px', letterSpacing: '2px', display: 'block', marginBottom: '6px' }}>
+          CATEGORY
+        </label>
+        <input
+          className="neo-input"
+          placeholder="e.g. Health, Productivity, Finance..."
+          value={category}
+          onChange={(e) => setCategory(e.target.value.slice(0, 30))}
+          maxLength={30}
+          list="category-suggestions"
+          style={{ fontSize: isMobile ? '16px' : undefined }}
+        />
+        <datalist id="category-suggestions">
+          <option value="Health" />
+          <option value="Productivity" />
+          <option value="Mindfulness" />
+          <option value="Fitness" />
+          <option value="Finance" />
+          <option value="Learning" />
+        </datalist>
+        <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '11px', textAlign: 'right', marginTop: '2px' }}>
+          {category.length}/30
         </div>
       </div>
 
