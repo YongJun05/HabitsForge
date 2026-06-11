@@ -268,30 +268,28 @@ const HabitForm: React.FC<HabitFormProps> = ({ initialData, onSave, onCancel }) 
       </div>
 
       {/* Category */}
-      <div>
+      <div style={{ marginBottom: isMobile ? '12px' : '16px' }}>
         <label style={{ fontWeight: 800, fontSize: '12px', letterSpacing: '2px', display: 'block', marginBottom: '6px' }}>
           CATEGORY
         </label>
-        <input
+        <select
           className="neo-input"
-          placeholder="e.g. Health, Productivity, Finance..."
           value={category}
-          onChange={(e) => setCategory(e.target.value.slice(0, 30))}
-          maxLength={30}
-          list="category-suggestions"
-          style={{ fontSize: isMobile ? '16px' : undefined }}
-        />
-        <datalist id="category-suggestions">
-          <option value="Health" />
-          <option value="Productivity" />
-          <option value="Mindfulness" />
-          <option value="Fitness" />
-          <option value="Finance" />
-          <option value="Learning" />
-        </datalist>
-        <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '11px', textAlign: 'right', marginTop: '2px' }}>
-          {category.length}/30
-        </div>
+          onChange={(e) => setCategory(e.target.value)}
+          style={{ fontSize: isMobile ? '16px' : undefined, cursor: 'pointer' }}
+        >
+          <option value="" disabled>Select a category...</option>
+          <option value="Health">Health</option>
+          <option value="Productivity">Productivity</option>
+          <option value="Mindfulness">Mindfulness</option>
+          <option value="Fitness">Fitness</option>
+          <option value="Finance">Finance</option>
+          <option value="Learning">Learning</option>
+          {/* Include current category if it's not in the default list */}
+          {category && !['Health', 'Productivity', 'Mindfulness', 'Fitness', 'Finance', 'Learning'].includes(category) && (
+            <option value={category}>{category}</option>
+          )}
+        </select>
       </div>
 
       <hr className="neo-section-divider" />
@@ -307,17 +305,18 @@ const HabitForm: React.FC<HabitFormProps> = ({ initialData, onSave, onCancel }) 
         gap: isMobile ? '0' : '24px',
         flexDirection: isMobile ? 'column' : undefined,
       }}>
-        {/* Icon picker — horizontal scrollable strip */}
-        <div style={{ marginBottom: isMobile ? '12px' : '0' }}>
+        {/* Icon picker — wrapping flex container */}
+        <div style={{ marginBottom: isMobile ? '12px' : '0', minWidth: 0 }}>
           <label style={{ fontWeight: 800, fontSize: '12px', letterSpacing: '2px', display: 'block', marginBottom: '6px' }}>
             CHOOSE ICON
           </label>
-          <div className="neo-scroll-strip">
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
             {HABIT_ICONS.map(({ id, Icon }) => (
               <button
                 key={id}
                 onClick={() => setIcon(id)}
                 aria-label={`Choose ${id} icon`}
+                type="button"
                 style={{
                   width: `${iconBtnSize}px`,
                   height: `${iconBtnSize}px`,

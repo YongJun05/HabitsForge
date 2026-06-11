@@ -947,7 +947,7 @@ const DashboardPage: React.FC = () => {
                                 <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: '12px', letterSpacing: '2px', marginBottom: '10px', color: '#666' }}>
                                     SELECT HABIT
                                 </div>
-                                <div className="neo-pill-strip">
+                                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', padding: '4px 0 8px' }}>
                                     {habits.map((h) => (
                                         <button
                                             key={h.id}
