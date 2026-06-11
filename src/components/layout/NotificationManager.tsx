@@ -79,6 +79,9 @@ const NotificationManager: React.FC = () => {
     const habits = habitsRef.current;
     if (habits.length === 0 || !userId) return;
 
+    // Respect the global notifications toggle from Settings
+    if (localStorage.getItem('habitsforge_notifications') === 'false') return;
+
     for (const habit of habits) {
       if (!habit.reminder_enabled || !habit.reminder_time) continue;
       if (habit.isDoneToday) continue;

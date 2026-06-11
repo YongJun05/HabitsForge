@@ -19,7 +19,7 @@ import { useWindowSize } from '../hooks/useWindowSize';
 const SettingsPage: React.FC = () => {
   const navigate = useNavigate();
   const { isMobile } = useWindowSize();
-  const { permission, requestPermission, isSupported, pushSubscribed, pushLoading, isPushAvailable, handleSubscribePush, handleUnsubscribePush } = useNotifications();
+  const { permission, requestPermission, pushSubscribed, pushLoading, isPushAvailable, handleSubscribePush, handleUnsubscribePush } = useNotifications();
 
   const [displayName, setDisplayName] = useState('');
   const [email, setEmail] = useState('');
@@ -159,7 +159,7 @@ const SettingsPage: React.FC = () => {
     }
   };
 
-  const permissionLabel = permission === 'granted' ? 'Granted' : permission === 'denied' ? 'Denied' : permission === 'unsupported' ? 'Not supported' : 'Not requested';
+
 
   return (
     <div style={{ minHeight: '100vh' }}>
@@ -208,7 +208,7 @@ const SettingsPage: React.FC = () => {
         {/* Notifications section — hidden entirely on unsupported browsers (e.g. iOS Safari) */}
         {isNotificationSupported && (
         <div style={{ padding: isMobile ? '16px' : '20px', marginBottom: '16px', background: '#FFFFFF', border: '3px solid #000000', boxShadow: '4px 4px 0px #000000', width: '100%', boxSizing: 'border-box' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
             <div className="neo-icon-box" style={{ background: '#2563EB', color: '#FFFFFF' }}>
               <Bell size={22} strokeWidth={2} />
             </div>
@@ -217,84 +217,127 @@ const SettingsPage: React.FC = () => {
             </h2>
           </div>
 
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: isMobile ? 'flex-start' : 'center', marginBottom: '12px', gap: '12px', flexDirection: isMobile ? 'column' : 'row' }}>
-            <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '13px' }}>BROWSER PERMISSION: <strong>{permissionLabel.toUpperCase()}</strong></span>
-            {isSupported && permission !== 'granted' && permission !== 'unsupported' && (
+          {/* Master toggle — controls whether any reminders fire at all */}
+          <div style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            padding: '14px 16px',
+            marginBottom: '16px',
+            background: notifGlobal ? '#f0fdf4' : '#fafafa',
+            border: `2px solid ${notifGlobal ? '#22C55E' : '#d4d4d4'}`,
+            transition: 'all 0.2s ease',
+          }}>
+            <div style={{ flex: 1, marginRight: '16px' }}>
+              <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: '13px', marginBottom: '4px', textTransform: 'uppercase' }}>
+                Habit Reminders
+              </div>
+              <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '11px', color: '#666', lineHeight: 1.4 }}>
+                {notifGlobal
+                  ? 'You will receive reminders for habits with alerts enabled.'
+                  : 'All reminders are paused. Individual habit reminder settings are preserved.'}
+              </div>
+            </div>
+            <button
+              onClick={handleToggleNotifGlobal}
+              aria-label={notifGlobal ? 'Disable all reminders' : 'Enable all reminders'}
+              style={{
+                width: '48px',
+                height: '26px',
+                background: notifGlobal ? '#22C55E' : '#d4d4d4',
+                border: '3px solid #000000',
+                boxShadow: '3px 3px 0px #000000',
+                cursor: 'pointer',
+                position: 'relative',
+                flexShrink: 0,
+                borderRadius: '0',
+                transition: 'background 0.2s ease',
+              }}
+            >
+              <div
+                style={{
+                  width: '14px',
+                  height: '14px',
+                  background: '#000000',
+                  position: 'absolute',
+                  top: '3px',
+                  left: notifGlobal ? '24px' : '3px',
+                  transition: 'left 0.2s ease',
+                }}
+              />
+            </button>
+          </div>
+
+          {/* Browser permission status */}
+          {permission === 'denied' ? (
+            <div style={{
+              padding: '14px 16px',
+              marginBottom: '16px',
+              background: '#fef2f2',
+              border: '2px solid #fca5a5',
+            }}>
+              <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: '12px', color: '#b91c1c', marginBottom: '4px' }}>
+                ⚠ BROWSER NOTIFICATIONS BLOCKED
+              </div>
+              <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '11px', color: '#991b1b', lineHeight: 1.4 }}>
+                Your browser is blocking notifications from this site. To fix this, click the lock icon in your browser's address bar and allow notifications.
+              </div>
+            </div>
+          ) : permission !== 'granted' && (
+            <div style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: isMobile ? 'flex-start' : 'center',
+              padding: '14px 16px',
+              marginBottom: '16px',
+              background: '#fffbeb',
+              border: '2px solid #fcd34d',
+              gap: '12px',
+              flexDirection: isMobile ? 'column' : 'row',
+            }}>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: '12px', marginBottom: '4px' }}>
+                  BROWSER PERMISSION REQUIRED
+                </div>
+                <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '11px', color: '#666', lineHeight: 1.4 }}>
+                  Allow browser notifications so HabitsForge can send you habit reminders.
+                </div>
+              </div>
               <button
                 className="neo-btn"
                 onClick={requestPermission}
-                style={{ background: '#2563EB', color: '#FFFFFF', padding: '8px 12px', fontSize: '12px', minHeight: '44px' }}
+                style={{ background: '#2563EB', color: '#FFFFFF', padding: '8px 14px', fontSize: '11px', minHeight: '44px', whiteSpace: 'nowrap' }}
               >
-                ENABLE NOTIFICATIONS
-              </button>
-            )}
-          </div>
-
-          {/* Blocked message */}
-          {permission === 'denied' && (
-            <p style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '13px', color: '#888', margin: '0 0 12px' }}>
-              Notifications are blocked. Please enable them in your browser settings.
-            </p>
-          )}
-
-          {/* Test Notification button — only when permission is granted */}
-          {permission === 'granted' && (
-            <div style={{ marginBottom: '12px' }}>
-              <button
-                className="neo-btn"
-                onClick={async () => {
-                  // Test via service worker if available, otherwise fallback
-                  if ('serviceWorker' in navigator) {
-                    const reg = await navigator.serviceWorker.ready;
-                    reg.showNotification('HabitsForge 🔥', {
-                      body: 'Push notifications are working!',
-                      icon: '/favicon.svg',
-                    });
-                  } else {
-                    new Notification('HabitsForge', {
-                      body: 'Notifications are working!',
-                      icon: '/favicon.svg',
-                    });
-                  }
-                }}
-                style={{
-                  background: '#FFFFFF',
-                  color: '#000000',
-                  border: '2px solid #000000',
-                  boxShadow: '3px 3px 0 #000000',
-                  padding: '10px 20px',
-                  fontFamily: "'Syne', sans-serif",
-                  fontWeight: 800,
-                  fontSize: '12px',
-                  textTransform: 'uppercase',
-                  minHeight: '44px',
-                  cursor: 'pointer',
-                }}
-              >
-                TEST NOTIFICATION
+                ALLOW NOTIFICATIONS
               </button>
             </div>
           )}
 
-          {/* Push Notification Subscription */}
+          {/* Push Notifications — only relevant when permission is granted */}
           {isPushAvailable && permission === 'granted' && (
-            <div style={{ marginBottom: '12px', padding: '12px', background: '#f8f8f8', border: '2px solid #000000' }}>
+            <div style={{
+              padding: '14px 16px',
+              background: '#fafafa',
+              border: '2px solid #e5e5e5',
+            }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: isMobile ? 'flex-start' : 'center', gap: '12px', flexDirection: isMobile ? 'column' : 'row' }}>
-                <div>
-                  <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '13px', fontWeight: 700, marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: '12px', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '8px', textTransform: 'uppercase' }}>
                     <span style={{
                       width: '8px',
                       height: '8px',
                       borderRadius: '50%',
-                      background: pushSubscribed ? '#22C55E' : '#999',
+                      background: pushSubscribed ? '#22C55E' : '#d4d4d4',
                       display: 'inline-block',
+                      boxShadow: pushSubscribed ? '0 0 6px rgba(34,197,94,0.4)' : 'none',
+                      transition: 'all 0.2s ease',
                     }} />
-                    PUSH NOTIFICATIONS: <strong>{pushSubscribed ? 'ACTIVE' : 'INACTIVE'}</strong>
+                    Push Notifications: {pushSubscribed ? 'Active' : 'Off'}
                   </div>
-                  <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '11px', color: '#666' }}>
+                  <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '11px', color: '#666', lineHeight: 1.4 }}>
                     {pushSubscribed
-                      ? 'You will receive reminders even when the browser is closed.'
-                      : 'Enable to receive reminders even when the browser is closed.'}
+                      ? 'Reminders will be delivered even when HabitsForge is closed.'
+                      : 'Enable to receive reminders even when HabitsForge is not open.'}
                   </div>
                 </div>
                 <button
@@ -311,39 +354,24 @@ const SettingsPage: React.FC = () => {
                     opacity: pushLoading ? 0.6 : 1,
                   }}
                 >
-                  {pushLoading ? 'PROCESSING...' : pushSubscribed ? 'UNSUBSCRIBE' : 'ENABLE PUSH'}
+                  {pushLoading ? 'PROCESSING...' : pushSubscribed ? 'DISABLE PUSH' : 'ENABLE PUSH'}
                 </button>
               </div>
             </div>
           )}
 
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '13px' }}>GLOBAL NOTIFICATIONS</span>
-            <button
-              onClick={handleToggleNotifGlobal}
-              style={{
-                width: '48px',
-                height: '24px',
-                background: notifGlobal ? '#22C55E' : '#e0e0e0',
-                border: '3px solid #000000',
-                boxShadow: '4px 4px 0px #000000',
-                cursor: 'pointer',
-                position: 'relative',
-              }}
-            >
-              <div
-                style={{
-                  width: '16px',
-                  height: '16px',
-                  background: '#000000',
-                  position: 'absolute',
-                  top: '2px',
-                  left: notifGlobal ? '22px' : '2px',
-                  transition: 'left 0.2s',
-                }}
-              />
-            </button>
-          </div>
+          {/* Success confirmation when permission is granted and no push available */}
+          {permission === 'granted' && !isPushAvailable && (
+            <div style={{
+              padding: '14px 16px',
+              background: '#f0fdf4',
+              border: '2px solid #bbf7d0',
+            }}>
+              <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '11px', color: '#166534', lineHeight: 1.4 }}>
+                ✓ Browser notifications are enabled. You'll receive reminders while the app is open.
+              </div>
+            </div>
+          )}
         </div>
         )}
 
