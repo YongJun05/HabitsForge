@@ -2,6 +2,13 @@
  * Habit form component with AI suggestion integration.
  * Used for both creating and editing habits.
  * IMPORTANT: Uses divs with onClick handlers, not <form> tags.
+ *
+ * Layout: Grouped into visual sections:
+ *   1. AI Coach — suggestion area
+ *   2. Habit Details — Name, Description, Category
+ *   3. Appearance — Icon + Color side-by-side on desktop
+ *   4. Schedule — Reminder toggle + time picker
+ *   5. Sticky Save/Cancel at bottom
  */
 import React, { useState } from 'react';
 import {
@@ -128,10 +135,12 @@ const HabitForm: React.FC<HabitFormProps> = ({ initialData, onSave, onCancel }) 
     }
   };
 
+  const iconBtnSize = isMobile ? 44 : 48;
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: isMobile ? '12px' : '16px' }}>
-      {/* AI Coach Banner */}
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '0' }}>
+
+      {/* ── Section 1: AI Coach ──────────────────────── */}
       <div
         style={{
           background: '#F0E6FF',
@@ -139,9 +148,9 @@ const HabitForm: React.FC<HabitFormProps> = ({ initialData, onSave, onCancel }) 
           padding: isMobile ? '12px' : '16px',
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
-          <Sparkles size={18} strokeWidth={2} />
-          <span style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800 }}>AI HABIT COACH</span>
+        <div className="neo-section-heading" style={{ color: '#7C3AED', marginBottom: '12px' }}>
+          <Sparkles size={14} strokeWidth={2.5} />
+          <span>AI COACH</span>
         </div>
 
         <div style={{ display: 'flex', gap: '8px', flexDirection: isMobile ? 'column' : 'row' }}>
@@ -214,8 +223,15 @@ const HabitForm: React.FC<HabitFormProps> = ({ initialData, onSave, onCancel }) 
         )}
       </div>
 
+      <hr className="neo-section-divider" />
+
+      {/* ── Section 2: Habit Details ─────────────────── */}
+      <div className="neo-section-heading">
+        <span>HABIT DETAILS</span>
+      </div>
+
       {/* Name */}
-      <div>
+      <div style={{ marginBottom: isMobile ? '12px' : '16px' }}>
         <label style={{ fontWeight: 800, fontSize: '12px', letterSpacing: '2px', display: 'block', marginBottom: '6px' }}>
           NAME <span style={{ color: '#FF2D9B' }}>*</span>
         </label>
@@ -233,7 +249,7 @@ const HabitForm: React.FC<HabitFormProps> = ({ initialData, onSave, onCancel }) 
       </div>
 
       {/* Description */}
-      <div>
+      <div style={{ marginBottom: isMobile ? '12px' : '16px' }}>
         <label style={{ fontWeight: 800, fontSize: '12px', letterSpacing: '2px', display: 'block', marginBottom: '6px' }}>
           DESCRIPTION
         </label>
@@ -278,65 +294,88 @@ const HabitForm: React.FC<HabitFormProps> = ({ initialData, onSave, onCancel }) 
         </div>
       </div>
 
-      {/* Icon picker */}
-      <div>
-        <label style={{ fontWeight: 800, fontSize: '12px', letterSpacing: '2px', display: 'block', marginBottom: '6px' }}>
-          CHOOSE ICON
-        </label>
-        <div style={{ display: 'grid', gridTemplateColumns: `repeat(${isMobile ? 4 : 5}, ${isMobile ? 44 : 48}px)`, gap: '8px' }}>
-          {HABIT_ICONS.map(({ id, Icon }) => (
-            <button
-              key={id}
-              onClick={() => setIcon(id)}
-              aria-label={`Choose ${id} icon`}
-              style={{
-                width: isMobile ? '44px' : '48px',
-                height: isMobile ? '44px' : '48px',
-                minWidth: '44px',
-                minHeight: '44px',
-                border: '2px solid #000000',
-                boxShadow: icon === id ? '2px 2px 0px #000000' : '3px 3px 0px #000000',
-                background: icon === id ? '#FFE566' : '#FFFFFF',
-                transform: icon === id ? 'translate(1px, 1px)' : 'none',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                borderRadius: 0,
-              }}
-            >
-              <Icon size={22} strokeWidth={2} color="#000000" />
-            </button>
-          ))}
+      <hr className="neo-section-divider" />
+
+      {/* ── Section 3: Appearance ────────────────────── */}
+      <div className="neo-section-heading">
+        <span>APPEARANCE</span>
+      </div>
+
+      <div style={{
+        display: isMobile ? 'flex' : 'grid',
+        gridTemplateColumns: isMobile ? undefined : '1fr 1fr',
+        gap: isMobile ? '0' : '24px',
+        flexDirection: isMobile ? 'column' : undefined,
+      }}>
+        {/* Icon picker — horizontal scrollable strip */}
+        <div style={{ marginBottom: isMobile ? '12px' : '0' }}>
+          <label style={{ fontWeight: 800, fontSize: '12px', letterSpacing: '2px', display: 'block', marginBottom: '6px' }}>
+            CHOOSE ICON
+          </label>
+          <div className="neo-scroll-strip">
+            {HABIT_ICONS.map(({ id, Icon }) => (
+              <button
+                key={id}
+                onClick={() => setIcon(id)}
+                aria-label={`Choose ${id} icon`}
+                style={{
+                  width: `${iconBtnSize}px`,
+                  height: `${iconBtnSize}px`,
+                  minWidth: `${iconBtnSize}px`,
+                  minHeight: '44px',
+                  border: '2px solid #000000',
+                  boxShadow: icon === id ? '2px 2px 0px #000000' : '3px 3px 0px #000000',
+                  background: icon === id ? '#FFE566' : '#FFFFFF',
+                  transform: icon === id ? 'translate(1px, 1px)' : 'none',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  borderRadius: 0,
+                  padding: 0,
+                }}
+              >
+                <Icon size={22} strokeWidth={2} color="#000000" />
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Color picker — compact row */}
+        <div>
+          <label style={{ fontWeight: 800, fontSize: '12px', letterSpacing: '2px', display: 'block', marginBottom: '6px' }}>
+            CARD COLOR
+          </label>
+          <div style={{ display: 'flex', gap: '8px', flexWrap: 'nowrap' }}>
+            {COLOR_OPTIONS.map((c) => (
+              <button
+                key={c}
+                onClick={() => setColor(c)}
+                style={{
+                  width: isMobile ? '40px' : '36px',
+                  height: isMobile ? '40px' : '36px',
+                  minWidth: '36px',
+                  minHeight: '36px',
+                  background: c,
+                  border: '2px solid #000000',
+                  cursor: 'pointer',
+                  boxShadow: color === c ? '4px 4px 0px #000000' : 'none',
+                  transform: color === c ? 'translate(-2px, -2px)' : 'none',
+                  padding: 0,
+                }}
+              />
+            ))}
+          </div>
         </div>
       </div>
 
-      {/* Color picker */}
-      <div>
-        <label style={{ fontWeight: 800, fontSize: '12px', letterSpacing: '2px', display: 'block', marginBottom: '6px' }}>
-          CARD COLOR
-        </label>
-        <div style={{ display: 'flex', gap: '8px', flexWrap: isMobile ? 'nowrap' : 'wrap', justifyContent: isMobile ? 'space-between' : undefined }}>
-          {COLOR_OPTIONS.map((c) => (
-            <button
-              key={c}
-              onClick={() => setColor(c)}
-              style={{
-                width: isMobile ? '40px' : '36px',
-                height: isMobile ? '40px' : '36px',
-                minWidth: '40px',
-                background: c,
-                border: '2px solid #000000',
-                cursor: 'pointer',
-                boxShadow: color === c ? '4px 4px 0px #000000' : 'none',
-                transform: color === c ? 'translate(-2px, -2px)' : 'none',
-              }}
-            />
-          ))}
-        </div>
+      <hr className="neo-section-divider" />
+
+      {/* ── Section 4: Schedule ──────────────────────── */}
+      <div className="neo-section-heading">
+        <span>SCHEDULE</span>
       </div>
 
-      {/* Reminder toggle */}
       <div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           <label style={{ fontWeight: 800, fontSize: '12px', letterSpacing: '2px' }}>REMINDER</label>
@@ -365,45 +404,47 @@ const HabitForm: React.FC<HabitFormProps> = ({ initialData, onSave, onCancel }) 
         )}
       </div>
 
-      {/* Save + Cancel */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '8px' }}>
+      {/* ── Sticky Save + Cancel ─────────────────────── */}
+      <div className="neo-form-actions-sticky">
         {formError && (
-          <div style={{ color: '#FF2D9B', fontSize: '13px', fontFamily: "'JetBrains Mono', monospace" }}>
+          <div style={{ color: '#FF2D9B', fontSize: '13px', fontFamily: "'JetBrains Mono', monospace", marginBottom: '8px' }}>
             {formError}
           </div>
         )}
-        <button
-          className="neo-btn"
-          onClick={handleSave}
-          disabled={!name.trim()}
-          type="button"
-          style={{
-            background: '#2563EB',
-            color: '#FFFFFF',
-            padding: '12px 24px',
-            fontSize: '14px',
-            width: '100%',
-            fontFamily: "'Syne', sans-serif",
-            fontWeight: 800,
-            minHeight: '44px',
-          }}
-        >
-          {initialData ? 'SAVE CHANGES' : 'ADD HABIT'}
-        </button>
-        <button
-          className="neo-btn"
-          onClick={onCancel}
-          type="button"
-          style={{
-            background: '#FFFFFF',
-            padding: '12px 24px',
-            fontSize: '14px',
-            width: '100%',
-            minHeight: '44px',
-          }}
-        >
-          CANCEL
-        </button>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          <button
+            className="neo-btn"
+            onClick={handleSave}
+            disabled={!name.trim()}
+            type="button"
+            style={{
+              background: '#2563EB',
+              color: '#FFFFFF',
+              padding: '12px 24px',
+              fontSize: '14px',
+              width: '100%',
+              fontFamily: "'Syne', sans-serif",
+              fontWeight: 800,
+              minHeight: '44px',
+            }}
+          >
+            {initialData ? 'SAVE CHANGES' : 'ADD HABIT'}
+          </button>
+          <button
+            className="neo-btn"
+            onClick={onCancel}
+            type="button"
+            style={{
+              background: '#FFFFFF',
+              padding: '12px 24px',
+              fontSize: '14px',
+              width: '100%',
+              minHeight: '44px',
+            }}
+          >
+            CANCEL
+          </button>
+        </div>
       </div>
     </div>
   );

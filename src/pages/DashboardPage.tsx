@@ -4,7 +4,7 @@
  */
 import React, { useEffect, useState, useCallback, useMemo, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
-import { Bell, Plus, BarChart2, RefreshCw, Search, X } from 'lucide-react';
+import { Bell, Plus, BarChart2, RefreshCw, Search, X, Filter } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import Navbar from '../components/layout/Navbar';
 import TabBar from '../components/layout/TabBar';
@@ -23,6 +23,23 @@ import { useNotifications } from '../hooks/useNotifications';
 import { getMilestoneBadge } from '../lib/streakUtils';
 import type { Habit, HabitWithStreak } from '../types';
 import { useWindowSize } from '../hooks/useWindowSize';
+
+/** Format a date string to friendly relative/short label */
+function formatLogDate(dateStr: string): string {
+    const d = new Date(dateStr + 'T00:00:00');
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const diffMs = today.getTime() - d.getTime();
+    const diffDays = Math.round(diffMs / (1000 * 60 * 60 * 24));
+
+    if (diffDays === 0) return 'Today';
+    if (diffDays === 1) return 'Yesterday';
+
+    const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    return `${dayNames[d.getDay()]}, ${monthNames[d.getMonth()]} ${d.getDate()}`;
+}
 
 const DashboardPage: React.FC = () => {
     const location = useLocation();
@@ -51,6 +68,9 @@ const DashboardPage: React.FC = () => {
     const [sortBy, setSortBy] = useState<'default' | 'name' | 'streak' | 'newest' | 'status'>('default');
     const [filterBy, setFilterBy] = useState<'all' | 'done' | 'not-done'>('all');
     const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+
+    // Collapsible toolbar state
+    const [toolbarExpanded, setToolbarExpanded] = useState(false);
 
     // Detail tab: notes map for recent log
     const [detailLogNotes, setDetailLogNotes] = useState<Map<string, string | null>>(new Map());
@@ -216,7 +236,7 @@ const DashboardPage: React.FC = () => {
     const progressPercent = totalCount > 0 ? Math.round((doneCount / totalCount) * 100) : 0;
 
     const today = new Date();
-    const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
     const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
     const todayLabel = `${dayNames[today.getDay()]}, ${monthNames[today.getMonth()]} ${today.getDate()}`;
 
@@ -463,14 +483,14 @@ const DashboardPage: React.FC = () => {
                             </div>
                         )}
 
-                        {/* Progress card / confetti banner */}
+                        {/* Compact progress banner */}
                         {progressPercent === 100 && totalCount > 0 ? (
                             <div
                                 style={{
                                     background: '#FFE566',
                                     border: '3px solid #000000',
                                     boxShadow: '4px 4px 0px #000000',
-                                    padding: isMobile ? '16px' : '16px',
+                                    padding: '14px 20px',
                                     textAlign: 'center',
                                     marginBottom: '16px',
                                 }}
@@ -480,72 +500,24 @@ const DashboardPage: React.FC = () => {
                                 </div>
                             </div>
                         ) : (
-                            <div className="neo-card" style={{ padding: isMobile ? '16px' : '24px', marginBottom: '16px' }}>
-                                <div style={{ fontWeight: 800, fontSize: '12px', letterSpacing: '2px', color: '#666', marginBottom: '6px' }}>
-                                    TODAY'S PROGRESS
-                                </div>
-                                <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: isMobile ? '18px' : '24px', marginBottom: '6px' }}>
+                            <div className="neo-progress-banner" style={{ marginBottom: '16px' }}>
+                                <span className="neo-progress-banner__label">
                                     {todayLabel.toUpperCase()}
-                                </div>
-                                <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '18px', marginBottom: '10px' }}>
-                                    {doneCount} / {totalCount} HABITS DONE
-                                </div>
-                                <div
-                                    style={{
-                                        height: '24px',
-                                        background: '#f0f0f0',
-                                        border: '3px solid #000000',
-                                        overflow: 'hidden',
-                                    }}
-                                >
+                                </span>
+                                <div className="neo-progress-banner__bar">
                                     <div
+                                        className="neo-progress-banner__fill"
                                         style={{
-                                            height: '100%',
                                             width: `${progressPercent}%`,
                                             background: '#22C55E',
-                                            transition: 'width 0.3s ease',
                                         }}
                                     />
                                 </div>
+                                <span className="neo-progress-banner__count">
+                                    {doneCount}/{totalCount}
+                                </span>
                             </div>
                         )}
-
-                        {/* Stats Card */}
-                        {habits.length > 0 && (
-                            <div style={{ marginBottom: '16px' }}>
-                                <StatsCard habits={habits} />
-                            </div>
-                        )}
-
-                        {/* Best Day Chart */}
-                        {habits.some(h => h.allLogDates.length > 0) && (
-                            <div style={{ marginBottom: '16px' }}>
-                                <BestDayChart habits={habits} />
-                            </div>
-                        )}
-
-                        <button
-                            className="neo-btn"
-                            onClick={handleAddNew}
-                            style={{
-                                background: '#ffe600',
-                                padding: '16px',
-                                fontSize: '18px',
-                                width: '100%',
-                                marginTop: '16px',
-                                marginBottom: '16px',
-                                fontFamily: "'Syne', sans-serif",
-                                fontWeight: 800,
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                gap: '8px',
-                                minHeight: '44px',
-                            }}
-                        >
-                            <Plus size={20} strokeWidth={2} />
-                            ADD NEW HABIT
-                        </button>
 
                         {error && (
                             <p style={{ color: '#FF2D9B', fontSize: '14px', textAlign: 'center', marginBottom: '16px', fontFamily: "'JetBrains Mono', monospace" }}>{error}</p>
@@ -562,13 +534,31 @@ const DashboardPage: React.FC = () => {
                                 }}
                             >
                                 <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: '20px', marginBottom: '6px' }}>NO HABITS YET</div>
-                                <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '13px', color: '#666' }}>Add your first habit to get started.</div>
+                                <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '13px', color: '#666', marginBottom: '16px' }}>Add your first habit to get started.</div>
+                                <button
+                                    className="neo-btn"
+                                    onClick={handleAddNew}
+                                    style={{
+                                        background: '#ffe600',
+                                        padding: '12px 20px',
+                                        fontSize: '14px',
+                                        fontFamily: "'Syne', sans-serif",
+                                        fontWeight: 800,
+                                        display: 'inline-flex',
+                                        alignItems: 'center',
+                                        gap: '8px',
+                                        minHeight: '44px',
+                                    }}
+                                >
+                                    <Plus size={18} strokeWidth={2} />
+                                    ADD NEW HABIT
+                                </button>
                             </div>
                         )}
 
                         {habits.length > 0 && (
                             <>
-                                {/* Search, Sort & Filter Toolbar */}
+                                {/* Compact toolbar: Search + Add button + Filter toggle */}
                                 <div
                                     style={{
                                         background: '#FFFFFF',
@@ -581,165 +571,190 @@ const DashboardPage: React.FC = () => {
                                         gap: '12px',
                                     }}
                                 >
-                                    {/* Search input */}
-                                    <div style={{ position: 'relative' }}>
-                                        <Search
-                                            size={16}
-                                            strokeWidth={2.5}
-                                            style={{
-                                                position: 'absolute',
-                                                left: '12px',
-                                                top: '50%',
-                                                transform: 'translateY(-50%)',
-                                                color: '#999',
-                                                pointerEvents: 'none',
-                                            }}
-                                        />
-                                        <input
-                                            className="neo-input"
-                                            type="text"
-                                            placeholder="Search habits..."
-                                            value={searchQuery}
-                                            onChange={(e) => setSearchQuery(e.target.value)}
-                                            style={{
-                                                paddingLeft: '36px',
-                                                paddingRight: searchQuery ? '36px' : undefined,
-                                                fontSize: isMobile ? '16px' : '14px',
-                                            }}
-                                        />
-                                        {searchQuery && (
-                                            <button
-                                                type="button"
-                                                onClick={() => setSearchQuery('')}
+                                    {/* Top row: Search + Add New Habit button */}
+                                    <div style={{ display: 'flex', gap: '8px', alignItems: 'stretch' }}>
+                                        {/* Search input */}
+                                        <div style={{ position: 'relative', flex: 1 }}>
+                                            <Search
+                                                size={16}
+                                                strokeWidth={2.5}
                                                 style={{
                                                     position: 'absolute',
-                                                    right: '8px',
+                                                    left: '12px',
                                                     top: '50%',
                                                     transform: 'translateY(-50%)',
-                                                    background: '#000',
-                                                    border: 'none',
-                                                    cursor: 'pointer',
-                                                    color: '#FFF',
-                                                    padding: '2px',
-                                                    display: 'flex',
-                                                    alignItems: 'center',
-                                                    justifyContent: 'center',
-                                                    width: '20px',
-                                                    height: '20px',
+                                                    color: '#999',
+                                                    pointerEvents: 'none',
                                                 }}
-                                            >
-                                                <X size={12} strokeWidth={3} />
-                                            </button>
-                                        )}
-                                    </div>
-
-                                    {/* Filter chips + Sort dropdown */}
-                                    <div
-                                        style={{
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            gap: '8px',
-                                            flexWrap: 'wrap',
-                                        }}
-                                    >
-                                        {(['all', 'not-done', 'done'] as const).map((f) => {
-                                            const labels: Record<typeof f, string> = { all: 'ALL', 'not-done': 'NOT DONE', done: 'DONE ✓' };
-                                            const isActive = filterBy === f;
-                                            return (
+                                            />
+                                            <input
+                                                className="neo-input"
+                                                type="text"
+                                                placeholder="Search habits..."
+                                                value={searchQuery}
+                                                onChange={(e) => setSearchQuery(e.target.value)}
+                                                style={{
+                                                    paddingLeft: '36px',
+                                                    paddingRight: searchQuery ? '36px' : undefined,
+                                                    fontSize: isMobile ? '16px' : '14px',
+                                                }}
+                                            />
+                                            {searchQuery && (
                                                 <button
-                                                    key={f}
-                                                    onClick={() => setFilterBy(f)}
+                                                    type="button"
+                                                    onClick={() => setSearchQuery('')}
                                                     style={{
-                                                        background: isActive ? '#000000' : '#FFFFFF',
-                                                        color: isActive ? '#FFFFFF' : '#000000',
-                                                        border: '2px solid #000000',
-                                                        padding: isMobile ? '8px 12px' : '6px 14px',
-                                                        fontFamily: "'Syne', sans-serif",
-                                                        fontWeight: 800,
-                                                        fontSize: '11px',
-                                                        letterSpacing: '1px',
+                                                        position: 'absolute',
+                                                        right: '8px',
+                                                        top: '50%',
+                                                        transform: 'translateY(-50%)',
+                                                        background: '#000',
+                                                        border: 'none',
                                                         cursor: 'pointer',
-                                                        textTransform: 'uppercase',
-                                                        boxShadow: isActive ? 'none' : '2px 2px 0px #000000',
-                                                        transform: isActive ? 'translate(2px, 2px)' : 'none',
-                                                        transition: 'all 0.1s ease',
-                                                        minHeight: isMobile ? '40px' : '34px',
+                                                        color: '#FFF',
+                                                        padding: '2px',
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        justifyContent: 'center',
+                                                        width: '20px',
+                                                        height: '20px',
                                                     }}
                                                 >
-                                                    {labels[f]}
+                                                    <X size={12} strokeWidth={3} />
                                                 </button>
-                                            );
-                                        })}
+                                            )}
+                                        </div>
 
-                                        <div style={{ flex: 1 }} />
-
-                                        {/* Sort dropdown */}
-                                        <select
-                                            value={sortBy}
-                                            onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
+                                        {/* Filter toggle button */}
+                                        <button
+                                            className="neo-btn"
+                                            onClick={() => setToolbarExpanded((prev) => !prev)}
                                             style={{
-                                                border: '2px solid #000000',
-                                                boxShadow: '2px 2px 0px #000000',
-                                                padding: isMobile ? '8px 10px' : '6px 10px',
-                                                fontFamily: "'JetBrains Mono', monospace",
-                                                fontSize: '11px',
-                                                fontWeight: 700,
-                                                background: '#FFFFFF',
-                                                cursor: 'pointer',
-                                                textTransform: 'uppercase',
-                                                letterSpacing: '1px',
-                                                minHeight: isMobile ? '40px' : '34px',
-                                                borderRadius: 0,
+                                                background: toolbarExpanded || isCustomView ? '#000000' : '#FFFFFF',
+                                                color: toolbarExpanded || isCustomView ? '#FFFFFF' : '#000000',
+                                                padding: isMobile ? '8px 10px' : '8px 14px',
+                                                fontSize: '12px',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                gap: '6px',
+                                                minHeight: '44px',
+                                                whiteSpace: 'nowrap',
                                             }}
                                         >
-                                            <option value="default">SORT: DEFAULT</option>
-                                            <option value="name">SORT: NAME A→Z</option>
-                                            <option value="streak">SORT: STREAK ↓</option>
-                                            <option value="newest">SORT: NEWEST</option>
-                                            <option value="status">SORT: UNDONE FIRST</option>
-                                        </select>
+                                            <Filter size={14} strokeWidth={2.5} />
+                                            {!isMobile && 'FILTER'}
+                                        </button>
+
+                                        {/* Add New Habit button — compact inline */}
+                                        <button
+                                            className="neo-btn"
+                                            onClick={handleAddNew}
+                                            style={{
+                                                background: '#ffe600',
+                                                padding: isMobile ? '8px 10px' : '8px 14px',
+                                                fontSize: '12px',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                gap: '6px',
+                                                minHeight: '44px',
+                                                whiteSpace: 'nowrap',
+                                            }}
+                                        >
+                                            <Plus size={16} strokeWidth={2.5} />
+                                            {!isMobile && 'ADD'}
+                                        </button>
                                     </div>
 
-                                    {/* Category Filter */}
-                                    {categories.length > 0 && (
+                                    {/* Expandable filter/sort section */}
+                                    <div
+                                        className={`neo-collapse-wrapper ${toolbarExpanded ? 'neo-collapse-wrapper--open' : 'neo-collapse-wrapper--closed'}`}
+                                        style={{ maxHeight: toolbarExpanded ? '300px' : 0 }}
+                                    >
+                                        {/* Filter chips + Sort dropdown */}
                                         <div
                                             style={{
                                                 display: 'flex',
                                                 alignItems: 'center',
                                                 gap: '8px',
                                                 flexWrap: 'wrap',
-                                                marginTop: '4px',
-                                                paddingTop: '12px',
-                                                borderTop: '2px dashed #e0e0e0',
                                             }}
                                         >
-                                            <button
-                                                onClick={() => setSelectedCategory(null)}
+                                            {(['all', 'not-done', 'done'] as const).map((f) => {
+                                                const labels: Record<typeof f, string> = { all: 'ALL', 'not-done': 'NOT DONE', done: 'DONE ✓' };
+                                                const isActive = filterBy === f;
+                                                return (
+                                                    <button
+                                                        key={f}
+                                                        onClick={() => setFilterBy(f)}
+                                                        style={{
+                                                            background: isActive ? '#000000' : '#FFFFFF',
+                                                            color: isActive ? '#FFFFFF' : '#000000',
+                                                            border: '2px solid #000000',
+                                                            padding: isMobile ? '8px 12px' : '6px 14px',
+                                                            fontFamily: "'Syne', sans-serif",
+                                                            fontWeight: 800,
+                                                            fontSize: '11px',
+                                                            letterSpacing: '1px',
+                                                            cursor: 'pointer',
+                                                            textTransform: 'uppercase',
+                                                            boxShadow: isActive ? 'none' : '2px 2px 0px #000000',
+                                                            transform: isActive ? 'translate(2px, 2px)' : 'none',
+                                                            transition: 'all 0.1s ease',
+                                                            minHeight: isMobile ? '40px' : '34px',
+                                                        }}
+                                                    >
+                                                        {labels[f]}
+                                                    </button>
+                                                );
+                                            })}
+
+                                            <div style={{ flex: 1 }} />
+
+                                            {/* Sort dropdown */}
+                                            <select
+                                                value={sortBy}
+                                                onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
                                                 style={{
-                                                    background: selectedCategory === null ? '#000000' : '#FFFFFF',
-                                                    color: selectedCategory === null ? '#FFFFFF' : '#000000',
                                                     border: '2px solid #000000',
-                                                    padding: '4px 10px',
-                                                    fontFamily: "'Syne', sans-serif",
-                                                    fontWeight: 800,
-                                                    fontSize: '10px',
-                                                    letterSpacing: '1px',
+                                                    boxShadow: '2px 2px 0px #000000',
+                                                    padding: isMobile ? '8px 10px' : '6px 10px',
+                                                    fontFamily: "'JetBrains Mono', monospace",
+                                                    fontSize: '11px',
+                                                    fontWeight: 700,
+                                                    background: '#FFFFFF',
                                                     cursor: 'pointer',
                                                     textTransform: 'uppercase',
-                                                    boxShadow: selectedCategory === null ? 'none' : '2px 2px 0px #000000',
-                                                    transform: selectedCategory === null ? 'translate(2px, 2px)' : 'none',
-                                                    transition: 'all 0.1s ease',
+                                                    letterSpacing: '1px',
+                                                    minHeight: isMobile ? '40px' : '34px',
+                                                    borderRadius: 0,
                                                 }}
                                             >
-                                                ALL CATEGORIES
-                                            </button>
-                                            {categories.map((cat) => (
+                                                <option value="default">SORT: DEFAULT</option>
+                                                <option value="name">SORT: NAME A→Z</option>
+                                                <option value="streak">SORT: STREAK ↓</option>
+                                                <option value="newest">SORT: NEWEST</option>
+                                                <option value="status">SORT: UNDONE FIRST</option>
+                                            </select>
+                                        </div>
+
+                                        {/* Category Filter */}
+                                        {categories.length > 0 && (
+                                            <div
+                                                style={{
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    gap: '8px',
+                                                    flexWrap: 'wrap',
+                                                    marginTop: '12px',
+                                                    paddingTop: '12px',
+                                                    borderTop: '2px dashed #e0e0e0',
+                                                }}
+                                            >
                                                 <button
-                                                    key={cat}
-                                                    onClick={() => setSelectedCategory(cat)}
+                                                    onClick={() => setSelectedCategory(null)}
                                                     style={{
-                                                        background: selectedCategory === cat ? '#000000' : '#FFFFFF',
-                                                        color: selectedCategory === cat ? '#FFFFFF' : '#000000',
+                                                        background: selectedCategory === null ? '#000000' : '#FFFFFF',
+                                                        color: selectedCategory === null ? '#FFFFFF' : '#000000',
                                                         border: '2px solid #000000',
                                                         padding: '4px 10px',
                                                         fontFamily: "'Syne', sans-serif",
@@ -748,16 +763,39 @@ const DashboardPage: React.FC = () => {
                                                         letterSpacing: '1px',
                                                         cursor: 'pointer',
                                                         textTransform: 'uppercase',
-                                                        boxShadow: selectedCategory === cat ? 'none' : '2px 2px 0px #000000',
-                                                        transform: selectedCategory === cat ? 'translate(2px, 2px)' : 'none',
+                                                        boxShadow: selectedCategory === null ? 'none' : '2px 2px 0px #000000',
+                                                        transform: selectedCategory === null ? 'translate(2px, 2px)' : 'none',
                                                         transition: 'all 0.1s ease',
                                                     }}
                                                 >
-                                                    # {cat}
+                                                    ALL CATEGORIES
                                                 </button>
-                                            ))}
-                                        </div>
-                                    )}
+                                                {categories.map((cat) => (
+                                                    <button
+                                                        key={cat}
+                                                        onClick={() => setSelectedCategory(cat)}
+                                                        style={{
+                                                            background: selectedCategory === cat ? '#000000' : '#FFFFFF',
+                                                            color: selectedCategory === cat ? '#FFFFFF' : '#000000',
+                                                            border: '2px solid #000000',
+                                                            padding: '4px 10px',
+                                                            fontFamily: "'Syne', sans-serif",
+                                                            fontWeight: 800,
+                                                            fontSize: '10px',
+                                                            letterSpacing: '1px',
+                                                            cursor: 'pointer',
+                                                            textTransform: 'uppercase',
+                                                            boxShadow: selectedCategory === cat ? 'none' : '2px 2px 0px #000000',
+                                                            transform: selectedCategory === cat ? 'translate(2px, 2px)' : 'none',
+                                                            transition: 'all 0.1s ease',
+                                                        }}
+                                                    >
+                                                        # {cat}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </div>
 
                                     {/* Results count when filtered */}
                                     {isCustomView && (
@@ -779,6 +817,7 @@ const DashboardPage: React.FC = () => {
                                                     setSearchQuery('');
                                                     setSortBy('default');
                                                     setFilterBy('all');
+                                                    setSelectedCategory(null);
                                                 }}
                                                 style={{
                                                     background: 'none',
@@ -798,7 +837,7 @@ const DashboardPage: React.FC = () => {
                                     )}
                                 </div>
 
-                                {/* Habit cards */}
+                                {/* Habit cards — now ABOVE stats */}
                                 {filteredHabits.length > 0 ? (
                                     <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                                         {filteredHabits.map((habit) => (
@@ -838,6 +877,16 @@ const DashboardPage: React.FC = () => {
                                         <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '13px', color: '#666' }}>
                                             Try adjusting your search or filters.
                                         </div>
+                                    </div>
+                                )}
+
+                                {/* Stats & Analytics — BELOW habit cards */}
+                                {habits.length > 0 && (
+                                    <div style={{ marginTop: '20px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                                        <StatsCard habits={habits} defaultCollapsed />
+                                        {habits.some(h => h.allLogDates.length > 0) && (
+                                            <BestDayChart habits={habits} defaultCollapsed />
+                                        )}
                                     </div>
                                 )}
                             </>
@@ -885,7 +934,7 @@ const DashboardPage: React.FC = () => {
 
                 {activeTab === 2 && (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                        {/* Habit selector for details tab */}
+                        {/* Habit selector — horizontal scrollable pill strip */}
                         {habits.length > 0 && (
                             <div
                                 style={{
@@ -898,24 +947,15 @@ const DashboardPage: React.FC = () => {
                                 <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: '12px', letterSpacing: '2px', marginBottom: '10px', color: '#666' }}>
                                     SELECT HABIT
                                 </div>
-                        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                                <div className="neo-pill-strip">
                                     {habits.map((h) => (
                                         <button
                                             key={h.id}
-                                            className="neo-btn"
+                                            className={`neo-pill ${selectedHabitId === h.id ? 'neo-pill--active' : ''}`}
                                             onClick={() => setSelectedHabitId(h.id)}
                                             style={{
                                                 background: selectedHabitId === h.id ? h.color : '#FFFFFF',
                                                 color: selectedHabitId === h.id && (h.color === '#000000') ? '#FFFFFF' : '#000000',
-                                                padding: '8px 14px',
-                                                fontSize: '12px',
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                gap: '6px',
-                                                border: selectedHabitId === h.id ? '3px solid #000000' : '2px solid #000000',
-                                                boxShadow: selectedHabitId === h.id ? '2px 2px 0px #000000' : '3px 3px 0px #000000',
-                                                transform: selectedHabitId === h.id ? 'translate(1px, 1px)' : 'none',
-                                                minHeight: '44px',
                                             }}
                                         >
                                             <HabitIcon iconId={h.icon} size={14} />
@@ -995,25 +1035,55 @@ const DashboardPage: React.FC = () => {
                                     )}
                                 </div>
 
+                                {/* Hero streak stat + supporting stats */}
                                 <div style={{ display: 'flex', gap: isMobile ? '8px' : '12px', marginBottom: '0' }}>
-                                    {[
-                                        { label: 'CURRENT STREAK', value: selectedHabit.currentStreak, prefix: '🔥 ' },
-                                        { label: 'BEST STREAK', value: selectedHabit.bestStreak, prefix: '' },
-                                        { label: 'THIS MONTH', value: `${completionRate}%`, prefix: '' },
-                                    ].map((stat) => (
+                                    {/* Hero Current Streak — prominently large */}
+                                    <div
+                                        style={{
+                                            background: '#FFF8E1',
+                                            border: '3px solid #000000',
+                                            boxShadow: '4px 4px 0 #000000',
+                                            padding: isMobile ? '14px 10px' : '20px',
+                                            textAlign: 'center',
+                                            flex: 1.5,
+                                        }}
+                                    >
+                                        <div style={{
+                                            fontFamily: "'JetBrains Mono', monospace",
+                                            fontSize: isMobile ? '36px' : '52px',
+                                            fontWeight: 700,
+                                            lineHeight: 1,
+                                        }}>
+                                            🔥 {selectedHabit.currentStreak}
+                                        </div>
                                         <div
-                                            key={stat.label}
+                                            style={{
+                                                fontFamily: "'Syne', sans-serif",
+                                                fontWeight: 800,
+                                                fontSize: isMobile ? '10px' : '12px',
+                                                letterSpacing: '2px',
+                                                color: '#B8860B',
+                                                marginTop: '6px',
+                                            }}
+                                        >
+                                            CURRENT STREAK
+                                        </div>
+                                    </div>
+
+                                    {/* Supporting stats stacked */}
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: isMobile ? '8px' : '12px', flex: 1 }}>
+                                        <div
                                             style={{
                                                 background: '#FFFFFF',
                                                 border: '3px solid #000000',
                                                 boxShadow: '3px 3px 0 #000000',
-                                                padding: isMobile ? '10px 8px' : '16px',
+                                                padding: isMobile ? '10px 8px' : '14px',
                                                 textAlign: 'center',
                                                 flex: 1,
                                             }}
                                         >
-                                            <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: isMobile ? '24px' : '36px', fontWeight: 700 }}>
-                                                {`${stat.prefix}${stat.value}`}
+                                            <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: isMobile ? '20px' : '28px', fontWeight: 700 }}>
+                                                {selectedHabit.bestStreak}
                                             </div>
                                             <div
                                                 style={{
@@ -1022,13 +1092,39 @@ const DashboardPage: React.FC = () => {
                                                     fontSize: isMobile ? '9px' : '10px',
                                                     letterSpacing: '2px',
                                                     color: '#666',
-                                                    marginTop: '4px',
+                                                    marginTop: '2px',
                                                 }}
                                             >
-                                                {stat.label}
+                                                BEST STREAK
                                             </div>
                                         </div>
-                                    ))}
+                                        <div
+                                            style={{
+                                                background: '#FFFFFF',
+                                                border: '3px solid #000000',
+                                                boxShadow: '3px 3px 0 #000000',
+                                                padding: isMobile ? '10px 8px' : '14px',
+                                                textAlign: 'center',
+                                                flex: 1,
+                                            }}
+                                        >
+                                            <div style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: isMobile ? '20px' : '28px', fontWeight: 700 }}>
+                                                {completionRate}%
+                                            </div>
+                                            <div
+                                                style={{
+                                                    fontFamily: "'Syne', sans-serif",
+                                                    fontWeight: 800,
+                                                    fontSize: isMobile ? '9px' : '10px',
+                                                    letterSpacing: '2px',
+                                                    color: '#666',
+                                                    marginTop: '2px',
+                                                }}
+                                            >
+                                                THIS MONTH
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
 
                                 {/* 30-day heatmap */}
@@ -1050,7 +1146,7 @@ const DashboardPage: React.FC = () => {
                                     )}
                                 </div>
 
-                                {/* Recent log */}
+                                {/* Recent log — with formatted dates and dot indicators */}
                                 <div>
                                     <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, textTransform: 'uppercase', marginBottom: '12px' }}>
                                         RECENT LOG
@@ -1070,20 +1166,20 @@ const DashboardPage: React.FC = () => {
                                                         padding: '12px 16px',
                                                     }}
                                                 >
-                                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                                        <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: isMobile ? '13px' : '14px', fontWeight: 600 }}>
-                                                            {entry.date}
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                                        {/* Color dot indicator */}
+                                                        <span className={`log-dot ${entry.done ? 'log-dot--done' : 'log-dot--missed'}`} />
+                                                        <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: isMobile ? '13px' : '14px', fontWeight: 600, flex: 1 }}>
+                                                            {formatLogDate(entry.date)}
                                                         </span>
                                                         <span
                                                             style={{
-                                                                background: entry.done ? '#22C55E' : '#f0f0f0',
-                                                                color: entry.done ? '#FFFFFF' : '#666',
-                                                                border: '2px solid #000000',
-                                                                padding: isMobile ? '2px 8px' : '3px 12px',
-                                                                fontFamily: "'Syne', sans-serif",
-                                                                fontWeight: 800,
+                                                                fontFamily: "'JetBrains Mono', monospace",
                                                                 fontSize: '11px',
+                                                                fontWeight: 700,
+                                                                color: entry.done ? '#22C55E' : '#999',
                                                                 textTransform: 'uppercase',
+                                                                letterSpacing: '1px',
                                                             }}
                                                         >
                                                             {entry.done ? 'DONE' : 'MISSED'}
@@ -1096,6 +1192,7 @@ const DashboardPage: React.FC = () => {
                                                             color: '#666',
                                                             fontStyle: 'italic',
                                                             marginTop: '4px',
+                                                            marginLeft: '20px',
                                                         }}>
                                                             {entry.note}
                                                         </div>

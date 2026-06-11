@@ -5,13 +5,16 @@
  * Each bar shows: completions / possible completions as a percentage.
  * "Possible" accounts for when each habit was created, so new habits
  * don't deflate the rate unfairly.
+ *
+ * Collapsible with a toggle header. Best day bar uses a vibrant accent.
  */
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import type { HabitWithStreak } from '../../types';
 import { useWindowSize } from '../../hooks/useWindowSize';
 
 interface BestDayChartProps {
   habits: HabitWithStreak[];
+  defaultCollapsed?: boolean;
 }
 
 const DAY_LABELS = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
@@ -24,8 +27,9 @@ function toDateStr(d: Date): string {
   return `${year}-${month}-${day}`;
 }
 
-const BestDayChart: React.FC<BestDayChartProps> = ({ habits }) => {
+const BestDayChart: React.FC<BestDayChartProps> = ({ habits, defaultCollapsed = false }) => {
   const { isMobile } = useWindowSize();
+  const [collapsed, setCollapsed] = useState(defaultCollapsed);
 
   const data = useMemo(() => {
     const today = new Date();
@@ -79,85 +83,107 @@ const BestDayChart: React.FC<BestDayChartProps> = ({ habits }) => {
         background: '#FFFFFF',
         border: '3px solid #000',
         boxShadow: '4px 4px 0 #000',
-        padding: isMobile ? '16px' : '20px',
         width: '100%',
         boxSizing: 'border-box',
       }}
     >
-      <div
-        style={{
-          fontFamily: "'Syne', sans-serif",
-          fontWeight: 800,
-          fontSize: '14px',
-          textTransform: 'uppercase',
-          letterSpacing: '2px',
-          marginBottom: '4px',
-        }}
+      {/* Collapsible toggle header */}
+      <button
+        className="neo-collapse-toggle"
+        onClick={() => setCollapsed((prev) => !prev)}
+        style={{ padding: isMobile ? '12px 14px' : '14px 16px' }}
       >
-        BEST DAY OF WEEK
-      </div>
-      <div
-        style={{
-          fontFamily: "'JetBrains Mono', monospace",
-          fontSize: '11px',
-          color: '#999',
-          marginBottom: '16px',
-        }}
-      >
-        COMPLETION RATE · LAST 28 DAYS
-      </div>
-
-      {data.map((row) => (
-        <div
-          key={row.day}
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: isMobile ? '8px' : '12px',
-            marginBottom: '10px',
-          }}
+        <span>BEST DAY OF WEEK</span>
+        <svg
+          className={`neo-collapse-chevron ${collapsed ? '' : 'neo-collapse-chevron--open'}`}
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="3"
+          strokeLinecap="square"
         >
-          <span
-            style={{
-              fontFamily: "'JetBrains Mono', monospace",
-              fontWeight: 700,
-              width: isMobile ? '34px' : '40px',
-              fontSize: isMobile ? '11px' : '13px',
-            }}
-          >
-            {row.day}
-          </span>
+          <polyline points="6 9 12 15 18 9" />
+        </svg>
+      </button>
+
+      <div
+        className={`neo-collapse-wrapper ${collapsed ? 'neo-collapse-wrapper--closed' : 'neo-collapse-wrapper--open'}`}
+        style={{ maxHeight: collapsed ? 0 : '500px' }}
+      >
+        <div style={{ padding: isMobile ? '0 14px 14px' : '0 16px 20px' }}>
           <div
             style={{
-              flex: 1,
-              height: isMobile ? '20px' : '24px',
-              background: '#f0f0f0',
-              border: '2px solid #000',
-              overflow: 'hidden',
-            }}
-          >
-            <div
-              style={{
-                height: '100%',
-                width: `${row.barPercent}%`,
-                background: row.isBest ? '#FFE566' : '#22C55E',
-                transition: 'width 0.3s ease',
-              }}
-            />
-          </div>
-          <span
-            style={{
               fontFamily: "'JetBrains Mono', monospace",
-              fontSize: isMobile ? '11px' : '12px',
-              fontWeight: 700,
-              width: '40px',
-              textAlign: 'right',
+              fontSize: '11px',
+              color: '#999',
+              marginBottom: '16px',
             }}
           >
-            {row.rate}%
-          </span>
+            COMPLETION RATE · LAST 28 DAYS
+          </div>
+
+          {data.map((row) => (
+            <div
+              key={row.day}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: isMobile ? '8px' : '12px',
+                marginBottom: '10px',
+              }}
+            >
+              <span
+                style={{
+                  fontFamily: "'JetBrains Mono', monospace",
+                  fontWeight: 700,
+                  width: isMobile ? '34px' : '40px',
+                  fontSize: isMobile ? '11px' : '13px',
+                }}
+              >
+                {row.day}
+              </span>
+              <div
+                style={{
+                  flex: 1,
+                  height: isMobile ? '20px' : '24px',
+                  background: '#f0f0f0',
+                  border: '2px solid #000',
+                  overflow: 'hidden',
+                  position: 'relative',
+                }}
+              >
+                <div
+                  style={{
+                    height: '100%',
+                    width: `${row.barPercent}%`,
+                    background: row.isBest
+                      ? 'linear-gradient(90deg, #FFE566 0%, #FFD000 100%)'
+                      : '#22C55E',
+                    transition: 'width 0.3s ease',
+                    ...(row.isBest ? {
+                      boxShadow: 'inset 0 0 8px rgba(255, 208, 0, 0.3)',
+                    } : {}),
+                  }}
+                />
+              </div>
+              <span
+                style={{
+                  fontFamily: "'JetBrains Mono', monospace",
+                  fontSize: isMobile ? '11px' : '12px',
+                  fontWeight: 700,
+                  width: '40px',
+                  textAlign: 'right',
+                  color: row.isBest ? '#B8860B' : undefined,
+                }}
+              >
+                {row.rate}%
+              </span>
+            </div>
+          ))}
         </div>
-      ))}
+      </div>
     </div>
   );
 };

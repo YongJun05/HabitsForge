@@ -1,18 +1,22 @@
 /**
- * Overall stats card — shows key metrics across all habits in a 2×2 grid.
+ * Overall stats card — shows key metrics across all habits in a collapsible 2×2 grid.
  *
  * Metrics:
  * - This Week: completions / possible this week (Mon → today), creation-aware
  * - Best All-Time Streak: highest best streak across all habits
  * - Last 7 Days Rate: creation-aware completion percentage
  * - Most Consistent: habit with highest 30-day completion rate
+ *
+ * Each stat box has a subtle color accent for visual differentiation.
+ * The grid is collapsible with a toggle header.
  */
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import type { HabitWithStreak } from '../../types';
 import { useWindowSize } from '../../hooks/useWindowSize';
 
 interface StatsCardProps {
   habits: HabitWithStreak[];
+  defaultCollapsed?: boolean;
 }
 
 /** Format a Date to YYYY-MM-DD in local time */
@@ -23,8 +27,9 @@ function toDateStr(d: Date): string {
   return `${year}-${month}-${day}`;
 }
 
-const StatsCard: React.FC<StatsCardProps> = ({ habits }) => {
+const StatsCard: React.FC<StatsCardProps> = ({ habits, defaultCollapsed = false }) => {
   const { isMobile } = useWindowSize();
+  const [collapsed, setCollapsed] = useState(defaultCollapsed);
 
   const stats = useMemo(() => {
     const today = new Date();
@@ -146,7 +151,14 @@ const StatsCard: React.FC<StatsCardProps> = ({ habits }) => {
     marginTop: '4px',
   };
 
-  const boxStyle: React.CSSProperties = {
+  const accentColors: Record<string, string> = {
+    week: '#E8F5E9',
+    streak: '#FFF8E1',
+    rate: '#E3F2FD',
+    consistent: '#FCE4EC',
+  };
+
+  const boxBase: React.CSSProperties = {
     border: '2px solid #000',
     padding: isMobile ? '12px 8px' : '16px',
     textAlign: 'center',
@@ -161,77 +173,91 @@ const StatsCard: React.FC<StatsCardProps> = ({ habits }) => {
         background: '#FFFFFF',
         border: '3px solid #000',
         boxShadow: '4px 4px 0 #000',
-        padding: isMobile ? '14px' : '20px',
         minWidth: 0,
         overflow: 'hidden',
       }}
     >
-      <div
-        style={{
-          fontFamily: "'Syne', sans-serif",
-          fontWeight: 800,
-          fontSize: isMobile ? '14px' : '16px',
-          textTransform: 'uppercase',
-          letterSpacing: '2px',
-          marginBottom: '16px',
-        }}
+      {/* Collapsible toggle header */}
+      <button
+        className="neo-collapse-toggle"
+        onClick={() => setCollapsed((prev) => !prev)}
+        style={{ padding: isMobile ? '12px 14px' : '14px 16px' }}
       >
-        YOUR STATS
-      </div>
+        <span>YOUR STATS</span>
+        <svg
+          className={`neo-collapse-chevron ${collapsed ? '' : 'neo-collapse-chevron--open'}`}
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="3"
+          strokeLinecap="square"
+        >
+          <polyline points="6 9 12 15 18 9" />
+        </svg>
+      </button>
 
       <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: '1fr 1fr',
-          gap: isMobile ? '10px' : '12px',
-        }}
+        className={`neo-collapse-wrapper ${collapsed ? 'neo-collapse-wrapper--closed' : 'neo-collapse-wrapper--open'}`}
+        style={{ maxHeight: collapsed ? 0 : '500px' }}
       >
-        {/* This Week */}
-        <div style={boxStyle}>
-          <div style={numStyle}>
-            {stats.weekCompletions}
-            <span
-              style={{
-                fontSize: isMobile ? '14px' : '18px',
-                color: '#999',
-              }}
-            >
-              {' '}
-              / {stats.weekPossible}
-            </span>
-          </div>
-          <div style={labelStyle}>THIS WEEK</div>
-        </div>
-
-        {/* Best All-Time Streak */}
-        <div style={boxStyle}>
-          <div style={numStyle}>🏆 {stats.bestAllTimeStreak}</div>
-          <div style={labelStyle}>BEST ALL-TIME STREAK</div>
-        </div>
-
-        {/* Last 7 Days Rate */}
-        <div style={boxStyle}>
-          <div style={numStyle}>{stats.last7Rate}%</div>
-          <div style={labelStyle}>LAST 7 DAYS</div>
-        </div>
-
-        {/* Most Consistent Habit */}
-        <div style={boxStyle}>
+        <div style={{ padding: isMobile ? '0 14px 14px' : '0 16px 20px' }}>
           <div
             style={{
-              ...numStyle,
-              fontSize: isMobile ? '13px' : '16px',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              whiteSpace: 'nowrap',
-              maxWidth: '100%',
+              display: 'grid',
+              gridTemplateColumns: '1fr 1fr',
+              gap: isMobile ? '10px' : '12px',
             }}
           >
-            {stats.mostConsistentName}
-          </div>
-          <div style={labelStyle}>
-            MOST CONSISTENT
-            {stats.mostConsistentRate > 0 ? ` · ${stats.mostConsistentRate}%` : ''}
+            {/* This Week */}
+            <div style={{ ...boxBase, background: accentColors.week }}>
+              <div style={numStyle}>
+                {stats.weekCompletions}
+                <span
+                  style={{
+                    fontSize: isMobile ? '14px' : '18px',
+                    color: '#999',
+                  }}
+                >
+                  {' '}
+                  / {stats.weekPossible}
+                </span>
+              </div>
+              <div style={labelStyle}>THIS WEEK</div>
+            </div>
+
+            {/* Best All-Time Streak */}
+            <div style={{ ...boxBase, background: accentColors.streak }}>
+              <div style={numStyle}>🏆 {stats.bestAllTimeStreak}</div>
+              <div style={labelStyle}>BEST ALL-TIME STREAK</div>
+            </div>
+
+            {/* Last 7 Days Rate */}
+            <div style={{ ...boxBase, background: accentColors.rate }}>
+              <div style={numStyle}>{stats.last7Rate}%</div>
+              <div style={labelStyle}>LAST 7 DAYS</div>
+            </div>
+
+            {/* Most Consistent Habit */}
+            <div style={{ ...boxBase, background: accentColors.consistent }}>
+              <div
+                style={{
+                  ...numStyle,
+                  fontSize: isMobile ? '13px' : '16px',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
+                  maxWidth: '100%',
+                }}
+              >
+                {stats.mostConsistentName}
+              </div>
+              <div style={labelStyle}>
+                MOST CONSISTENT
+                {stats.mostConsistentRate > 0 ? ` · ${stats.mostConsistentRate}%` : ''}
+              </div>
+            </div>
           </div>
         </div>
       </div>

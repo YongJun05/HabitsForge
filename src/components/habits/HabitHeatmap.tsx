@@ -1,13 +1,30 @@
 /**
  * 30-day heatmap component.
- * Renders a 5x6 grid of cells showing habit completion over the last 30 days.
- * Done cells are green, missed cells are grey.
+ * Renders an auto-fill grid of cells showing habit completion over the last 30 days.
+ * Done cells are green, missed cells are grey. Cells have hover tooltips.
  */
 import React from 'react';
 import { useWindowSize } from '../../hooks/useWindowSize';
 
 interface HabitHeatmapProps {
   logs: string[];
+}
+
+/** Format date for tooltip display */
+function formatTooltipDate(dateStr: string): string {
+  const d = new Date(dateStr + 'T00:00:00');
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const diffMs = today.getTime() - d.getTime();
+  const diffDays = Math.round(diffMs / (1000 * 60 * 60 * 24));
+
+  if (diffDays === 0) return 'Today';
+  if (diffDays === 1) return 'Yesterday';
+
+  const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  return `${dayNames[d.getDay()]}, ${monthNames[d.getMonth()]} ${d.getDate()}`;
 }
 
 const HabitHeatmap: React.FC<HabitHeatmapProps> = ({ logs }) => {
@@ -31,25 +48,37 @@ const HabitHeatmap: React.FC<HabitHeatmapProps> = ({ logs }) => {
   const doneCount = cells.filter((c) => c.isDone).length;
   const percentage = Math.round((doneCount / 30) * 100);
 
+  const cellSize = isMobile ? 28 : 32;
+
   return (
     <div>
       <div style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: '16px', marginBottom: '8px' }}>
         30-DAY HISTORY
       </div>
 
-      {/* 5x6 grid = 30 cells */}
-      <div style={{ display: 'grid', gridTemplateColumns: `repeat(${isMobile ? 7 : 6}, ${isMobile ? 28 : 32}px)`, gap: '4px', maxWidth: '100%', overflow: 'hidden' }}>
+      {/* Auto-fill grid — dynamically fills available width */}
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: `repeat(auto-fill, ${cellSize}px)`,
+        gap: '4px',
+        maxWidth: '100%',
+        justifyContent: 'start',
+      }}>
         {cells.map((cell) => (
           <div
             key={cell.dateStr}
-            title={`${cell.dateStr}: ${cell.isDone ? 'Done' : 'Missed'}`}
+            className="heatmap-cell"
             style={{
-              width: isMobile ? '28px' : '32px',
-              height: isMobile ? '28px' : '32px',
+              width: `${cellSize}px`,
+              height: `${cellSize}px`,
               border: '2px solid #000000',
               background: cell.isDone ? '#22C55E' : '#f0f0f0',
             }}
-          />
+          >
+            <span className="heatmap-tooltip">
+              {formatTooltipDate(cell.dateStr)} · {cell.isDone ? 'Done ✓' : 'Missed'}
+            </span>
+          </div>
         ))}
       </div>
 
