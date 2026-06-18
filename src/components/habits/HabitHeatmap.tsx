@@ -56,12 +56,11 @@ const HabitHeatmap: React.FC<HabitHeatmapProps> = ({ logs }) => {
         30-DAY HISTORY
       </div>
 
-      {/* Auto-fill grid — dynamically fills available width */}
+      {/* Fixed 6×5 grid */}
       <div style={{
         display: 'grid',
-        gridTemplateColumns: `repeat(auto-fill, ${cellSize}px)`,
+        gridTemplateColumns: `repeat(6, ${cellSize}px)`,
         gap: '4px',
-        maxWidth: '100%',
         justifyContent: 'start',
       }}>
         {cells.map((cell) => (
